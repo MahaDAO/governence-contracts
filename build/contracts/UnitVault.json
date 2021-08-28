@@ -1,0 +1,4784 @@
+{
+  "abi": [
+    {
+      "gas": 35352,
+      "inputs": [
+        {
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "set_token",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "gas": 39089,
+      "inputs": [
+        {
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "deposit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "gas": 39102,
+      "inputs": [
+        {
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "gas": 27031,
+      "inputs": [
+        {
+          "name": "_user",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "liquidate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "gas": 1638,
+      "inputs": [
+        {
+          "name": "arg0",
+          "type": "address"
+        },
+        {
+          "name": "arg1",
+          "type": "address"
+        }
+      ],
+      "name": "collaterals",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "allSourcePaths": {
+    "0": "contracts/testing/UnitVault.vy"
+  },
+  "ast": {
+    "ast_type": "Module",
+    "body": [
+      {
+        "alias": null,
+        "ast_type": "ImportFrom",
+        "col_offset": 0,
+        "end_col_offset": 34,
+        "end_lineno": 3,
+        "level": 0,
+        "lineno": 3,
+        "module": "vyper.interfaces",
+        "name": "ERC20",
+        "node_id": 1,
+        "src": "19:34:1"
+      },
+      {
+        "annotation": {
+          "args": [
+            {
+              "ast_type": "Subscript",
+              "col_offset": 20,
+              "end_col_offset": 63,
+              "end_lineno": 6,
+              "lineno": 6,
+              "node_id": 9,
+              "slice": {
+                "ast_type": "Index",
+                "col_offset": 28,
+                "end_col_offset": 62,
+                "end_lineno": 6,
+                "lineno": 6,
+                "node_id": 12,
+                "src": "110:34:1",
+                "value": {
+                  "ast_type": "Tuple",
+                  "col_offset": 28,
+                  "elements": [
+                    {
+                      "ast_type": "Name",
+                      "col_offset": 28,
+                      "end_col_offset": 35,
+                      "end_lineno": 6,
+                      "id": "address",
+                      "lineno": 6,
+                      "node_id": 14,
+                      "src": "110:7:1"
+                    },
+                    {
+                      "ast_type": "Subscript",
+                      "col_offset": 37,
+                      "end_col_offset": 62,
+                      "end_lineno": 6,
+                      "lineno": 6,
+                      "node_id": 16,
+                      "slice": {
+                        "ast_type": "Index",
+                        "col_offset": 45,
+                        "end_col_offset": 61,
+                        "end_lineno": 6,
+                        "lineno": 6,
+                        "node_id": 19,
+                        "src": "127:16:1",
+                        "value": {
+                          "ast_type": "Tuple",
+                          "col_offset": 45,
+                          "elements": [
+                            {
+                              "ast_type": "Name",
+                              "col_offset": 45,
+                              "end_col_offset": 52,
+                              "end_lineno": 6,
+                              "id": "address",
+                              "lineno": 6,
+                              "node_id": 21,
+                              "src": "127:7:1"
+                            },
+                            {
+                              "ast_type": "Name",
+                              "col_offset": 54,
+                              "end_col_offset": 61,
+                              "end_lineno": 6,
+                              "id": "uint256",
+                              "lineno": 6,
+                              "node_id": 23,
+                              "src": "136:7:1"
+                            }
+                          ],
+                          "end_col_offset": 61,
+                          "end_lineno": 6,
+                          "lineno": 6,
+                          "node_id": 20,
+                          "src": "127:16:1"
+                        }
+                      },
+                      "src": "119:25:1",
+                      "value": {
+                        "ast_type": "Name",
+                        "col_offset": 37,
+                        "end_col_offset": 44,
+                        "end_lineno": 6,
+                        "id": "HashMap",
+                        "lineno": 6,
+                        "node_id": 17,
+                        "src": "119:7:1"
+                      }
+                    }
+                  ],
+                  "end_col_offset": 62,
+                  "end_lineno": 6,
+                  "lineno": 6,
+                  "node_id": 13,
+                  "src": "110:34:1"
+                }
+              },
+              "src": "102:43:1",
+              "value": {
+                "ast_type": "Name",
+                "col_offset": 20,
+                "end_col_offset": 27,
+                "end_lineno": 6,
+                "id": "HashMap",
+                "lineno": 6,
+                "node_id": 10,
+                "src": "102:7:1"
+              }
+            }
+          ],
+          "ast_type": "Call",
+          "col_offset": 13,
+          "end_col_offset": 64,
+          "end_lineno": 6,
+          "func": {
+            "ast_type": "Name",
+            "col_offset": 13,
+            "end_col_offset": 19,
+            "end_lineno": 6,
+            "id": "public",
+            "lineno": 6,
+            "node_id": 7,
+            "src": "95:6:1"
+          },
+          "keyword": null,
+          "keywords": [],
+          "lineno": 6,
+          "node_id": 6,
+          "src": "95:51:1"
+        },
+        "ast_type": "AnnAssign",
+        "col_offset": 0,
+        "end_col_offset": 64,
+        "end_lineno": 6,
+        "lineno": 6,
+        "node_id": 3,
+        "simple": 1,
+        "src": "82:64:1",
+        "target": {
+          "ast_type": "Name",
+          "col_offset": 0,
+          "end_col_offset": 11,
+          "end_lineno": 6,
+          "id": "collaterals",
+          "lineno": 6,
+          "node_id": 4,
+          "src": "82:11:1"
+        },
+        "value": null
+      },
+      {
+        "annotation": {
+          "ast_type": "Name",
+          "col_offset": 7,
+          "end_col_offset": 14,
+          "end_lineno": 8,
+          "id": "address",
+          "lineno": 8,
+          "node_id": 32,
+          "src": "155:7:1"
+        },
+        "ast_type": "AnnAssign",
+        "col_offset": 0,
+        "end_col_offset": 14,
+        "end_lineno": 8,
+        "lineno": 8,
+        "node_id": 29,
+        "simple": 1,
+        "src": "148:14:1",
+        "target": {
+          "ast_type": "Name",
+          "col_offset": 0,
+          "end_col_offset": 5,
+          "end_lineno": 8,
+          "id": "token",
+          "lineno": 8,
+          "node_id": 30,
+          "src": "148:5:1"
+        },
+        "value": null
+      },
+      {
+        "args": {
+          "args": [
+            {
+              "annotation": {
+                "ast_type": "Name",
+                "col_offset": 22,
+                "end_col_offset": 29,
+                "end_lineno": 12,
+                "id": "address",
+                "lineno": 12,
+                "node_id": 37,
+                "src": "197:7:1"
+              },
+              "arg": "_token",
+              "ast_type": "arg",
+              "col_offset": 14,
+              "end_col_offset": 29,
+              "end_lineno": 12,
+              "lineno": 12,
+              "node_id": 36,
+              "src": "189:15:1"
+            }
+          ],
+          "ast_type": "arguments",
+          "col_offset": 14,
+          "default": null,
+          "defaults": [],
+          "end_col_offset": 29,
+          "end_lineno": 12,
+          "lineno": 12,
+          "node_id": 35,
+          "src": "189:15:1"
+        },
+        "ast_type": "FunctionDef",
+        "body": [
+          {
+            "ast_type": "Assign",
+            "col_offset": 4,
+            "end_col_offset": 23,
+            "end_lineno": 13,
+            "lineno": 13,
+            "node_id": 39,
+            "src": "211:19:1",
+            "target": {
+              "ast_type": "Attribute",
+              "attr": "token",
+              "col_offset": 4,
+              "end_col_offset": 14,
+              "end_lineno": 13,
+              "lineno": 13,
+              "node_id": 40,
+              "src": "211:10:1",
+              "value": {
+                "ast_type": "Name",
+                "col_offset": 4,
+                "end_col_offset": 8,
+                "end_lineno": 13,
+                "id": "self",
+                "lineno": 13,
+                "node_id": 41,
+                "src": "211:4:1"
+              }
+            },
+            "value": {
+              "ast_type": "Name",
+              "col_offset": 17,
+              "end_col_offset": 23,
+              "end_lineno": 13,
+              "id": "_token",
+              "lineno": 13,
+              "node_id": 44,
+              "src": "224:6:1"
+            }
+          }
+        ],
+        "col_offset": 0,
+        "decorator_list": [
+          {
+            "ast_type": "Name",
+            "col_offset": 1,
+            "end_col_offset": 9,
+            "end_lineno": 11,
+            "id": "external",
+            "lineno": 11,
+            "node_id": 46,
+            "src": "166:8:1"
+          }
+        ],
+        "doc_string": null,
+        "end_col_offset": 23,
+        "end_lineno": 13,
+        "lineno": 12,
+        "name": "set_token",
+        "node_id": 34,
+        "pos": null,
+        "returns": null,
+        "src": "175:55:1"
+      },
+      {
+        "args": {
+          "args": [
+            {
+              "annotation": {
+                "ast_type": "Name",
+                "col_offset": 21,
+                "end_col_offset": 28,
+                "end_lineno": 16,
+                "id": "uint256",
+                "lineno": 16,
+                "node_id": 51,
+                "src": "263:7:1"
+              },
+              "arg": "_amount",
+              "ast_type": "arg",
+              "col_offset": 12,
+              "end_col_offset": 28,
+              "end_lineno": 16,
+              "lineno": 16,
+              "node_id": 50,
+              "src": "254:16:1"
+            }
+          ],
+          "ast_type": "arguments",
+          "col_offset": 12,
+          "default": null,
+          "defaults": [],
+          "end_col_offset": 28,
+          "end_lineno": 16,
+          "lineno": 16,
+          "node_id": 49,
+          "src": "254:16:1"
+        },
+        "ast_type": "FunctionDef",
+        "body": [
+          {
+            "ast_type": "Expr",
+            "col_offset": 4,
+            "end_col_offset": 61,
+            "end_lineno": 17,
+            "lineno": 17,
+            "node_id": 53,
+            "src": "277:57:1",
+            "value": {
+              "args": [
+                {
+                  "ast_type": "Attribute",
+                  "attr": "sender",
+                  "col_offset": 35,
+                  "end_col_offset": 45,
+                  "end_lineno": 17,
+                  "lineno": 17,
+                  "node_id": 64,
+                  "src": "308:10:1",
+                  "value": {
+                    "ast_type": "Name",
+                    "col_offset": 35,
+                    "end_col_offset": 38,
+                    "end_lineno": 17,
+                    "id": "msg",
+                    "lineno": 17,
+                    "node_id": 65,
+                    "src": "308:3:1"
+                  }
+                },
+                {
+                  "ast_type": "Name",
+                  "col_offset": 47,
+                  "end_col_offset": 51,
+                  "end_lineno": 17,
+                  "id": "self",
+                  "lineno": 17,
+                  "node_id": 68,
+                  "src": "320:4:1"
+                },
+                {
+                  "ast_type": "Name",
+                  "col_offset": 53,
+                  "end_col_offset": 60,
+                  "end_lineno": 17,
+                  "id": "_amount",
+                  "lineno": 17,
+                  "node_id": 70,
+                  "src": "326:7:1"
+                }
+              ],
+              "ast_type": "Call",
+              "col_offset": 4,
+              "end_col_offset": 61,
+              "end_lineno": 17,
+              "func": {
+                "ast_type": "Attribute",
+                "attr": "transferFrom",
+                "col_offset": 4,
+                "end_col_offset": 34,
+                "end_lineno": 17,
+                "lineno": 17,
+                "node_id": 55,
+                "src": "277:30:1",
+                "value": {
+                  "args": [
+                    {
+                      "ast_type": "Attribute",
+                      "attr": "token",
+                      "col_offset": 10,
+                      "end_col_offset": 20,
+                      "end_lineno": 17,
+                      "lineno": 17,
+                      "node_id": 59,
+                      "src": "283:10:1",
+                      "value": {
+                        "ast_type": "Name",
+                        "col_offset": 10,
+                        "end_col_offset": 14,
+                        "end_lineno": 17,
+                        "id": "self",
+                        "lineno": 17,
+                        "node_id": 60,
+                        "src": "283:4:1"
+                      }
+                    }
+                  ],
+                  "ast_type": "Call",
+                  "col_offset": 4,
+                  "end_col_offset": 21,
+                  "end_lineno": 17,
+                  "func": {
+                    "ast_type": "Name",
+                    "col_offset": 4,
+                    "end_col_offset": 9,
+                    "end_lineno": 17,
+                    "id": "ERC20",
+                    "lineno": 17,
+                    "node_id": 57,
+                    "src": "277:5:1"
+                  },
+                  "keyword": null,
+                  "keywords": [],
+                  "lineno": 17,
+                  "node_id": 56,
+                  "src": "277:17:1"
+                }
+              },
+              "keyword": null,
+              "keywords": [],
+              "lineno": 17,
+              "node_id": 54,
+              "src": "277:57:1"
+            }
+          },
+          {
+            "ast_type": "AugAssign",
+            "col_offset": 4,
+            "end_col_offset": 55,
+            "end_lineno": 18,
+            "lineno": 18,
+            "node_id": 72,
+            "op": {
+              "ast_type": "Add",
+              "col_offset": 4,
+              "end_col_offset": 55,
+              "end_lineno": 18,
+              "lineno": 18,
+              "node_id": 91,
+              "src": "339:51:1"
+            },
+            "src": "339:51:1",
+            "target": {
+              "ast_type": "Subscript",
+              "col_offset": 4,
+              "end_col_offset": 44,
+              "end_lineno": 18,
+              "lineno": 18,
+              "node_id": 73,
+              "slice": {
+                "ast_type": "Index",
+                "col_offset": 33,
+                "end_col_offset": 43,
+                "end_lineno": 18,
+                "lineno": 18,
+                "node_id": 85,
+                "src": "368:10:1",
+                "value": {
+                  "ast_type": "Attribute",
+                  "attr": "sender",
+                  "col_offset": 33,
+                  "end_col_offset": 43,
+                  "end_lineno": 18,
+                  "lineno": 18,
+                  "node_id": 86,
+                  "src": "368:10:1",
+                  "value": {
+                    "ast_type": "Name",
+                    "col_offset": 33,
+                    "end_col_offset": 36,
+                    "end_lineno": 18,
+                    "id": "msg",
+                    "lineno": 18,
+                    "node_id": 87,
+                    "src": "368:3:1"
+                  }
+                }
+              },
+              "src": "339:40:1",
+              "value": {
+                "ast_type": "Subscript",
+                "col_offset": 4,
+                "end_col_offset": 32,
+                "end_lineno": 18,
+                "lineno": 18,
+                "node_id": 74,
+                "slice": {
+                  "ast_type": "Index",
+                  "col_offset": 21,
+                  "end_col_offset": 31,
+                  "end_lineno": 18,
+                  "lineno": 18,
+                  "node_id": 79,
+                  "src": "356:10:1",
+                  "value": {
+                    "ast_type": "Attribute",
+                    "attr": "token",
+                    "col_offset": 21,
+                    "end_col_offset": 31,
+                    "end_lineno": 18,
+                    "lineno": 18,
+                    "node_id": 80,
+                    "src": "356:10:1",
+                    "value": {
+                      "ast_type": "Name",
+                      "col_offset": 21,
+                      "end_col_offset": 25,
+                      "end_lineno": 18,
+                      "id": "self",
+                      "lineno": 18,
+                      "node_id": 81,
+                      "src": "356:4:1"
+                    }
+                  }
+                },
+                "src": "339:28:1",
+                "value": {
+                  "ast_type": "Attribute",
+                  "attr": "collaterals",
+                  "col_offset": 4,
+                  "end_col_offset": 20,
+                  "end_lineno": 18,
+                  "lineno": 18,
+                  "node_id": 75,
+                  "src": "339:16:1",
+                  "value": {
+                    "ast_type": "Name",
+                    "col_offset": 4,
+                    "end_col_offset": 8,
+                    "end_lineno": 18,
+                    "id": "self",
+                    "lineno": 18,
+                    "node_id": 76,
+                    "src": "339:4:1"
+                  }
+                }
+              }
+            },
+            "value": {
+              "ast_type": "Name",
+              "col_offset": 48,
+              "end_col_offset": 55,
+              "end_lineno": 18,
+              "id": "_amount",
+              "lineno": 18,
+              "node_id": 92,
+              "src": "383:7:1"
+            }
+          }
+        ],
+        "col_offset": 0,
+        "decorator_list": [
+          {
+            "ast_type": "Name",
+            "col_offset": 1,
+            "end_col_offset": 9,
+            "end_lineno": 15,
+            "id": "external",
+            "lineno": 15,
+            "node_id": 94,
+            "src": "233:8:1"
+          }
+        ],
+        "doc_string": null,
+        "end_col_offset": 55,
+        "end_lineno": 18,
+        "lineno": 16,
+        "name": "deposit",
+        "node_id": 48,
+        "pos": null,
+        "returns": null,
+        "src": "242:148:1"
+      },
+      {
+        "args": {
+          "args": [
+            {
+              "annotation": {
+                "ast_type": "Name",
+                "col_offset": 22,
+                "end_col_offset": 29,
+                "end_lineno": 22,
+                "id": "uint256",
+                "lineno": 22,
+                "node_id": 99,
+                "src": "425:7:1"
+              },
+              "arg": "_amount",
+              "ast_type": "arg",
+              "col_offset": 13,
+              "end_col_offset": 29,
+              "end_lineno": 22,
+              "lineno": 22,
+              "node_id": 98,
+              "src": "416:16:1"
+            }
+          ],
+          "ast_type": "arguments",
+          "col_offset": 13,
+          "default": null,
+          "defaults": [],
+          "end_col_offset": 29,
+          "end_lineno": 22,
+          "lineno": 22,
+          "node_id": 97,
+          "src": "416:16:1"
+        },
+        "ast_type": "FunctionDef",
+        "body": [
+          {
+            "ast_type": "AugAssign",
+            "col_offset": 4,
+            "end_col_offset": 55,
+            "end_lineno": 23,
+            "lineno": 23,
+            "node_id": 101,
+            "op": {
+              "ast_type": "Sub",
+              "col_offset": 4,
+              "end_col_offset": 55,
+              "end_lineno": 23,
+              "lineno": 23,
+              "node_id": 205,
+              "src": "439:51:1"
+            },
+            "src": "439:51:1",
+            "target": {
+              "ast_type": "Subscript",
+              "col_offset": 4,
+              "end_col_offset": 44,
+              "end_lineno": 23,
+              "lineno": 23,
+              "node_id": 102,
+              "slice": {
+                "ast_type": "Index",
+                "col_offset": 33,
+                "end_col_offset": 43,
+                "end_lineno": 23,
+                "lineno": 23,
+                "node_id": 114,
+                "src": "468:10:1",
+                "value": {
+                  "ast_type": "Attribute",
+                  "attr": "sender",
+                  "col_offset": 33,
+                  "end_col_offset": 43,
+                  "end_lineno": 23,
+                  "lineno": 23,
+                  "node_id": 115,
+                  "src": "468:10:1",
+                  "value": {
+                    "ast_type": "Name",
+                    "col_offset": 33,
+                    "end_col_offset": 36,
+                    "end_lineno": 23,
+                    "id": "msg",
+                    "lineno": 23,
+                    "node_id": 116,
+                    "src": "468:3:1"
+                  }
+                }
+              },
+              "src": "439:40:1",
+              "value": {
+                "ast_type": "Subscript",
+                "col_offset": 4,
+                "end_col_offset": 32,
+                "end_lineno": 23,
+                "lineno": 23,
+                "node_id": 103,
+                "slice": {
+                  "ast_type": "Index",
+                  "col_offset": 21,
+                  "end_col_offset": 31,
+                  "end_lineno": 23,
+                  "lineno": 23,
+                  "node_id": 108,
+                  "src": "456:10:1",
+                  "value": {
+                    "ast_type": "Attribute",
+                    "attr": "token",
+                    "col_offset": 21,
+                    "end_col_offset": 31,
+                    "end_lineno": 23,
+                    "lineno": 23,
+                    "node_id": 109,
+                    "src": "456:10:1",
+                    "value": {
+                      "ast_type": "Name",
+                      "col_offset": 21,
+                      "end_col_offset": 25,
+                      "end_lineno": 23,
+                      "id": "self",
+                      "lineno": 23,
+                      "node_id": 110,
+                      "src": "456:4:1"
+                    }
+                  }
+                },
+                "src": "439:28:1",
+                "value": {
+                  "ast_type": "Attribute",
+                  "attr": "collaterals",
+                  "col_offset": 4,
+                  "end_col_offset": 20,
+                  "end_lineno": 23,
+                  "lineno": 23,
+                  "node_id": 104,
+                  "src": "439:16:1",
+                  "value": {
+                    "ast_type": "Name",
+                    "col_offset": 4,
+                    "end_col_offset": 8,
+                    "end_lineno": 23,
+                    "id": "self",
+                    "lineno": 23,
+                    "node_id": 105,
+                    "src": "439:4:1"
+                  }
+                }
+              }
+            },
+            "value": {
+              "ast_type": "Name",
+              "col_offset": 48,
+              "end_col_offset": 55,
+              "end_lineno": 23,
+              "id": "_amount",
+              "lineno": 23,
+              "node_id": 121,
+              "src": "483:7:1"
+            }
+          },
+          {
+            "ast_type": "Expr",
+            "col_offset": 4,
+            "end_col_offset": 51,
+            "end_lineno": 24,
+            "lineno": 24,
+            "node_id": 123,
+            "src": "495:47:1",
+            "value": {
+              "args": [
+                {
+                  "ast_type": "Attribute",
+                  "attr": "sender",
+                  "col_offset": 31,
+                  "end_col_offset": 41,
+                  "end_lineno": 24,
+                  "lineno": 24,
+                  "node_id": 134,
+                  "src": "522:10:1",
+                  "value": {
+                    "ast_type": "Name",
+                    "col_offset": 31,
+                    "end_col_offset": 34,
+                    "end_lineno": 24,
+                    "id": "msg",
+                    "lineno": 24,
+                    "node_id": 135,
+                    "src": "522:3:1"
+                  }
+                },
+                {
+                  "ast_type": "Name",
+                  "col_offset": 43,
+                  "end_col_offset": 50,
+                  "end_lineno": 24,
+                  "id": "_amount",
+                  "lineno": 24,
+                  "node_id": 138,
+                  "src": "534:7:1"
+                }
+              ],
+              "ast_type": "Call",
+              "col_offset": 4,
+              "end_col_offset": 51,
+              "end_lineno": 24,
+              "func": {
+                "ast_type": "Attribute",
+                "attr": "transfer",
+                "col_offset": 4,
+                "end_col_offset": 30,
+                "end_lineno": 24,
+                "lineno": 24,
+                "node_id": 125,
+                "src": "495:26:1",
+                "value": {
+                  "args": [
+                    {
+                      "ast_type": "Attribute",
+                      "attr": "token",
+                      "col_offset": 10,
+                      "end_col_offset": 20,
+                      "end_lineno": 24,
+                      "lineno": 24,
+                      "node_id": 129,
+                      "src": "501:10:1",
+                      "value": {
+                        "ast_type": "Name",
+                        "col_offset": 10,
+                        "end_col_offset": 14,
+                        "end_lineno": 24,
+                        "id": "self",
+                        "lineno": 24,
+                        "node_id": 130,
+                        "src": "501:4:1"
+                      }
+                    }
+                  ],
+                  "ast_type": "Call",
+                  "col_offset": 4,
+                  "end_col_offset": 21,
+                  "end_lineno": 24,
+                  "func": {
+                    "ast_type": "Name",
+                    "col_offset": 4,
+                    "end_col_offset": 9,
+                    "end_lineno": 24,
+                    "id": "ERC20",
+                    "lineno": 24,
+                    "node_id": 127,
+                    "src": "495:5:1"
+                  },
+                  "keyword": null,
+                  "keywords": [],
+                  "lineno": 24,
+                  "node_id": 126,
+                  "src": "495:17:1"
+                }
+              },
+              "keyword": null,
+              "keywords": [],
+              "lineno": 24,
+              "node_id": 124,
+              "src": "495:47:1"
+            }
+          }
+        ],
+        "col_offset": 0,
+        "decorator_list": [
+          {
+            "ast_type": "Name",
+            "col_offset": 1,
+            "end_col_offset": 9,
+            "end_lineno": 21,
+            "id": "external",
+            "lineno": 21,
+            "node_id": 140,
+            "src": "394:8:1"
+          }
+        ],
+        "doc_string": null,
+        "end_col_offset": 51,
+        "end_lineno": 24,
+        "lineno": 22,
+        "name": "withdraw",
+        "node_id": 96,
+        "pos": null,
+        "returns": null,
+        "src": "403:139:1"
+      },
+      {
+        "args": {
+          "args": [
+            {
+              "annotation": {
+                "ast_type": "Name",
+                "col_offset": 21,
+                "end_col_offset": 28,
+                "end_lineno": 28,
+                "id": "address",
+                "lineno": 28,
+                "node_id": 145,
+                "src": "576:7:1"
+              },
+              "arg": "_user",
+              "ast_type": "arg",
+              "col_offset": 14,
+              "end_col_offset": 28,
+              "end_lineno": 28,
+              "lineno": 28,
+              "node_id": 144,
+              "src": "569:14:1"
+            },
+            {
+              "annotation": {
+                "ast_type": "Name",
+                "col_offset": 39,
+                "end_col_offset": 46,
+                "end_lineno": 28,
+                "id": "uint256",
+                "lineno": 28,
+                "node_id": 148,
+                "src": "594:7:1"
+              },
+              "arg": "_amount",
+              "ast_type": "arg",
+              "col_offset": 30,
+              "end_col_offset": 46,
+              "end_lineno": 28,
+              "lineno": 28,
+              "node_id": 147,
+              "src": "585:16:1"
+            }
+          ],
+          "ast_type": "arguments",
+          "col_offset": 14,
+          "default": null,
+          "defaults": [],
+          "end_col_offset": 46,
+          "end_lineno": 28,
+          "lineno": 28,
+          "node_id": 143,
+          "src": "569:32:1"
+        },
+        "ast_type": "FunctionDef",
+        "body": [
+          {
+            "annotation": {
+              "ast_type": "Name",
+              "col_offset": 11,
+              "end_col_offset": 18,
+              "end_lineno": 29,
+              "id": "uint256",
+              "lineno": 29,
+              "node_id": 153,
+              "src": "615:7:1"
+            },
+            "ast_type": "AnnAssign",
+            "col_offset": 4,
+            "end_col_offset": 56,
+            "end_lineno": 29,
+            "lineno": 29,
+            "node_id": 150,
+            "simple": 1,
+            "src": "608:52:1",
+            "target": {
+              "ast_type": "Name",
+              "col_offset": 4,
+              "end_col_offset": 9,
+              "end_lineno": 29,
+              "id": "total",
+              "lineno": 29,
+              "node_id": 151,
+              "src": "608:5:1"
+            },
+            "value": {
+              "ast_type": "Subscript",
+              "col_offset": 21,
+              "end_col_offset": 56,
+              "end_lineno": 29,
+              "lineno": 29,
+              "node_id": 155,
+              "slice": {
+                "ast_type": "Index",
+                "col_offset": 50,
+                "end_col_offset": 55,
+                "end_lineno": 29,
+                "lineno": 29,
+                "node_id": 167,
+                "src": "654:5:1",
+                "value": {
+                  "ast_type": "Name",
+                  "col_offset": 50,
+                  "end_col_offset": 55,
+                  "end_lineno": 29,
+                  "id": "_user",
+                  "lineno": 29,
+                  "node_id": 168,
+                  "src": "654:5:1"
+                }
+              },
+              "src": "625:35:1",
+              "value": {
+                "ast_type": "Subscript",
+                "col_offset": 21,
+                "end_col_offset": 49,
+                "end_lineno": 29,
+                "lineno": 29,
+                "node_id": 156,
+                "slice": {
+                  "ast_type": "Index",
+                  "col_offset": 38,
+                  "end_col_offset": 48,
+                  "end_lineno": 29,
+                  "lineno": 29,
+                  "node_id": 161,
+                  "src": "642:10:1",
+                  "value": {
+                    "ast_type": "Attribute",
+                    "attr": "token",
+                    "col_offset": 38,
+                    "end_col_offset": 48,
+                    "end_lineno": 29,
+                    "lineno": 29,
+                    "node_id": 162,
+                    "src": "642:10:1",
+                    "value": {
+                      "ast_type": "Name",
+                      "col_offset": 38,
+                      "end_col_offset": 42,
+                      "end_lineno": 29,
+                      "id": "self",
+                      "lineno": 29,
+                      "node_id": 163,
+                      "src": "642:4:1"
+                    }
+                  }
+                },
+                "src": "625:28:1",
+                "value": {
+                  "ast_type": "Attribute",
+                  "attr": "collaterals",
+                  "col_offset": 21,
+                  "end_col_offset": 37,
+                  "end_lineno": 29,
+                  "lineno": 29,
+                  "node_id": 157,
+                  "src": "625:16:1",
+                  "value": {
+                    "ast_type": "Name",
+                    "col_offset": 21,
+                    "end_col_offset": 25,
+                    "end_lineno": 29,
+                    "id": "self",
+                    "lineno": 29,
+                    "node_id": 158,
+                    "src": "625:4:1"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "ast_type": "Assign",
+            "col_offset": 4,
+            "end_col_offset": 43,
+            "end_lineno": 30,
+            "lineno": 30,
+            "node_id": 171,
+            "src": "665:39:1",
+            "target": {
+              "ast_type": "Subscript",
+              "col_offset": 4,
+              "end_col_offset": 39,
+              "end_lineno": 30,
+              "lineno": 30,
+              "node_id": 172,
+              "slice": {
+                "ast_type": "Index",
+                "col_offset": 33,
+                "end_col_offset": 38,
+                "end_lineno": 30,
+                "lineno": 30,
+                "node_id": 184,
+                "src": "694:5:1",
+                "value": {
+                  "ast_type": "Name",
+                  "col_offset": 33,
+                  "end_col_offset": 38,
+                  "end_lineno": 30,
+                  "id": "_user",
+                  "lineno": 30,
+                  "node_id": 185,
+                  "src": "694:5:1"
+                }
+              },
+              "src": "665:35:1",
+              "value": {
+                "ast_type": "Subscript",
+                "col_offset": 4,
+                "end_col_offset": 32,
+                "end_lineno": 30,
+                "lineno": 30,
+                "node_id": 173,
+                "slice": {
+                  "ast_type": "Index",
+                  "col_offset": 21,
+                  "end_col_offset": 31,
+                  "end_lineno": 30,
+                  "lineno": 30,
+                  "node_id": 178,
+                  "src": "682:10:1",
+                  "value": {
+                    "ast_type": "Attribute",
+                    "attr": "token",
+                    "col_offset": 21,
+                    "end_col_offset": 31,
+                    "end_lineno": 30,
+                    "lineno": 30,
+                    "node_id": 179,
+                    "src": "682:10:1",
+                    "value": {
+                      "ast_type": "Name",
+                      "col_offset": 21,
+                      "end_col_offset": 25,
+                      "end_lineno": 30,
+                      "id": "self",
+                      "lineno": 30,
+                      "node_id": 180,
+                      "src": "682:4:1"
+                    }
+                  }
+                },
+                "src": "665:28:1",
+                "value": {
+                  "ast_type": "Attribute",
+                  "attr": "collaterals",
+                  "col_offset": 4,
+                  "end_col_offset": 20,
+                  "end_lineno": 30,
+                  "lineno": 30,
+                  "node_id": 174,
+                  "src": "665:16:1",
+                  "value": {
+                    "ast_type": "Name",
+                    "col_offset": 4,
+                    "end_col_offset": 8,
+                    "end_lineno": 30,
+                    "id": "self",
+                    "lineno": 30,
+                    "node_id": 175,
+                    "src": "665:4:1"
+                  }
+                }
+              }
+            },
+            "value": {
+              "ast_type": "Int",
+              "col_offset": 42,
+              "end_col_offset": 43,
+              "end_lineno": 30,
+              "lineno": 30,
+              "node_id": 188,
+              "src": "703:1:1",
+              "value": 0
+            }
+          },
+          {
+            "ast_type": "Expr",
+            "col_offset": 4,
+            "end_col_offset": 54,
+            "end_lineno": 31,
+            "lineno": 31,
+            "node_id": 189,
+            "src": "709:50:1",
+            "value": {
+              "args": [
+                {
+                  "ast_type": "Name",
+                  "col_offset": 31,
+                  "end_col_offset": 36,
+                  "end_lineno": 31,
+                  "id": "_user",
+                  "lineno": 31,
+                  "node_id": 200,
+                  "src": "736:5:1"
+                },
+                {
+                  "ast_type": "BinOp",
+                  "col_offset": 38,
+                  "end_col_offset": 53,
+                  "end_lineno": 31,
+                  "left": {
+                    "ast_type": "Name",
+                    "col_offset": 38,
+                    "end_col_offset": 43,
+                    "end_lineno": 31,
+                    "id": "total",
+                    "lineno": 31,
+                    "node_id": 203,
+                    "src": "743:5:1"
+                  },
+                  "lineno": 31,
+                  "node_id": 202,
+                  "op": {
+                    "ast_type": "Sub",
+                    "col_offset": 38,
+                    "end_col_offset": 53,
+                    "end_lineno": 31,
+                    "lineno": 31,
+                    "node_id": 205,
+                    "src": "743:15:1"
+                  },
+                  "right": {
+                    "ast_type": "Name",
+                    "col_offset": 46,
+                    "end_col_offset": 53,
+                    "end_lineno": 31,
+                    "id": "_amount",
+                    "lineno": 31,
+                    "node_id": 206,
+                    "src": "751:7:1"
+                  },
+                  "src": "743:15:1"
+                }
+              ],
+              "ast_type": "Call",
+              "col_offset": 4,
+              "end_col_offset": 54,
+              "end_lineno": 31,
+              "func": {
+                "ast_type": "Attribute",
+                "attr": "transfer",
+                "col_offset": 4,
+                "end_col_offset": 30,
+                "end_lineno": 31,
+                "lineno": 31,
+                "node_id": 191,
+                "src": "709:26:1",
+                "value": {
+                  "args": [
+                    {
+                      "ast_type": "Attribute",
+                      "attr": "token",
+                      "col_offset": 10,
+                      "end_col_offset": 20,
+                      "end_lineno": 31,
+                      "lineno": 31,
+                      "node_id": 195,
+                      "src": "715:10:1",
+                      "value": {
+                        "ast_type": "Name",
+                        "col_offset": 10,
+                        "end_col_offset": 14,
+                        "end_lineno": 31,
+                        "id": "self",
+                        "lineno": 31,
+                        "node_id": 196,
+                        "src": "715:4:1"
+                      }
+                    }
+                  ],
+                  "ast_type": "Call",
+                  "col_offset": 4,
+                  "end_col_offset": 21,
+                  "end_lineno": 31,
+                  "func": {
+                    "ast_type": "Name",
+                    "col_offset": 4,
+                    "end_col_offset": 9,
+                    "end_lineno": 31,
+                    "id": "ERC20",
+                    "lineno": 31,
+                    "node_id": 193,
+                    "src": "709:5:1"
+                  },
+                  "keyword": null,
+                  "keywords": [],
+                  "lineno": 31,
+                  "node_id": 192,
+                  "src": "709:17:1"
+                }
+              },
+              "keyword": null,
+              "keywords": [],
+              "lineno": 31,
+              "node_id": 190,
+              "src": "709:50:1"
+            }
+          },
+          {
+            "ast_type": "Expr",
+            "col_offset": 4,
+            "end_col_offset": 51,
+            "end_lineno": 32,
+            "lineno": 32,
+            "node_id": 208,
+            "src": "764:47:1",
+            "value": {
+              "args": [
+                {
+                  "ast_type": "Attribute",
+                  "attr": "sender",
+                  "col_offset": 31,
+                  "end_col_offset": 41,
+                  "end_lineno": 32,
+                  "lineno": 32,
+                  "node_id": 219,
+                  "src": "791:10:1",
+                  "value": {
+                    "ast_type": "Name",
+                    "col_offset": 31,
+                    "end_col_offset": 34,
+                    "end_lineno": 32,
+                    "id": "msg",
+                    "lineno": 32,
+                    "node_id": 220,
+                    "src": "791:3:1"
+                  }
+                },
+                {
+                  "ast_type": "Name",
+                  "col_offset": 43,
+                  "end_col_offset": 50,
+                  "end_lineno": 32,
+                  "id": "_amount",
+                  "lineno": 32,
+                  "node_id": 223,
+                  "src": "803:7:1"
+                }
+              ],
+              "ast_type": "Call",
+              "col_offset": 4,
+              "end_col_offset": 51,
+              "end_lineno": 32,
+              "func": {
+                "ast_type": "Attribute",
+                "attr": "transfer",
+                "col_offset": 4,
+                "end_col_offset": 30,
+                "end_lineno": 32,
+                "lineno": 32,
+                "node_id": 210,
+                "src": "764:26:1",
+                "value": {
+                  "args": [
+                    {
+                      "ast_type": "Attribute",
+                      "attr": "token",
+                      "col_offset": 10,
+                      "end_col_offset": 20,
+                      "end_lineno": 32,
+                      "lineno": 32,
+                      "node_id": 214,
+                      "src": "770:10:1",
+                      "value": {
+                        "ast_type": "Name",
+                        "col_offset": 10,
+                        "end_col_offset": 14,
+                        "end_lineno": 32,
+                        "id": "self",
+                        "lineno": 32,
+                        "node_id": 215,
+                        "src": "770:4:1"
+                      }
+                    }
+                  ],
+                  "ast_type": "Call",
+                  "col_offset": 4,
+                  "end_col_offset": 21,
+                  "end_lineno": 32,
+                  "func": {
+                    "ast_type": "Name",
+                    "col_offset": 4,
+                    "end_col_offset": 9,
+                    "end_lineno": 32,
+                    "id": "ERC20",
+                    "lineno": 32,
+                    "node_id": 212,
+                    "src": "764:5:1"
+                  },
+                  "keyword": null,
+                  "keywords": [],
+                  "lineno": 32,
+                  "node_id": 211,
+                  "src": "764:17:1"
+                }
+              },
+              "keyword": null,
+              "keywords": [],
+              "lineno": 32,
+              "node_id": 209,
+              "src": "764:47:1"
+            }
+          }
+        ],
+        "col_offset": 0,
+        "decorator_list": [
+          {
+            "ast_type": "Name",
+            "col_offset": 1,
+            "end_col_offset": 9,
+            "end_lineno": 27,
+            "id": "external",
+            "lineno": 27,
+            "node_id": 225,
+            "src": "546:8:1"
+          }
+        ],
+        "doc_string": null,
+        "end_col_offset": 51,
+        "end_lineno": 32,
+        "lineno": 28,
+        "name": "liquidate",
+        "node_id": 142,
+        "pos": null,
+        "returns": null,
+        "src": "555:256:1"
+      }
+    ],
+    "col_offset": 0,
+    "doc_string": null,
+    "end_col_offset": 51,
+    "end_lineno": 32,
+    "lineno": 1,
+    "name": "contracts/testing/UnitVault.vy",
+    "node_id": 0,
+    "src": "0:811:1"
+  },
+  "bytecode": "0x6102c056600436101561000d576102b6565b600035601c52600051341561002157600080fd5b63cc63a3c98114156100455760043560a01c1561003d57600080fd5b600435600155005b63b6b55f258114156100d557602061020060646323b872dd61014052336101605230610180526004356101a05261015c60006001545af161008557600080fd5b601f3d1161009257600080fd5b60005061020050600060015460e05260c052604060c0203360e05260c052604060c02080546004358181830110156100c957600080fd5b80820190509050815550005b632e1a7d4d81141561015e57600060015460e05260c052604060c0203360e05260c052604060c02080546004358082101561010f57600080fd5b8082039050905081555060206101e0604463a9059cbb6101405233610160526004356101805261015c60006001545af161014857600080fd5b601f3d1161015557600080fd5b6000506101e050005b63bcbaf4878114156102605760043560a01c1561017a57600080fd5b600060015460e05260c052604060c02060043560e05260c052604060c02054610140526000600060015460e05260c052604060c02060043560e05260c052604060c020556020610200604463a9059cbb610160526004356101805261014051602435808210156101e957600080fd5b808203905090506101a05261017c60006001545af161020757600080fd5b601f3d1161021457600080fd5b600050610200506020610200604463a9059cbb6101605233610180526024356101a05261017c60006001545af161024a57600080fd5b601f3d1161025757600080fd5b60005061020050005b63e51e119e8114156102b45760043560a01c1561027c57600080fd5b60243560a01c1561028c57600080fd5b600060043560e05260c052604060c02060243560e05260c052604060c0205460005260206000f35b505b60006000fd5b6100046102c0036100046000396100046102c0036000f3",
+  "bytecodeSha1": "0712b983b27d2683f6a1b46f2518c2fe53506737",
+  "compiler": {
+    "evm_version": "istanbul",
+    "version": "0.2.11"
+  },
+  "contractName": "UnitVault",
+  "coverageMap": {
+    "branches": {
+      "0": {}
+    },
+    "statements": {
+      "0": {
+        "UnitVault.deposit": {
+          "1": [
+            277,
+            334
+          ],
+          "2": [
+            339,
+            390
+          ]
+        },
+        "UnitVault.liquidate": {
+          "5": [
+            608,
+            660
+          ],
+          "6": [
+            665,
+            704
+          ],
+          "7": [
+            709,
+            759
+          ],
+          "8": [
+            764,
+            811
+          ]
+        },
+        "UnitVault.set_token": {
+          "0": [
+            211,
+            230
+          ]
+        },
+        "UnitVault.withdraw": {
+          "3": [
+            439,
+            490
+          ],
+          "4": [
+            495,
+            542
+          ]
+        }
+      }
+    }
+  },
+  "dependencies": [],
+  "deployedBytecode": "0x600436101561000d576102b6565b600035601c52600051341561002157600080fd5b63cc63a3c98114156100455760043560a01c1561003d57600080fd5b600435600155005b63b6b55f258114156100d557602061020060646323b872dd61014052336101605230610180526004356101a05261015c60006001545af161008557600080fd5b601f3d1161009257600080fd5b60005061020050600060015460e05260c052604060c0203360e05260c052604060c02080546004358181830110156100c957600080fd5b80820190509050815550005b632e1a7d4d81141561015e57600060015460e05260c052604060c0203360e05260c052604060c02080546004358082101561010f57600080fd5b8082039050905081555060206101e0604463a9059cbb6101405233610160526004356101805261015c60006001545af161014857600080fd5b601f3d1161015557600080fd5b6000506101e050005b63bcbaf4878114156102605760043560a01c1561017a57600080fd5b600060015460e05260c052604060c02060043560e05260c052604060c02054610140526000600060015460e05260c052604060c02060043560e05260c052604060c020556020610200604463a9059cbb610160526004356101805261014051602435808210156101e957600080fd5b808203905090506101a05261017c60006001545af161020757600080fd5b601f3d1161021457600080fd5b600050610200506020610200604463a9059cbb6101605233610180526024356101a05261017c60006001545af161024a57600080fd5b601f3d1161025757600080fd5b60005061020050005b63e51e119e8114156102b45760043560a01c1561027c57600080fd5b60243560a01c1561028c57600080fd5b600060043560e05260c052604060c02060243560e05260c052604060c0205460005260206000f35b505b60006000fd",
+  "deployedSourceMap": "-1:-1:1:-;;;;;:::-;;:::-;:::-;;;;;;;;;;:::-;;;;:::-;175:55;;;;;:::-;-1:-1;;;;;175:55;:::-;;;;:::-;224:6;-1:-1;211:10;:19;175:55;:::-;242:148;;;;;:::-;277:57;;;-1:-1;;;308:10;-1:-1;;320:4;-1:-1;;326:7;-1:-1;;;;277:57;283:10;277:57;;;;:::-;;;;:::-;;;;;:::-;;;;:::-;;242:148;277:57;242:148;339:16;356:10;-1:-1;;;;;;;;368:10;339:51;;;;;;;-1:-1;339:51;383:7;339:51;;;;;-1:-1;;339:51;:::-;;;;:::-;;;;;;;;;;;242:148;:::-;403:139;;;;;:::-;439:16;456:10;-1:-1;;;;;;;;468:10;439:51;;;;;;;-1:-1;439:51;483:7;439:51;;;-1:-1;;439:51;:::-;;;;:::-;;;;;;;;;;;495:47;;;-1:-1;;;522:10;-1:-1;;534:7;-1:-1;;;;495:47;501:10;495:47;;;;:::-;;;;:::-;;;;;:::-;;;;:::-;;403:139;495:47;403:139;;:::-;555:256;;;;;:::-;-1:-1;;;;;555:256;:::-;;;;:::-;625:16;642:10;-1:-1;;;;;;;;654:5;-1:-1;;;;;;;;;608:52;555:256;703:1;665:16;682:10;-1:-1;;;;;;;;694:5;-1:-1;;;;;;;;665:39;709:50;;;-1:-1;;;736:5;-1:-1;;;743:5;:15;751:7;743:15;;;-1:-1;;743:15;:::-;;;;:::-;;;;;;;;-1:-1;;;709:50;715:10;709:50;;;;:::-;;;;:::-;;;;;:::-;;;;:::-;;555:256;709:50;555:256;764:47;;;-1:-1;;;791:10;-1:-1;;803:7;-1:-1;;;;764:47;770:10;764:47;;;;:::-;;;;:::-;;;;;:::-;;;;:::-;;555:256;764:47;555:256;;:::-;95:51;;;;;:::-;-1:-1;;;;;95:51;:::-;;;;:::-;-1:-1;;;;;95:51;:::-;;;;:::-;-1:-1;;;;;;;;;;;;;;;;;;;95:51;;;;;;:::-;-1:-1;:::-;;;;",
+  "language": "Vyper",
+  "natspec": {
+    "methods": {}
+  },
+  "offset": [
+    0,
+    812
+  ],
+  "opcodes": "PUSH1 0x4 CALLDATASIZE LT ISZERO PUSH2 0x0D JUMPI PUSH2 0x2B6 JUMP JUMPDEST PUSH1 0x0 CALLDATALOAD PUSH1 0x1C MSTORE PUSH1 0x0 MLOAD CALLVALUE ISZERO PUSH2 0x021 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH4 0xCC63A3C9 DUP2 EQ ISZERO PUSH2 0x045 JUMPI PUSH1 0x4 CALLDATALOAD PUSH1 0xA0 SHR ISZERO PUSH2 0x03D JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x4 CALLDATALOAD PUSH1 0x1 SSTORE STOP JUMPDEST PUSH4 0xB6B55F25 DUP2 EQ ISZERO PUSH2 0x0D5 JUMPI PUSH1 0x20 PUSH2 0x20 PUSH1 0x64 PUSH4 0x23B872DD PUSH2 0x140 MSTORE CALLER PUSH2 0x160 MSTORE ADDRESS PUSH2 0x180 MSTORE PUSH1 0x4 CALLDATALOAD PUSH2 0x1A0 MSTORE PUSH2 0x15C PUSH1 0x0 PUSH1 0x1 SLOAD GAS CALL PUSH2 0x085 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x1F RETURNDATASIZE GT PUSH2 0x092 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x0 POP PUSH2 0x20 POP PUSH1 0x0 PUSH1 0x1 SLOAD PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 CALLER PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 DUP1 SLOAD PUSH1 0x4 CALLDATALOAD DUP2 DUP2 DUP4 ADD LT ISZERO PUSH2 0x0C9 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 DUP3 ADD SWAP1 POP SWAP1 POP DUP2 SSTORE POP STOP JUMPDEST PUSH4 0x2E1A7D4D DUP2 EQ ISZERO PUSH2 0x15E JUMPI PUSH1 0x0 PUSH1 0x1 SLOAD PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 CALLER PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 DUP1 SLOAD PUSH1 0x4 CALLDATALOAD DUP1 DUP3 LT ISZERO PUSH2 0x1F JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 DUP3 SUB SWAP1 POP SWAP1 POP DUP2 SSTORE POP PUSH1 0x20 PUSH2 0x1E0 PUSH1 0x44 PUSH4 0xA959CBB PUSH2 0x140 MSTORE CALLER PUSH2 0x160 MSTORE PUSH1 0x4 CALLDATALOAD PUSH2 0x180 MSTORE PUSH2 0x15C PUSH1 0x0 PUSH1 0x1 SLOAD GAS CALL PUSH2 0x148 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x1F RETURNDATASIZE GT PUSH2 0x155 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x0 POP PUSH2 0x1E0 POP STOP JUMPDEST PUSH4 0xBCBAF487 DUP2 EQ ISZERO PUSH2 0x260 JUMPI PUSH1 0x4 CALLDATALOAD PUSH1 0xA0 SHR ISZERO PUSH2 0x17A JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x0 PUSH1 0x1 SLOAD PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 PUSH1 0x4 CALLDATALOAD PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 SLOAD PUSH2 0x140 MSTORE PUSH1 0x0 PUSH1 0x0 PUSH1 0x1 SLOAD PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 PUSH1 0x4 CALLDATALOAD PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 SSTORE PUSH1 0x20 PUSH2 0x20 PUSH1 0x44 PUSH4 0xA959CBB PUSH2 0x160 MSTORE PUSH1 0x4 CALLDATALOAD PUSH2 0x180 MSTORE PUSH2 0x140 MLOAD PUSH1 0x24 CALLDATALOAD DUP1 DUP3 LT ISZERO PUSH2 0x1E9 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 DUP3 SUB SWAP1 POP SWAP1 POP PUSH2 0x1A0 MSTORE PUSH2 0x17C PUSH1 0x0 PUSH1 0x1 SLOAD GAS CALL PUSH2 0x27 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x1F RETURNDATASIZE GT PUSH2 0x214 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x0 POP PUSH2 0x20 POP PUSH1 0x20 PUSH2 0x20 PUSH1 0x44 PUSH4 0xA959CBB PUSH2 0x160 MSTORE CALLER PUSH2 0x180 MSTORE PUSH1 0x24 CALLDATALOAD PUSH2 0x1A0 MSTORE PUSH2 0x17C PUSH1 0x0 PUSH1 0x1 SLOAD GAS CALL PUSH2 0x24A JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x1F RETURNDATASIZE GT PUSH2 0x257 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x0 POP PUSH2 0x20 POP STOP JUMPDEST PUSH4 0xE51E119E DUP2 EQ ISZERO PUSH2 0x2B4 JUMPI PUSH1 0x4 CALLDATALOAD PUSH1 0xA0 SHR ISZERO PUSH2 0x27C JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x24 CALLDATALOAD PUSH1 0xA0 SHR ISZERO PUSH2 0x28C JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x0 PUSH1 0x4 CALLDATALOAD PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 PUSH1 0x24 CALLDATALOAD PUSH1 0xE0 MSTORE PUSH1 0xC0 MSTORE PUSH1 0x40 PUSH1 0xC0 SHA3 SLOAD PUSH1 0x0 MSTORE PUSH1 0x20 PUSH1 0x0 RETURN JUMPDEST POP JUMPDEST PUSH1 0x0 PUSH1 0x0 REVERT",
+  "pcMap": {
+    "0": {
+      "offset": [
+        0,
+        811
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x4"
+    },
+    "2": {
+      "op": "CALLDATASIZE"
+    },
+    "3": {
+      "op": "LT"
+    },
+    "4": {
+      "op": "ISZERO"
+    },
+    "5": {
+      "op": "PUSH2",
+      "value": "0x0D"
+    },
+    "8": {
+      "op": "JUMPI"
+    },
+    "9": {
+      "op": "PUSH2",
+      "value": "0x2B6"
+    },
+    "12": {
+      "op": "JUMP"
+    },
+    "13": {
+      "op": "JUMPDEST"
+    },
+    "14": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "16": {
+      "op": "CALLDATALOAD"
+    },
+    "17": {
+      "op": "PUSH1",
+      "value": "0x1C"
+    },
+    "19": {
+      "op": "MSTORE"
+    },
+    "20": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "22": {
+      "op": "MLOAD"
+    },
+    "23": {
+      "op": "CALLVALUE"
+    },
+    "24": {
+      "op": "ISZERO"
+    },
+    "25": {
+      "op": "PUSH2",
+      "value": "0x021"
+    },
+    "28": {
+      "op": "JUMPI"
+    },
+    "29": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "31": {
+      "offset": [
+        0,
+        0
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "32": {
+      "dev": "Cannot send ether to nonpayable function",
+      "op": "REVERT"
+    },
+    "33": {
+      "op": "JUMPDEST"
+    },
+    "34": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "PUSH4",
+      "path": "0",
+      "value": "0xCC63A3C9"
+    },
+    "39": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "DUP2",
+      "path": "0"
+    },
+    "40": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "EQ",
+      "path": "0"
+    },
+    "41": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "ISZERO",
+      "path": "0"
+    },
+    "42": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x045"
+    },
+    "45": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "46": {
+      "op": "PUSH1",
+      "value": "0x4"
+    },
+    "48": {
+      "op": "CALLDATALOAD"
+    },
+    "49": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "51": {
+      "op": "SHR"
+    },
+    "52": {
+      "op": "ISZERO"
+    },
+    "53": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x03D"
+    },
+    "56": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "57": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "59": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "60": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "61": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "62": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        224,
+        230
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "statement": 0,
+      "value": "0x4"
+    },
+    "64": {
+      "op": "CALLDATALOAD"
+    },
+    "65": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        211,
+        221
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1"
+    },
+    "67": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        211,
+        230
+      ],
+      "op": "SSTORE",
+      "path": "0"
+    },
+    "68": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "STOP",
+      "path": "0"
+    },
+    "69": {
+      "fn": "UnitVault.set_token",
+      "offset": [
+        175,
+        230
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "70": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "PUSH4",
+      "path": "0",
+      "value": "0xB6B55F25"
+    },
+    "75": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "DUP2",
+      "path": "0"
+    },
+    "76": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "EQ",
+      "path": "0"
+    },
+    "77": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "ISZERO",
+      "path": "0"
+    },
+    "78": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x0D5"
+    },
+    "81": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "82": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "statement": 1,
+      "value": "0x20"
+    },
+    "84": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x20"
+    },
+    "87": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x64"
+    },
+    "89": {
+      "op": "PUSH4",
+      "value": "0x23B872DD"
+    },
+    "94": {
+      "op": "PUSH2",
+      "value": "0x140"
+    },
+    "97": {
+      "op": "MSTORE"
+    },
+    "98": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        308,
+        318
+      ],
+      "op": "CALLER",
+      "path": "0"
+    },
+    "99": {
+      "op": "PUSH2",
+      "value": "0x160"
+    },
+    "102": {
+      "op": "MSTORE"
+    },
+    "103": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        320,
+        324
+      ],
+      "op": "ADDRESS",
+      "path": "0"
+    },
+    "104": {
+      "op": "PUSH2",
+      "value": "0x180"
+    },
+    "107": {
+      "op": "MSTORE"
+    },
+    "108": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        326,
+        333
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x4"
+    },
+    "110": {
+      "op": "CALLDATALOAD"
+    },
+    "111": {
+      "op": "PUSH2",
+      "value": "0x1A0"
+    },
+    "114": {
+      "op": "MSTORE"
+    },
+    "115": {
+      "op": "PUSH2",
+      "value": "0x15C"
+    },
+    "118": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "120": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        283,
+        293
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1"
+    },
+    "122": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "SLOAD",
+      "path": "0"
+    },
+    "123": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "GAS",
+      "path": "0"
+    },
+    "124": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "CALL",
+      "path": "0"
+    },
+    "125": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x085"
+    },
+    "128": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "129": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "131": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "132": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "133": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "134": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1F"
+    },
+    "136": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "0"
+    },
+    "137": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "GT",
+      "path": "0"
+    },
+    "138": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x092"
+    },
+    "141": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "142": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "144": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "145": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "146": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "147": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "149": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "150": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        277,
+        334
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x20"
+    },
+    "153": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "154": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        355
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "statement": 2,
+      "value": "0x0"
+    },
+    "156": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        356,
+        366
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1"
+    },
+    "158": {
+      "op": "SLOAD"
+    },
+    "159": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "161": {
+      "op": "MSTORE"
+    },
+    "162": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "164": {
+      "op": "MSTORE"
+    },
+    "165": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "167": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "169": {
+      "op": "SHA3"
+    },
+    "170": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        368,
+        378
+      ],
+      "op": "CALLER",
+      "path": "0"
+    },
+    "171": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0xE0"
+    },
+    "173": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "MSTORE",
+      "path": "0"
+    },
+    "174": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0xC0"
+    },
+    "176": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "MSTORE",
+      "path": "0"
+    },
+    "177": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x40"
+    },
+    "179": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0xC0"
+    },
+    "181": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "SHA3",
+      "path": "0"
+    },
+    "182": {
+      "op": "DUP1"
+    },
+    "183": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "SLOAD",
+      "path": "0"
+    },
+    "184": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        383,
+        390
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x4"
+    },
+    "186": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "CALLDATALOAD",
+      "path": "0"
+    },
+    "187": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "DUP2",
+      "path": "0"
+    },
+    "188": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "DUP2",
+      "path": "0"
+    },
+    "189": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "DUP4",
+      "path": "0"
+    },
+    "190": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "ADD",
+      "path": "0"
+    },
+    "191": {
+      "op": "LT"
+    },
+    "192": {
+      "op": "ISZERO"
+    },
+    "193": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x0C9"
+    },
+    "196": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "197": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "199": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "200": {
+      "dev": "Integer overflow",
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "201": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "202": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "203": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "DUP3",
+      "path": "0"
+    },
+    "204": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "ADD",
+      "path": "0"
+    },
+    "205": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "SWAP1",
+      "path": "0"
+    },
+    "206": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "207": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "SWAP1",
+      "path": "0"
+    },
+    "208": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "209": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "DUP2",
+      "path": "0"
+    },
+    "210": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "SSTORE",
+      "path": "0"
+    },
+    "211": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        339,
+        390
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "212": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "STOP",
+      "path": "0"
+    },
+    "213": {
+      "fn": "UnitVault.deposit",
+      "offset": [
+        242,
+        390
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "214": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "PUSH4",
+      "path": "0",
+      "value": "0x2E1A7D4D"
+    },
+    "219": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "DUP2",
+      "path": "0"
+    },
+    "220": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "EQ",
+      "path": "0"
+    },
+    "221": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "ISZERO",
+      "path": "0"
+    },
+    "222": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x15E"
+    },
+    "225": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "226": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        455
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "statement": 3,
+      "value": "0x0"
+    },
+    "228": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        456,
+        466
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1"
+    },
+    "230": {
+      "op": "SLOAD"
+    },
+    "231": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "233": {
+      "op": "MSTORE"
+    },
+    "234": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "236": {
+      "op": "MSTORE"
+    },
+    "237": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "239": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "241": {
+      "op": "SHA3"
+    },
+    "242": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        468,
+        478
+      ],
+      "op": "CALLER",
+      "path": "0"
+    },
+    "243": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0xE0"
+    },
+    "245": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "MSTORE",
+      "path": "0"
+    },
+    "246": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0xC0"
+    },
+    "248": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "MSTORE",
+      "path": "0"
+    },
+    "249": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x40"
+    },
+    "251": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0xC0"
+    },
+    "253": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "SHA3",
+      "path": "0"
+    },
+    "254": {
+      "op": "DUP1"
+    },
+    "255": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "SLOAD",
+      "path": "0"
+    },
+    "256": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        483,
+        490
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x4"
+    },
+    "258": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "CALLDATALOAD",
+      "path": "0"
+    },
+    "259": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "260": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "DUP3",
+      "path": "0"
+    },
+    "261": {
+      "op": "LT"
+    },
+    "262": {
+      "op": "ISZERO"
+    },
+    "263": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x1F"
+    },
+    "266": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "267": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "269": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "270": {
+      "dev": "Integer underflow",
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "271": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "272": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "273": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "DUP3",
+      "path": "0"
+    },
+    "274": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "SUB",
+      "path": "0"
+    },
+    "275": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "SWAP1",
+      "path": "0"
+    },
+    "276": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "277": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "SWAP1",
+      "path": "0"
+    },
+    "278": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "279": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "DUP2",
+      "path": "0"
+    },
+    "280": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "SSTORE",
+      "path": "0"
+    },
+    "281": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        439,
+        490
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "282": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "statement": 4,
+      "value": "0x20"
+    },
+    "284": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x1E0"
+    },
+    "287": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x44"
+    },
+    "289": {
+      "op": "PUSH4",
+      "value": "0xA959CBB"
+    },
+    "294": {
+      "op": "PUSH2",
+      "value": "0x140"
+    },
+    "297": {
+      "op": "MSTORE"
+    },
+    "298": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        522,
+        532
+      ],
+      "op": "CALLER",
+      "path": "0"
+    },
+    "299": {
+      "op": "PUSH2",
+      "value": "0x160"
+    },
+    "302": {
+      "op": "MSTORE"
+    },
+    "303": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        534,
+        541
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x4"
+    },
+    "305": {
+      "op": "CALLDATALOAD"
+    },
+    "306": {
+      "op": "PUSH2",
+      "value": "0x180"
+    },
+    "309": {
+      "op": "MSTORE"
+    },
+    "310": {
+      "op": "PUSH2",
+      "value": "0x15C"
+    },
+    "313": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "315": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        501,
+        511
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1"
+    },
+    "317": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "SLOAD",
+      "path": "0"
+    },
+    "318": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "GAS",
+      "path": "0"
+    },
+    "319": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "CALL",
+      "path": "0"
+    },
+    "320": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x148"
+    },
+    "323": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "324": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "326": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "327": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "328": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "329": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1F"
+    },
+    "331": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "0"
+    },
+    "332": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "GT",
+      "path": "0"
+    },
+    "333": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x155"
+    },
+    "336": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "337": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "339": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "340": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "341": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "342": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "344": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "345": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        495,
+        542
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x1E0"
+    },
+    "348": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "349": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "STOP",
+      "path": "0"
+    },
+    "350": {
+      "fn": "UnitVault.withdraw",
+      "offset": [
+        403,
+        542
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "351": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "PUSH4",
+      "path": "0",
+      "value": "0xBCBAF487"
+    },
+    "356": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "DUP2",
+      "path": "0"
+    },
+    "357": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "EQ",
+      "path": "0"
+    },
+    "358": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "ISZERO",
+      "path": "0"
+    },
+    "359": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x260"
+    },
+    "362": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "363": {
+      "op": "PUSH1",
+      "value": "0x4"
+    },
+    "365": {
+      "op": "CALLDATALOAD"
+    },
+    "366": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "368": {
+      "op": "SHR"
+    },
+    "369": {
+      "op": "ISZERO"
+    },
+    "370": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x17A"
+    },
+    "373": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "374": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "376": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "377": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "378": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "379": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        625,
+        641
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "statement": 5,
+      "value": "0x0"
+    },
+    "381": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        642,
+        652
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1"
+    },
+    "383": {
+      "op": "SLOAD"
+    },
+    "384": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "386": {
+      "op": "MSTORE"
+    },
+    "387": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "389": {
+      "op": "MSTORE"
+    },
+    "390": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "392": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "394": {
+      "op": "SHA3"
+    },
+    "395": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        654,
+        659
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x4"
+    },
+    "397": {
+      "op": "CALLDATALOAD"
+    },
+    "398": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "400": {
+      "op": "MSTORE"
+    },
+    "401": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "403": {
+      "op": "MSTORE"
+    },
+    "404": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "406": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "408": {
+      "op": "SHA3"
+    },
+    "409": {
+      "op": "SLOAD"
+    },
+    "410": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        608,
+        660
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x140"
+    },
+    "413": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "MSTORE",
+      "path": "0"
+    },
+    "414": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        703,
+        704
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "statement": 6,
+      "value": "0x0"
+    },
+    "416": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        665,
+        681
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "418": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        682,
+        692
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1"
+    },
+    "420": {
+      "op": "SLOAD"
+    },
+    "421": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "423": {
+      "op": "MSTORE"
+    },
+    "424": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "426": {
+      "op": "MSTORE"
+    },
+    "427": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "429": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "431": {
+      "op": "SHA3"
+    },
+    "432": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        694,
+        699
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x4"
+    },
+    "434": {
+      "op": "CALLDATALOAD"
+    },
+    "435": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "437": {
+      "op": "MSTORE"
+    },
+    "438": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "440": {
+      "op": "MSTORE"
+    },
+    "441": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "443": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "445": {
+      "op": "SHA3"
+    },
+    "446": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        665,
+        704
+      ],
+      "op": "SSTORE",
+      "path": "0"
+    },
+    "447": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "statement": 7,
+      "value": "0x20"
+    },
+    "449": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x20"
+    },
+    "452": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x44"
+    },
+    "454": {
+      "op": "PUSH4",
+      "value": "0xA959CBB"
+    },
+    "459": {
+      "op": "PUSH2",
+      "value": "0x160"
+    },
+    "462": {
+      "op": "MSTORE"
+    },
+    "463": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        736,
+        741
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x4"
+    },
+    "465": {
+      "op": "CALLDATALOAD"
+    },
+    "466": {
+      "op": "PUSH2",
+      "value": "0x180"
+    },
+    "469": {
+      "op": "MSTORE"
+    },
+    "470": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        748
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x140"
+    },
+    "473": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "MLOAD",
+      "path": "0"
+    },
+    "474": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        751,
+        758
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x24"
+    },
+    "476": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "CALLDATALOAD",
+      "path": "0"
+    },
+    "477": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "478": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "DUP3",
+      "path": "0"
+    },
+    "479": {
+      "op": "LT"
+    },
+    "480": {
+      "op": "ISZERO"
+    },
+    "481": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x1E9"
+    },
+    "484": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "485": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "487": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "488": {
+      "dev": "Integer underflow",
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "489": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "490": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "491": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "DUP3",
+      "path": "0"
+    },
+    "492": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "SUB",
+      "path": "0"
+    },
+    "493": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "SWAP1",
+      "path": "0"
+    },
+    "494": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "495": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "SWAP1",
+      "path": "0"
+    },
+    "496": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        743,
+        758
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "497": {
+      "op": "PUSH2",
+      "value": "0x1A0"
+    },
+    "500": {
+      "op": "MSTORE"
+    },
+    "501": {
+      "op": "PUSH2",
+      "value": "0x17C"
+    },
+    "504": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "506": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        715,
+        725
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1"
+    },
+    "508": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "SLOAD",
+      "path": "0"
+    },
+    "509": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "GAS",
+      "path": "0"
+    },
+    "510": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "CALL",
+      "path": "0"
+    },
+    "511": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x27"
+    },
+    "514": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "515": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "517": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "518": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "519": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "520": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1F"
+    },
+    "522": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "0"
+    },
+    "523": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "GT",
+      "path": "0"
+    },
+    "524": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x214"
+    },
+    "527": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "528": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "530": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "531": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "532": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "533": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "535": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "536": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        709,
+        759
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x20"
+    },
+    "539": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "540": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "statement": 8,
+      "value": "0x20"
+    },
+    "542": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x20"
+    },
+    "545": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x44"
+    },
+    "547": {
+      "op": "PUSH4",
+      "value": "0xA959CBB"
+    },
+    "552": {
+      "op": "PUSH2",
+      "value": "0x160"
+    },
+    "555": {
+      "op": "MSTORE"
+    },
+    "556": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        791,
+        801
+      ],
+      "op": "CALLER",
+      "path": "0"
+    },
+    "557": {
+      "op": "PUSH2",
+      "value": "0x180"
+    },
+    "560": {
+      "op": "MSTORE"
+    },
+    "561": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        803,
+        810
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x24"
+    },
+    "563": {
+      "op": "CALLDATALOAD"
+    },
+    "564": {
+      "op": "PUSH2",
+      "value": "0x1A0"
+    },
+    "567": {
+      "op": "MSTORE"
+    },
+    "568": {
+      "op": "PUSH2",
+      "value": "0x17C"
+    },
+    "571": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "573": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        770,
+        780
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1"
+    },
+    "575": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "SLOAD",
+      "path": "0"
+    },
+    "576": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "GAS",
+      "path": "0"
+    },
+    "577": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "CALL",
+      "path": "0"
+    },
+    "578": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x24A"
+    },
+    "581": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "582": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "584": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "585": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "586": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "587": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x1F"
+    },
+    "589": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "0"
+    },
+    "590": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "GT",
+      "path": "0"
+    },
+    "591": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x257"
+    },
+    "594": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "595": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "597": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "598": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "599": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "600": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "602": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "603": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        764,
+        811
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x20"
+    },
+    "606": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "POP",
+      "path": "0"
+    },
+    "607": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "STOP",
+      "path": "0"
+    },
+    "608": {
+      "fn": "UnitVault.liquidate",
+      "offset": [
+        555,
+        811
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "609": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "PUSH4",
+      "path": "0",
+      "value": "0xE51E119E"
+    },
+    "614": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "DUP2",
+      "path": "0"
+    },
+    "615": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "EQ",
+      "path": "0"
+    },
+    "616": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "ISZERO",
+      "path": "0"
+    },
+    "617": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x2B4"
+    },
+    "620": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "621": {
+      "op": "PUSH1",
+      "value": "0x4"
+    },
+    "623": {
+      "op": "CALLDATALOAD"
+    },
+    "624": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "626": {
+      "op": "SHR"
+    },
+    "627": {
+      "op": "ISZERO"
+    },
+    "628": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x27C"
+    },
+    "631": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "632": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "634": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "635": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "636": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "637": {
+      "op": "PUSH1",
+      "value": "0x24"
+    },
+    "639": {
+      "op": "CALLDATALOAD"
+    },
+    "640": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "642": {
+      "op": "SHR"
+    },
+    "643": {
+      "op": "ISZERO"
+    },
+    "644": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "PUSH2",
+      "path": "0",
+      "value": "0x28C"
+    },
+    "647": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "JUMPI",
+      "path": "0"
+    },
+    "648": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "650": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "DUP1",
+      "path": "0"
+    },
+    "651": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "REVERT",
+      "path": "0"
+    },
+    "652": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "653": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "655": {
+      "op": "PUSH1",
+      "value": "0x4"
+    },
+    "657": {
+      "op": "CALLDATALOAD"
+    },
+    "658": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "660": {
+      "op": "MSTORE"
+    },
+    "661": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "663": {
+      "op": "MSTORE"
+    },
+    "664": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "666": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "668": {
+      "op": "SHA3"
+    },
+    "669": {
+      "op": "PUSH1",
+      "value": "0x24"
+    },
+    "671": {
+      "op": "CALLDATALOAD"
+    },
+    "672": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "674": {
+      "op": "MSTORE"
+    },
+    "675": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "677": {
+      "op": "MSTORE"
+    },
+    "678": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "680": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "682": {
+      "op": "SHA3"
+    },
+    "683": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "SLOAD",
+      "path": "0"
+    },
+    "684": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "686": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "MSTORE",
+      "path": "0"
+    },
+    "687": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x20"
+    },
+    "689": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "PUSH1",
+      "path": "0",
+      "value": "0x0"
+    },
+    "691": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "RETURN",
+      "path": "0"
+    },
+    "692": {
+      "offset": [
+        95,
+        146
+      ],
+      "op": "JUMPDEST",
+      "path": "0"
+    },
+    "693": {
+      "op": "POP"
+    },
+    "694": {
+      "op": "JUMPDEST"
+    },
+    "695": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "697": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "699": {
+      "op": "REVERT"
+    }
+  },
+  "sha1": "c1567b73dfa3fd0f13c106cb21951854597c9904",
+  "source": "# @version 0.2.11\n\nfrom vyper.interfaces import ERC20\n\n# asset -> owner -> amount\ncollaterals: public(HashMap[address, HashMap[address, uint256]])\n\ntoken: address\n\n\n@external\ndef set_token(_token: address):\n    self.token = _token\n\n@external\ndef deposit(_amount: uint256):\n    ERC20(self.token).transferFrom(msg.sender, self, _amount)\n    self.collaterals[self.token][msg.sender] += _amount\n\n\n@external\ndef withdraw(_amount: uint256):\n    self.collaterals[self.token][msg.sender] -= _amount\n    ERC20(self.token).transfer(msg.sender, _amount)\n\n\n@external\ndef liquidate(_user: address, _amount: uint256):\n    total: uint256 = self.collaterals[self.token][_user]\n    self.collaterals[self.token][_user] = 0\n    ERC20(self.token).transfer(_user, total - _amount)\n    ERC20(self.token).transfer(msg.sender, _amount)\n",
+  "sourceMap": "",
+  "sourcePath": "contracts/testing/UnitVault.vy",
+  "type": "contract"
+}
