@@ -801,7 +801,7 @@
       "enabled": true,
       "runs": 200
     },
-    "version": "0.8.6+commit.11564f7e"
+    "version": "0.8.7+commit.e28d00a7"
   },
   "contractName": "Proxy",
   "coverageMap": {

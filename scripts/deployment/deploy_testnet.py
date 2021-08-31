@@ -7,6 +7,7 @@ from brownie import (
     accounts,
     ERC20,
     ERC20LP,
+    ERC20CRV,
     CurvePool,
     CurveRewards,
     GaugeController,
