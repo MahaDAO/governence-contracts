@@ -6,7 +6,6 @@ import time
 from brownie import (
     accounts,
     ERC20,
-    ERC20CRV,
     ERC20LP,
     CurvePool,
     CurveRewards,
@@ -187,7 +186,7 @@ def main():
     coin_a = coins[1]
 
     token = repeat(
-        ERC20CRV.deploy, "Curve DAO Token", "CRV", 18, {"from": deployer, "required_confs": CONFS}
+        ERC20.deploy, "Curve DAO Token", "CRV", 18, {"from": deployer, "required_confs": CONFS}
     )
     save_abi(token, "token_crv")
 
