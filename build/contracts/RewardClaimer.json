@@ -144,7 +144,7 @@
         "module": "vyper.interfaces",
         "name": "ERC20",
         "node_id": 3,
-        "src": "147:34:9"
+        "src": "147:34:10"
       },
       {
         "ast_type": "InterfaceDef",
@@ -160,7 +160,7 @@
               "end_lineno": 13,
               "lineno": 13,
               "node_id": 7,
-              "src": "212:3:9"
+              "src": "212:3:10"
             },
             "ast_type": "FunctionDef",
             "body": [
@@ -171,7 +171,7 @@
                 "end_lineno": 13,
                 "lineno": 13,
                 "node_id": 8,
-                "src": "230:10:9",
+                "src": "230:10:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 22,
@@ -180,7 +180,7 @@
                   "id": "nonpayable",
                   "lineno": 13,
                   "node_id": 9,
-                  "src": "230:10:9"
+                  "src": "230:10:10"
                 }
               }
             ],
@@ -194,7 +194,7 @@
             "node_id": 6,
             "pos": null,
             "returns": null,
-            "src": "212:28:9"
+            "src": "212:28:10"
           }
         ],
         "col_offset": 0,
@@ -203,7 +203,7 @@
         "lineno": 12,
         "name": "RewardStream",
         "node_id": 5,
-        "src": "184:56:9"
+        "src": "184:56:10"
       },
       {
         "ast_type": "StructDef",
@@ -217,7 +217,7 @@
               "id": "address",
               "lineno": 17,
               "node_id": 15,
-              "src": "273:7:9"
+              "src": "273:7:10"
             },
             "ast_type": "AnnAssign",
             "col_offset": 4,
@@ -226,7 +226,7 @@
             "lineno": 17,
             "node_id": 12,
             "simple": 1,
-            "src": "266:14:9",
+            "src": "266:14:10",
             "target": {
               "ast_type": "Name",
               "col_offset": 4,
@@ -235,7 +235,7 @@
               "id": "claim",
               "lineno": 17,
               "node_id": 13,
-              "src": "266:5:9"
+              "src": "266:5:10"
             },
             "value": null
           },
@@ -248,7 +248,7 @@
               "id": "address",
               "lineno": 18,
               "node_id": 20,
-              "src": "293:7:9"
+              "src": "293:7:10"
             },
             "ast_type": "AnnAssign",
             "col_offset": 4,
@@ -257,7 +257,7 @@
             "lineno": 18,
             "node_id": 17,
             "simple": 1,
-            "src": "285:15:9",
+            "src": "285:15:10",
             "target": {
               "ast_type": "Name",
               "col_offset": 4,
@@ -266,7 +266,7 @@
               "id": "reward",
               "lineno": 18,
               "node_id": 18,
-              "src": "285:6:9"
+              "src": "285:6:10"
             },
             "value": null
           }
@@ -277,7 +277,7 @@
         "lineno": 16,
         "name": "RewardData",
         "node_id": 11,
-        "src": "243:57:9"
+        "src": "243:57:10"
       },
       {
         "annotation": {
@@ -290,7 +290,7 @@
               "id": "address",
               "lineno": 21,
               "node_id": 28,
-              "src": "317:7:9"
+              "src": "317:7:10"
             }
           ],
           "ast_type": "Call",
@@ -305,13 +305,13 @@
             "id": "public",
             "lineno": 21,
             "node_id": 26,
-            "src": "310:6:9"
+            "src": "310:6:10"
           },
           "keyword": null,
           "keywords": [],
           "lineno": 21,
           "node_id": 25,
-          "src": "310:15:9"
+          "src": "310:15:10"
         },
         "ast_type": "AnnAssign",
         "col_offset": 0,
@@ -320,7 +320,7 @@
         "lineno": 21,
         "node_id": 22,
         "simple": 1,
-        "src": "303:22:9",
+        "src": "303:22:10",
         "target": {
           "ast_type": "Name",
           "col_offset": 0,
@@ -329,7 +329,7 @@
           "id": "owner",
           "lineno": 21,
           "node_id": 23,
-          "src": "303:5:9"
+          "src": "303:5:10"
         },
         "value": null
       },
@@ -344,7 +344,7 @@
               "id": "address",
               "lineno": 22,
               "node_id": 36,
-              "src": "347:7:9"
+              "src": "347:7:10"
             }
           ],
           "ast_type": "Call",
@@ -359,13 +359,13 @@
             "id": "public",
             "lineno": 22,
             "node_id": 34,
-            "src": "340:6:9"
+            "src": "340:6:10"
           },
           "keyword": null,
           "keywords": [],
           "lineno": 22,
           "node_id": 33,
-          "src": "340:15:9"
+          "src": "340:15:10"
         },
         "ast_type": "AnnAssign",
         "col_offset": 0,
@@ -374,7 +374,7 @@
         "lineno": 22,
         "node_id": 30,
         "simple": 1,
-        "src": "326:29:9",
+        "src": "326:29:10",
         "target": {
           "ast_type": "Name",
           "col_offset": 0,
@@ -383,7 +383,7 @@
           "id": "future_owner",
           "lineno": 22,
           "node_id": 31,
-          "src": "326:12:9"
+          "src": "326:12:10"
         },
         "value": null
       },
@@ -398,7 +398,7 @@
               "id": "address",
               "lineno": 23,
               "node_id": 44,
-              "src": "380:7:9"
+              "src": "380:7:10"
             }
           ],
           "ast_type": "Call",
@@ -413,13 +413,13 @@
             "id": "public",
             "lineno": 23,
             "node_id": 42,
-            "src": "373:6:9"
+            "src": "373:6:10"
           },
           "keyword": null,
           "keywords": [],
           "lineno": 23,
           "node_id": 41,
-          "src": "373:15:9"
+          "src": "373:15:10"
         },
         "ast_type": "AnnAssign",
         "col_offset": 0,
@@ -428,7 +428,7 @@
         "lineno": 23,
         "node_id": 38,
         "simple": 1,
-        "src": "356:32:9",
+        "src": "356:32:10",
         "target": {
           "ast_type": "Name",
           "col_offset": 0,
@@ -437,7 +437,7 @@
           "id": "reward_receiver",
           "lineno": 23,
           "node_id": 39,
-          "src": "356:15:9"
+          "src": "356:15:10"
         },
         "value": null
       },
@@ -458,7 +458,7 @@
                 "end_lineno": 25,
                 "lineno": 25,
                 "node_id": 55,
-                "src": "421:1:9",
+                "src": "421:1:10",
                 "value": {
                   "ast_type": "Int",
                   "col_offset": 31,
@@ -466,11 +466,11 @@
                   "end_lineno": 25,
                   "lineno": 25,
                   "node_id": 56,
-                  "src": "421:1:9",
+                  "src": "421:1:10",
                   "value": 4
                 }
               },
-              "src": "410:13:9",
+              "src": "410:13:10",
               "value": {
                 "ast_type": "Name",
                 "col_offset": 20,
@@ -479,7 +479,7 @@
                 "id": "RewardData",
                 "lineno": 25,
                 "node_id": 53,
-                "src": "410:10:9"
+                "src": "410:10:10"
               }
             }
           ],
@@ -495,13 +495,13 @@
             "id": "public",
             "lineno": 25,
             "node_id": 50,
-            "src": "403:6:9"
+            "src": "403:6:10"
           },
           "keyword": null,
           "keywords": [],
           "lineno": 25,
           "node_id": 49,
-          "src": "403:21:9"
+          "src": "403:21:10"
         },
         "ast_type": "AnnAssign",
         "col_offset": 0,
@@ -510,7 +510,7 @@
         "lineno": 25,
         "node_id": 46,
         "simple": 1,
-        "src": "390:34:9",
+        "src": "390:34:10",
         "target": {
           "ast_type": "Name",
           "col_offset": 0,
@@ -519,7 +519,7 @@
           "id": "reward_data",
           "lineno": 25,
           "node_id": 47,
-          "src": "390:11:9"
+          "src": "390:11:10"
         },
         "value": null
       },
@@ -535,7 +535,7 @@
                 "id": "address",
                 "lineno": 29,
                 "node_id": 61,
-                "src": "458:7:9"
+                "src": "458:7:10"
               },
               "arg": "_owner",
               "ast_type": "arg",
@@ -544,7 +544,7 @@
               "end_lineno": 29,
               "lineno": 29,
               "node_id": 60,
-              "src": "450:15:9"
+              "src": "450:15:10"
             },
             {
               "annotation": {
@@ -555,7 +555,7 @@
                 "id": "address",
                 "lineno": 29,
                 "node_id": 64,
-                "src": "485:7:9"
+                "src": "485:7:10"
               },
               "arg": "_reward_receiver",
               "ast_type": "arg",
@@ -564,7 +564,7 @@
               "end_lineno": 29,
               "lineno": 29,
               "node_id": 63,
-              "src": "467:25:9"
+              "src": "467:25:10"
             }
           ],
           "ast_type": "arguments",
@@ -575,7 +575,7 @@
           "end_lineno": 29,
           "lineno": 29,
           "node_id": 59,
-          "src": "450:42:9"
+          "src": "450:42:10"
         },
         "ast_type": "FunctionDef",
         "body": [
@@ -586,7 +586,7 @@
             "end_lineno": 35,
             "lineno": 35,
             "node_id": 68,
-            "src": "632:19:9",
+            "src": "632:19:10",
             "target": {
               "ast_type": "Attribute",
               "attr": "owner",
@@ -595,7 +595,7 @@
               "end_lineno": 35,
               "lineno": 35,
               "node_id": 69,
-              "src": "632:10:9",
+              "src": "632:10:10",
               "value": {
                 "ast_type": "Name",
                 "col_offset": 4,
@@ -604,7 +604,7 @@
                 "id": "self",
                 "lineno": 35,
                 "node_id": 70,
-                "src": "632:4:9"
+                "src": "632:4:10"
               }
             },
             "value": {
@@ -615,7 +615,7 @@
               "id": "_owner",
               "lineno": 35,
               "node_id": 73,
-              "src": "645:6:9"
+              "src": "645:6:10"
             }
           },
           {
@@ -625,7 +625,7 @@
             "end_lineno": 36,
             "lineno": 36,
             "node_id": 75,
-            "src": "656:39:9",
+            "src": "656:39:10",
             "target": {
               "ast_type": "Attribute",
               "attr": "reward_receiver",
@@ -634,7 +634,7 @@
               "end_lineno": 36,
               "lineno": 36,
               "node_id": 76,
-              "src": "656:20:9",
+              "src": "656:20:10",
               "value": {
                 "ast_type": "Name",
                 "col_offset": 4,
@@ -643,7 +643,7 @@
                 "id": "self",
                 "lineno": 36,
                 "node_id": 77,
-                "src": "656:4:9"
+                "src": "656:4:10"
               }
             },
             "value": {
@@ -654,7 +654,7 @@
               "id": "_reward_receiver",
               "lineno": 36,
               "node_id": 80,
-              "src": "679:16:9"
+              "src": "679:16:10"
             }
           }
         ],
@@ -668,7 +668,7 @@
             "id": "external",
             "lineno": 28,
             "node_id": 82,
-            "src": "428:8:9"
+            "src": "428:8:10"
           }
         ],
         "doc_string": {
@@ -678,7 +678,7 @@
           "end_lineno": 34,
           "lineno": 30,
           "node_id": 84,
-          "src": "499:128:9",
+          "src": "499:128:10",
           "value": "\n    @notice Contract constructor\n    @param _owner Owner address\n    @param _reward_receiver Reward receiver address\n    "
         },
         "end_col_offset": 43,
@@ -688,7 +688,7 @@
         "node_id": 58,
         "pos": null,
         "returns": null,
-        "src": "437:258:9"
+        "src": "437:258:10"
       },
       {
         "args": {
@@ -701,7 +701,7 @@
           "end_lineno": 40,
           "lineno": 40,
           "node_id": 86,
-          "src": "708:3:9"
+          "src": "708:3:10"
         },
         "ast_type": "FunctionDef",
         "body": [
@@ -713,7 +713,7 @@
             "lineno": 45,
             "msg": null,
             "node_id": 89,
-            "src": "832:41:9",
+            "src": "832:41:10",
             "test": {
               "ast_type": "Compare",
               "col_offset": 11,
@@ -727,7 +727,7 @@
                 "end_lineno": 45,
                 "lineno": 45,
                 "node_id": 91,
-                "src": "839:10:9",
+                "src": "839:10:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 11,
@@ -736,7 +736,7 @@
                   "id": "msg",
                   "lineno": 45,
                   "node_id": 92,
-                  "src": "839:3:9"
+                  "src": "839:3:10"
                 }
               },
               "lineno": 45,
@@ -748,7 +748,7 @@
                 "end_lineno": 45,
                 "lineno": 45,
                 "node_id": 281,
-                "src": "839:34:9"
+                "src": "839:34:10"
               },
               "right": {
                 "ast_type": "Attribute",
@@ -758,7 +758,7 @@
                 "end_lineno": 45,
                 "lineno": 45,
                 "node_id": 96,
-                "src": "853:20:9",
+                "src": "853:20:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 25,
@@ -767,10 +767,10 @@
                   "id": "self",
                   "lineno": 45,
                   "node_id": 97,
-                  "src": "853:4:9"
+                  "src": "853:4:10"
                 }
               },
-              "src": "839:34:9"
+              "src": "839:34:10"
             }
           },
           {
@@ -785,7 +785,7 @@
                   "id": "RewardData",
                   "lineno": 48,
                   "node_id": 110,
-                  "src": "912:10:9"
+                  "src": "912:10:10"
                 },
                 "ast_type": "AnnAssign",
                 "col_offset": 8,
@@ -794,7 +794,7 @@
                 "lineno": 48,
                 "node_id": 107,
                 "simple": 1,
-                "src": "906:38:9",
+                "src": "906:38:10",
                 "target": {
                   "ast_type": "Name",
                   "col_offset": 8,
@@ -803,7 +803,7 @@
                   "id": "data",
                   "lineno": 48,
                   "node_id": 108,
-                  "src": "906:4:9"
+                  "src": "906:4:10"
                 },
                 "value": {
                   "ast_type": "Subscript",
@@ -819,7 +819,7 @@
                     "end_lineno": 48,
                     "lineno": 48,
                     "node_id": 117,
-                    "src": "942:1:9",
+                    "src": "942:1:10",
                     "value": {
                       "ast_type": "Name",
                       "col_offset": 44,
@@ -828,10 +828,10 @@
                       "id": "i",
                       "lineno": 48,
                       "node_id": 118,
-                      "src": "942:1:9"
+                      "src": "942:1:10"
                     }
                   },
-                  "src": "925:19:9",
+                  "src": "925:19:10",
                   "value": {
                     "ast_type": "Attribute",
                     "attr": "reward_data",
@@ -840,7 +840,7 @@
                     "end_lineno": 48,
                     "lineno": 48,
                     "node_id": 113,
-                    "src": "925:16:9",
+                    "src": "925:16:10",
                     "value": {
                       "ast_type": "Name",
                       "col_offset": 27,
@@ -849,7 +849,7 @@
                       "id": "self",
                       "lineno": 48,
                       "node_id": 114,
-                      "src": "925:4:9"
+                      "src": "925:4:10"
                     }
                   }
                 }
@@ -864,7 +864,7 @@
                     "end_lineno": 50,
                     "lineno": 50,
                     "node_id": 130,
-                    "src": "997:5:9"
+                    "src": "997:5:10"
                   }
                 ],
                 "col_offset": 8,
@@ -873,7 +873,7 @@
                 "lineno": 49,
                 "node_id": 121,
                 "orelse": [],
-                "src": "953:49:9",
+                "src": "953:49:10",
                 "test": {
                   "ast_type": "Compare",
                   "col_offset": 11,
@@ -887,7 +887,7 @@
                     "end_lineno": 49,
                     "lineno": 49,
                     "node_id": 123,
-                    "src": "956:11:9",
+                    "src": "956:11:10",
                     "value": {
                       "ast_type": "Name",
                       "col_offset": 11,
@@ -896,7 +896,7 @@
                       "id": "data",
                       "lineno": 49,
                       "node_id": 124,
-                      "src": "956:4:9"
+                      "src": "956:4:10"
                     }
                   },
                   "lineno": 49,
@@ -908,7 +908,7 @@
                     "end_lineno": 49,
                     "lineno": 49,
                     "node_id": 281,
-                    "src": "956:27:9"
+                    "src": "956:27:10"
                   },
                   "right": {
                     "ast_type": "Name",
@@ -918,9 +918,9 @@
                     "id": "ZERO_ADDRESS",
                     "lineno": 49,
                     "node_id": 128,
-                    "src": "971:12:9"
+                    "src": "971:12:10"
                   },
-                  "src": "956:27:9"
+                  "src": "956:27:10"
                 }
               },
               {
@@ -930,7 +930,7 @@
                 "end_lineno": 52,
                 "lineno": 52,
                 "node_id": 131,
-                "src": "1012:37:9",
+                "src": "1012:37:10",
                 "value": {
                   "args": [],
                   "ast_type": "Call",
@@ -945,7 +945,7 @@
                     "end_lineno": 52,
                     "lineno": 52,
                     "node_id": 133,
-                    "src": "1012:35:9",
+                    "src": "1012:35:10",
                     "value": {
                       "args": [
                         {
@@ -956,7 +956,7 @@
                           "end_lineno": 52,
                           "lineno": 52,
                           "node_id": 137,
-                          "src": "1025:10:9",
+                          "src": "1025:10:10",
                           "value": {
                             "ast_type": "Name",
                             "col_offset": 21,
@@ -965,7 +965,7 @@
                             "id": "data",
                             "lineno": 52,
                             "node_id": 138,
-                            "src": "1025:4:9"
+                            "src": "1025:4:10"
                           }
                         }
                       ],
@@ -981,20 +981,20 @@
                         "id": "RewardStream",
                         "lineno": 52,
                         "node_id": 135,
-                        "src": "1012:12:9"
+                        "src": "1012:12:10"
                       },
                       "keyword": null,
                       "keywords": [],
                       "lineno": 52,
                       "node_id": 134,
-                      "src": "1012:24:9"
+                      "src": "1012:24:10"
                     }
                   },
                   "keyword": null,
                   "keywords": [],
                   "lineno": 52,
                   "node_id": 132,
-                  "src": "1012:37:9"
+                  "src": "1012:37:10"
                 }
               },
               {
@@ -1006,7 +1006,7 @@
                   "id": "uint256",
                   "lineno": 53,
                   "node_id": 145,
-                  "src": "1066:7:9"
+                  "src": "1066:7:10"
                 },
                 "ast_type": "AnnAssign",
                 "col_offset": 8,
@@ -1015,7 +1015,7 @@
                 "lineno": 53,
                 "node_id": 142,
                 "simple": 1,
-                "src": "1058:52:9",
+                "src": "1058:52:10",
                 "target": {
                   "ast_type": "Name",
                   "col_offset": 8,
@@ -1024,7 +1024,7 @@
                   "id": "amount",
                   "lineno": 53,
                   "node_id": 143,
-                  "src": "1058:6:9"
+                  "src": "1058:6:10"
                 },
                 "value": {
                   "args": [
@@ -1036,7 +1036,7 @@
                       "id": "self",
                       "lineno": 53,
                       "node_id": 157,
-                      "src": "1105:4:9"
+                      "src": "1105:4:10"
                     }
                   ],
                   "ast_type": "Call",
@@ -1051,7 +1051,7 @@
                     "end_lineno": 53,
                     "lineno": 53,
                     "node_id": 148,
-                    "src": "1076:28:9",
+                    "src": "1076:28:10",
                     "value": {
                       "args": [
                         {
@@ -1062,7 +1062,7 @@
                           "end_lineno": 53,
                           "lineno": 53,
                           "node_id": 152,
-                          "src": "1082:11:9",
+                          "src": "1082:11:10",
                           "value": {
                             "ast_type": "Name",
                             "col_offset": 32,
@@ -1071,7 +1071,7 @@
                             "id": "data",
                             "lineno": 53,
                             "node_id": 153,
-                            "src": "1082:4:9"
+                            "src": "1082:4:10"
                           }
                         }
                       ],
@@ -1087,20 +1087,20 @@
                         "id": "ERC20",
                         "lineno": 53,
                         "node_id": 150,
-                        "src": "1076:5:9"
+                        "src": "1076:5:10"
                       },
                       "keyword": null,
                       "keywords": [],
                       "lineno": 53,
                       "node_id": 149,
-                      "src": "1076:18:9"
+                      "src": "1076:18:10"
                     }
                   },
                   "keyword": null,
                   "keywords": [],
                   "lineno": 53,
                   "node_id": 147,
-                  "src": "1076:34:9"
+                  "src": "1076:34:10"
                 }
               },
               {
@@ -1114,7 +1114,7 @@
                     "lineno": 55,
                     "msg": null,
                     "node_id": 165,
-                    "src": "1146:54:9",
+                    "src": "1146:54:10",
                     "test": {
                       "args": [
                         {
@@ -1125,7 +1125,7 @@
                           "end_lineno": 55,
                           "lineno": 55,
                           "node_id": 176,
-                          "src": "1181:10:9",
+                          "src": "1181:10:10",
                           "value": {
                             "ast_type": "Name",
                             "col_offset": 47,
@@ -1134,7 +1134,7 @@
                             "id": "msg",
                             "lineno": 55,
                             "node_id": 177,
-                            "src": "1181:3:9"
+                            "src": "1181:3:10"
                           }
                         },
                         {
@@ -1145,7 +1145,7 @@
                           "id": "amount",
                           "lineno": 55,
                           "node_id": 180,
-                          "src": "1193:6:9"
+                          "src": "1193:6:10"
                         }
                       ],
                       "ast_type": "Call",
@@ -1160,7 +1160,7 @@
                         "end_lineno": 55,
                         "lineno": 55,
                         "node_id": 167,
-                        "src": "1153:27:9",
+                        "src": "1153:27:10",
                         "value": {
                           "args": [
                             {
@@ -1171,7 +1171,7 @@
                               "end_lineno": 55,
                               "lineno": 55,
                               "node_id": 171,
-                              "src": "1159:11:9",
+                              "src": "1159:11:10",
                               "value": {
                                 "ast_type": "Name",
                                 "col_offset": 25,
@@ -1180,7 +1180,7 @@
                                 "id": "data",
                                 "lineno": 55,
                                 "node_id": 172,
-                                "src": "1159:4:9"
+                                "src": "1159:4:10"
                               }
                             }
                           ],
@@ -1196,20 +1196,20 @@
                             "id": "ERC20",
                             "lineno": 55,
                             "node_id": 169,
-                            "src": "1153:5:9"
+                            "src": "1153:5:10"
                           },
                           "keyword": null,
                           "keywords": [],
                           "lineno": 55,
                           "node_id": 168,
-                          "src": "1153:18:9"
+                          "src": "1153:18:10"
                         }
                       },
                       "keyword": null,
                       "keywords": [],
                       "lineno": 55,
                       "node_id": 166,
-                      "src": "1153:47:9"
+                      "src": "1153:47:10"
                     }
                   }
                 ],
@@ -1219,7 +1219,7 @@
                 "lineno": 54,
                 "node_id": 159,
                 "orelse": [],
-                "src": "1119:81:9",
+                "src": "1119:81:10",
                 "test": {
                   "ast_type": "Compare",
                   "col_offset": 11,
@@ -1233,7 +1233,7 @@
                     "id": "amount",
                     "lineno": 54,
                     "node_id": 161,
-                    "src": "1122:6:9"
+                    "src": "1122:6:10"
                   },
                   "lineno": 54,
                   "node_id": 160,
@@ -1244,7 +1244,7 @@
                     "end_lineno": 54,
                     "lineno": 54,
                     "node_id": 163,
-                    "src": "1122:10:9"
+                    "src": "1122:10:10"
                   },
                   "right": {
                     "ast_type": "Int",
@@ -1253,10 +1253,10 @@
                     "end_lineno": 54,
                     "lineno": 54,
                     "node_id": 164,
-                    "src": "1131:1:9",
+                    "src": "1131:1:10",
                     "value": 0
                   },
-                  "src": "1122:10:9"
+                  "src": "1122:10:10"
                 }
               }
             ],
@@ -1272,7 +1272,7 @@
                   "end_lineno": 47,
                   "lineno": 47,
                   "node_id": 106,
-                  "src": "894:1:9",
+                  "src": "894:1:10",
                   "value": 4
                 }
               ],
@@ -1288,17 +1288,17 @@
                 "id": "range",
                 "lineno": 47,
                 "node_id": 104,
-                "src": "888:5:9"
+                "src": "888:5:10"
               },
               "keyword": null,
               "keywords": [],
               "lineno": 47,
               "node_id": 103,
-              "src": "888:8:9"
+              "src": "888:8:10"
             },
             "lineno": 47,
             "node_id": 100,
-            "src": "879:321:9",
+            "src": "879:321:10",
             "target": {
               "ast_type": "Name",
               "col_offset": 8,
@@ -1307,7 +1307,7 @@
               "id": "i",
               "lineno": 47,
               "node_id": 101,
-              "src": "883:1:9"
+              "src": "883:1:10"
             }
           }
         ],
@@ -1321,7 +1321,7 @@
             "id": "external",
             "lineno": 39,
             "node_id": 182,
-            "src": "699:8:9"
+            "src": "699:8:10"
           }
         ],
         "doc_string": {
@@ -1331,7 +1331,7 @@
           "end_lineno": 44,
           "lineno": 41,
           "node_id": 184,
-          "src": "730:97:9",
+          "src": "730:97:10",
           "value": "\n    @notice Claim all available rewards\n    @dev Only callable by the reward receiver\n    "
         },
         "end_col_offset": 66,
@@ -1341,7 +1341,7 @@
         "node_id": 85,
         "pos": null,
         "returns": null,
-        "src": "708:492:9"
+        "src": "708:492:10"
       },
       {
         "args": {
@@ -1355,7 +1355,7 @@
                 "id": "uint256",
                 "lineno": 59,
                 "node_id": 188,
-                "src": "1239:7:9"
+                "src": "1239:7:10"
               },
               "arg": "_idx",
               "ast_type": "arg",
@@ -1364,7 +1364,7 @@
               "end_lineno": 59,
               "lineno": 59,
               "node_id": 187,
-              "src": "1233:13:9"
+              "src": "1233:13:10"
             },
             {
               "annotation": {
@@ -1375,7 +1375,7 @@
                 "id": "address",
                 "lineno": 59,
                 "node_id": 191,
-                "src": "1256:7:9"
+                "src": "1256:7:10"
               },
               "arg": "_claim",
               "ast_type": "arg",
@@ -1384,7 +1384,7 @@
               "end_lineno": 59,
               "lineno": 59,
               "node_id": 190,
-              "src": "1248:15:9"
+              "src": "1248:15:10"
             },
             {
               "annotation": {
@@ -1395,7 +1395,7 @@
                 "id": "address",
                 "lineno": 59,
                 "node_id": 194,
-                "src": "1274:7:9"
+                "src": "1274:7:10"
               },
               "arg": "_reward",
               "ast_type": "arg",
@@ -1404,7 +1404,7 @@
               "end_lineno": 59,
               "lineno": 59,
               "node_id": 193,
-              "src": "1265:16:9"
+              "src": "1265:16:10"
             }
           ],
           "ast_type": "arguments",
@@ -1415,7 +1415,7 @@
           "end_lineno": 59,
           "lineno": 59,
           "node_id": 186,
-          "src": "1233:48:9"
+          "src": "1233:48:10"
         },
         "ast_type": "FunctionDef",
         "body": [
@@ -1427,7 +1427,7 @@
             "lineno": 67,
             "msg": null,
             "node_id": 198,
-            "src": "1537:31:9",
+            "src": "1537:31:10",
             "test": {
               "ast_type": "Compare",
               "col_offset": 11,
@@ -1441,7 +1441,7 @@
                 "end_lineno": 67,
                 "lineno": 67,
                 "node_id": 200,
-                "src": "1544:10:9",
+                "src": "1544:10:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 11,
@@ -1450,7 +1450,7 @@
                   "id": "msg",
                   "lineno": 67,
                   "node_id": 201,
-                  "src": "1544:3:9"
+                  "src": "1544:3:10"
                 }
               },
               "lineno": 67,
@@ -1462,7 +1462,7 @@
                 "end_lineno": 67,
                 "lineno": 67,
                 "node_id": 281,
-                "src": "1544:24:9"
+                "src": "1544:24:10"
               },
               "right": {
                 "ast_type": "Attribute",
@@ -1472,7 +1472,7 @@
                 "end_lineno": 67,
                 "lineno": 67,
                 "node_id": 205,
-                "src": "1558:10:9",
+                "src": "1558:10:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 25,
@@ -1481,10 +1481,10 @@
                   "id": "self",
                   "lineno": 67,
                   "node_id": 206,
-                  "src": "1558:4:9"
+                  "src": "1558:4:10"
                 }
               },
-              "src": "1544:24:9"
+              "src": "1544:24:10"
             }
           },
           {
@@ -1494,7 +1494,7 @@
             "end_lineno": 69,
             "lineno": 69,
             "node_id": 209,
-            "src": "1574:69:9",
+            "src": "1574:69:10",
             "target": {
               "ast_type": "Subscript",
               "col_offset": 4,
@@ -1509,7 +1509,7 @@
                 "end_lineno": 69,
                 "lineno": 69,
                 "node_id": 215,
-                "src": "1591:4:9",
+                "src": "1591:4:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 21,
@@ -1518,10 +1518,10 @@
                   "id": "_idx",
                   "lineno": 69,
                   "node_id": 216,
-                  "src": "1591:4:9"
+                  "src": "1591:4:10"
                 }
               },
-              "src": "1574:22:9",
+              "src": "1574:22:10",
               "value": {
                 "ast_type": "Attribute",
                 "attr": "reward_data",
@@ -1530,7 +1530,7 @@
                 "end_lineno": 69,
                 "lineno": 69,
                 "node_id": 211,
-                "src": "1574:16:9",
+                "src": "1574:16:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 4,
@@ -1539,7 +1539,7 @@
                   "id": "self",
                   "lineno": 69,
                   "node_id": 212,
-                  "src": "1574:4:9"
+                  "src": "1574:4:10"
                 }
               }
             },
@@ -1559,7 +1559,7 @@
                       "id": "claim",
                       "lineno": 69,
                       "node_id": 223,
-                      "src": "1611:5:9"
+                      "src": "1611:5:10"
                     },
                     {
                       "ast_type": "Name",
@@ -1569,12 +1569,12 @@
                       "id": "reward",
                       "lineno": 69,
                       "node_id": 225,
-                      "src": "1626:6:9"
+                      "src": "1626:6:10"
                     }
                   ],
                   "lineno": 69,
                   "node_id": 222,
-                  "src": "1610:32:9",
+                  "src": "1610:32:10",
                   "values": [
                     {
                       "ast_type": "Name",
@@ -1584,7 +1584,7 @@
                       "id": "_claim",
                       "lineno": 69,
                       "node_id": 227,
-                      "src": "1618:6:9"
+                      "src": "1618:6:10"
                     },
                     {
                       "ast_type": "Name",
@@ -1594,7 +1594,7 @@
                       "id": "_reward",
                       "lineno": 69,
                       "node_id": 229,
-                      "src": "1634:7:9"
+                      "src": "1634:7:10"
                     }
                   ]
                 }
@@ -1611,13 +1611,13 @@
                 "id": "RewardData",
                 "lineno": 69,
                 "node_id": 220,
-                "src": "1599:10:9"
+                "src": "1599:10:10"
               },
               "keyword": null,
               "keywords": [],
               "lineno": 69,
               "node_id": 219,
-              "src": "1599:44:9"
+              "src": "1599:44:10"
             }
           }
         ],
@@ -1631,7 +1631,7 @@
             "id": "external",
             "lineno": 58,
             "node_id": 231,
-            "src": "1204:8:9"
+            "src": "1204:8:10"
           }
         ],
         "doc_string": {
@@ -1641,7 +1641,7 @@
           "end_lineno": 66,
           "lineno": 60,
           "node_id": 233,
-          "src": "1288:244:9",
+          "src": "1288:244:10",
           "value": "\n    @notice Set data about a reward streamer\n    @dev Only callable by the owner\n    @param _idx Index of `reward_data` to modify\n    @param _claim Address of the streamer to claim from\n    @param _reward Address of the reward token\n    "
         },
         "end_col_offset": 73,
@@ -1651,7 +1651,7 @@
         "node_id": 185,
         "pos": null,
         "returns": null,
-        "src": "1213:430:9"
+        "src": "1213:430:10"
       },
       {
         "args": {
@@ -1665,7 +1665,7 @@
                 "id": "address",
                 "lineno": 73,
                 "node_id": 237,
-                "src": "1694:7:9"
+                "src": "1694:7:10"
               },
               "arg": "_owner",
               "ast_type": "arg",
@@ -1674,7 +1674,7 @@
               "end_lineno": 73,
               "lineno": 73,
               "node_id": 236,
-              "src": "1686:15:9"
+              "src": "1686:15:10"
             }
           ],
           "ast_type": "arguments",
@@ -1685,7 +1685,7 @@
           "end_lineno": 73,
           "lineno": 73,
           "node_id": 235,
-          "src": "1686:15:9"
+          "src": "1686:15:10"
         },
         "ast_type": "FunctionDef",
         "body": [
@@ -1697,7 +1697,7 @@
             "lineno": 78,
             "msg": null,
             "node_id": 241,
-            "src": "1838:31:9",
+            "src": "1838:31:10",
             "test": {
               "ast_type": "Compare",
               "col_offset": 11,
@@ -1711,7 +1711,7 @@
                 "end_lineno": 78,
                 "lineno": 78,
                 "node_id": 243,
-                "src": "1845:10:9",
+                "src": "1845:10:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 11,
@@ -1720,7 +1720,7 @@
                   "id": "msg",
                   "lineno": 78,
                   "node_id": 244,
-                  "src": "1845:3:9"
+                  "src": "1845:3:10"
                 }
               },
               "lineno": 78,
@@ -1732,7 +1732,7 @@
                 "end_lineno": 78,
                 "lineno": 78,
                 "node_id": 281,
-                "src": "1845:24:9"
+                "src": "1845:24:10"
               },
               "right": {
                 "ast_type": "Attribute",
@@ -1742,7 +1742,7 @@
                 "end_lineno": 78,
                 "lineno": 78,
                 "node_id": 248,
-                "src": "1859:10:9",
+                "src": "1859:10:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 25,
@@ -1751,10 +1751,10 @@
                   "id": "self",
                   "lineno": 78,
                   "node_id": 249,
-                  "src": "1859:4:9"
+                  "src": "1859:4:10"
                 }
               },
-              "src": "1845:24:9"
+              "src": "1845:24:10"
             }
           },
           {
@@ -1764,7 +1764,7 @@
             "end_lineno": 80,
             "lineno": 80,
             "node_id": 252,
-            "src": "1894:26:9",
+            "src": "1894:26:10",
             "target": {
               "ast_type": "Attribute",
               "attr": "future_owner",
@@ -1773,7 +1773,7 @@
               "end_lineno": 80,
               "lineno": 80,
               "node_id": 253,
-              "src": "1894:17:9",
+              "src": "1894:17:10",
               "value": {
                 "ast_type": "Name",
                 "col_offset": 4,
@@ -1782,7 +1782,7 @@
                 "id": "self",
                 "lineno": 80,
                 "node_id": 254,
-                "src": "1894:4:9"
+                "src": "1894:4:10"
               }
             },
             "value": {
@@ -1793,7 +1793,7 @@
               "id": "_owner",
               "lineno": 80,
               "node_id": 257,
-              "src": "1914:6:9"
+              "src": "1914:6:10"
             }
           }
         ],
@@ -1807,7 +1807,7 @@
             "id": "external",
             "lineno": 72,
             "node_id": 259,
-            "src": "1647:8:9"
+            "src": "1647:8:10"
           }
         ],
         "doc_string": {
@@ -1817,7 +1817,7 @@
           "end_lineno": 77,
           "lineno": 74,
           "node_id": 261,
-          "src": "1708:125:9",
+          "src": "1708:125:10",
           "value": "\n    @notice Initiate ownership tansfer of the contract\n    @param _owner Address to have ownership transferred to\n    "
         },
         "end_col_offset": 30,
@@ -1827,7 +1827,7 @@
         "node_id": 234,
         "pos": null,
         "returns": null,
-        "src": "1656:264:9"
+        "src": "1656:264:10"
       },
       {
         "args": {
@@ -1840,7 +1840,7 @@
           "end_lineno": 84,
           "lineno": 84,
           "node_id": 263,
-          "src": "1933:3:9"
+          "src": "1933:3:10"
         },
         "ast_type": "FunctionDef",
         "body": [
@@ -1853,7 +1853,7 @@
               "id": "address",
               "lineno": 88,
               "node_id": 269,
-              "src": "2041:7:9"
+              "src": "2041:7:10"
             },
             "ast_type": "AnnAssign",
             "col_offset": 4,
@@ -1862,7 +1862,7 @@
             "lineno": 88,
             "node_id": 266,
             "simple": 1,
-            "src": "2034:34:9",
+            "src": "2034:34:10",
             "target": {
               "ast_type": "Name",
               "col_offset": 4,
@@ -1871,7 +1871,7 @@
               "id": "owner",
               "lineno": 88,
               "node_id": 267,
-              "src": "2034:5:9"
+              "src": "2034:5:10"
             },
             "value": {
               "ast_type": "Attribute",
@@ -1881,7 +1881,7 @@
               "end_lineno": 88,
               "lineno": 88,
               "node_id": 271,
-              "src": "2051:17:9",
+              "src": "2051:17:10",
               "value": {
                 "ast_type": "Name",
                 "col_offset": 21,
@@ -1890,7 +1890,7 @@
                 "id": "self",
                 "lineno": 88,
                 "node_id": 272,
-                "src": "2051:4:9"
+                "src": "2051:4:10"
               }
             }
           },
@@ -1902,7 +1902,7 @@
             "lineno": 89,
             "msg": null,
             "node_id": 275,
-            "src": "2073:26:9",
+            "src": "2073:26:10",
             "test": {
               "ast_type": "Compare",
               "col_offset": 11,
@@ -1916,7 +1916,7 @@
                 "end_lineno": 89,
                 "lineno": 89,
                 "node_id": 277,
-                "src": "2080:10:9",
+                "src": "2080:10:10",
                 "value": {
                   "ast_type": "Name",
                   "col_offset": 11,
@@ -1925,7 +1925,7 @@
                   "id": "msg",
                   "lineno": 89,
                   "node_id": 278,
-                  "src": "2080:3:9"
+                  "src": "2080:3:10"
                 }
               },
               "lineno": 89,
@@ -1937,7 +1937,7 @@
                 "end_lineno": 89,
                 "lineno": 89,
                 "node_id": 281,
-                "src": "2080:19:9"
+                "src": "2080:19:10"
               },
               "right": {
                 "ast_type": "Name",
@@ -1947,9 +1947,9 @@
                 "id": "owner",
                 "lineno": 89,
                 "node_id": 282,
-                "src": "2094:5:9"
+                "src": "2094:5:10"
               },
-              "src": "2080:19:9"
+              "src": "2080:19:10"
             }
           },
           {
@@ -1959,7 +1959,7 @@
             "end_lineno": 91,
             "lineno": 91,
             "node_id": 284,
-            "src": "2128:18:9",
+            "src": "2128:18:10",
             "target": {
               "ast_type": "Attribute",
               "attr": "owner",
@@ -1968,7 +1968,7 @@
               "end_lineno": 91,
               "lineno": 91,
               "node_id": 285,
-              "src": "2128:10:9",
+              "src": "2128:10:10",
               "value": {
                 "ast_type": "Name",
                 "col_offset": 4,
@@ -1977,7 +1977,7 @@
                 "id": "self",
                 "lineno": 91,
                 "node_id": 286,
-                "src": "2128:4:9"
+                "src": "2128:4:10"
               }
             },
             "value": {
@@ -1988,7 +1988,7 @@
               "id": "owner",
               "lineno": 91,
               "node_id": 289,
-              "src": "2141:5:9"
+              "src": "2141:5:10"
             }
           }
         ],
@@ -2002,7 +2002,7 @@
             "id": "external",
             "lineno": 83,
             "node_id": 291,
-            "src": "1924:8:9"
+            "src": "1924:8:10"
           }
         ],
         "doc_string": {
@@ -2012,7 +2012,7 @@
           "end_lineno": 87,
           "lineno": 85,
           "node_id": 293,
-          "src": "1970:59:9",
+          "src": "1970:59:10",
           "value": "\n    @notice Accept a pending ownership transfer\n    "
         },
         "end_col_offset": 22,
@@ -2022,7 +2022,7 @@
         "node_id": 262,
         "pos": null,
         "returns": null,
-        "src": "1933:213:9"
+        "src": "1933:213:10"
       }
     ],
     "col_offset": 0,
@@ -2033,7 +2033,7 @@
       "end_lineno": 7,
       "lineno": 2,
       "node_id": 294,
-      "src": "18:127:9",
+      "src": "18:127:10",
       "value": "\n@title RewardClaimer\n@author Curve.Fi\n@license MIT\n@notice Passthrough to allow claiming from multiple reward streamers\n"
     },
     "end_col_offset": 22,
@@ -2041,7 +2041,7 @@
     "lineno": 1,
     "name": "contracts/streamers/RewardClaimer.vy",
     "node_id": 0,
-    "src": "0:2146:9"
+    "src": "0:2146:10"
   },
   "bytecode": "0x604061035861014039602061035860c03960c05160a01c1561002057600080fd5b602060206103580160c03960c05160a01c1561003b57600080fd5b610140516000556101605160025561034056600436101561000d576102ec565b600035601c52600051341561002157600080fd5b631afe22a681141561017357600254331461003b57600080fd5b61014060006004818352015b610160610140516004811061005b57600080fd5b600360c052602060c020018060c052602060c02054825260018160c052602060c0200154826020015250506101805115156100955761016f565b610160513b6100a357600080fd5b600060006004631afe22a66101a0526101bc6000610160515af16100c657600080fd5b602061024060246370a082316101c052306101e0526101dc610180515afa6100ed57600080fd5b601f3d116100fa57600080fd5b600050610240516101a05260006101a051111561015f576020610260604463a9059cbb6101c052336101e0526101a051610200526101dc6000610180515af161014257600080fd5b601f3d1161014f57600080fd5b6000506102605161015f57600080fd5b8151600101808352811415610047575b5050005b638de099988114156101e05760243560a01c1561018f57600080fd5b60443560a01c1561019f57600080fd5b60005433146101ad57600080fd5b600435600481106101bd57600080fd5b600360c052602060c0200160c052602060c0206024358155604435600182015550005b636b441a408114156102125760043560a01c156101fc57600080fd5b600054331461020a57600080fd5b600435600155005b63e5ea47b881141561023d576001546101405261014051331461023457600080fd5b61014051600055005b638da5cb5b8114156102555760005460005260206000f35b631ec0cdc181141561026d5760015460005260206000f35b63b618ba628114156102855760025460005260206000f35b6393af73ed8114156102ea57600435600481106102a157600080fd5b600360c052602060c020016101408080808460c052602060c0205481525050602081019050808060018560c052602060c02001548152505060409050905060c05260c051610140f35b505b60006000fd5b61004e6103400361004e60003961004e610340036000f3",
   "bytecodeSha1": "e18f3ec2d07e7bc051844ef7ce182610ecf6e21c",
@@ -2165,7 +2165,7 @@
   },
   "dependencies": [],
   "deployedBytecode": "0x600436101561000d576102ec565b600035601c52600051341561002157600080fd5b631afe22a681141561017357600254331461003b57600080fd5b61014060006004818352015b610160610140516004811061005b57600080fd5b600360c052602060c020018060c052602060c02054825260018160c052602060c0200154826020015250506101805115156100955761016f565b610160513b6100a357600080fd5b600060006004631afe22a66101a0526101bc6000610160515af16100c657600080fd5b602061024060246370a082316101c052306101e0526101dc610180515afa6100ed57600080fd5b601f3d116100fa57600080fd5b600050610240516101a05260006101a051111561015f576020610260604463a9059cbb6101c052336101e0526101a051610200526101dc6000610180515af161014257600080fd5b601f3d1161014f57600080fd5b6000506102605161015f57600080fd5b8151600101808352811415610047575b5050005b638de099988114156101e05760243560a01c1561018f57600080fd5b60443560a01c1561019f57600080fd5b60005433146101ad57600080fd5b600435600481106101bd57600080fd5b600360c052602060c0200160c052602060c0206024358155604435600182015550005b636b441a408114156102125760043560a01c156101fc57600080fd5b600054331461020a57600080fd5b600435600155005b63e5ea47b881141561023d576001546101405261014051331461023457600080fd5b61014051600055005b638da5cb5b8114156102555760005460005260206000f35b631ec0cdc181141561026d5760015460005260206000f35b63b618ba628114156102855760025460005260206000f35b6393af73ed8114156102ea57600435600481106102a157600080fd5b600360c052602060c020016101408080808460c052602060c0205481525050602081019050808060018560c052602060c02001548152505060409050905060c05260c051610140f35b505b60006000fd",
-  "deployedSourceMap": "-1:-1:9:-;;;;;:::-;;:::-;:::-;;;;;;;;;;:::-;;;;:::-;708:492;;;;;:::-;853:20;839:34;:10;:34;832:41;:::-;;;;:::-;879:321;;;;;;;:::-;906:38;942:1;925:19;;;;;:::-;;;;:::-;:16;:19;;;;;;-1:-1;;;;;;;;;;;;;;;;;;;;;;;906:38;-1:-1;956:27;;953:49;;:::-;997:5;:::-;953:49::-;-1:-1;1012:37;;;:::-;;;;:::-;;;;-1:-1;;;;1012:37;-1:-1;1012:37;;;;:::-;;;;:::-;1076:34;;;-1:-1;;;1105:4;-1:-1;;;;1076:34;;;;:::-;;;;:::-;;;;;:::-;;;;:::-;;;;-1:-1;1058:52;906:38;1131:1;1122:6;:10;;1119:81;1146:54;1119:81::-;1153:47;;;-1:-1;;;1181:10;-1:-1;;1193:6;-1:-1;;;;1153:47;-1:-1;1153:47;;;;:::-;;;;:::-;;;;;:::-;;;;:::-;;;;1146:54;;:::-;;;;:::-;879:321;;;;;;;;;;;:::-;:::-;;;708:492;:::-;1213:430;;;;;:::-;-1:-1;;;;;1213:430;:::-;;;;:::-;-1:-1;;;;;1213:430;:::-;;;;:::-;1558:10;1544:24;:10;:24;1537:31;:::-;;;;:::-;1591:4;1574:22;;;;;:::-;;;;:::-;:16;:22;;;;;;-1:-1;;;;;1618:6;-1:-1;;;1634:7;-1:-1;;;;;1574:69;1213:430;:::-;1656:264;;;;;:::-;-1:-1;;;;;1656:264;:::-;;;;:::-;1859:10;1845:24;:10;:24;1838:31;:::-;;;;:::-;1914:6;-1:-1;1894:17;:26;1656:264;:::-;1933:213;;;;;:::-;2051:17;-1:-1;2034:34;1933:213;2094:5;2080:19;:10;:19;2073:26;:::-;;;;:::-;2141:5;-1:-1;2128:10;:18;1933:213;:::-;310:15;;;;;:::-;-1:-1;310:15;;;;;;:::-;340;;;;;:::-;-1:-1;340:15;;;;;;:::-;373;;;;;:::-;-1:-1;373:15;;;;;;:::-;403:21;;;;;:::-;-1:-1;;;;;;:::-;;;;:::-;;;;;;;;403:21;-1:-1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;403:21;;;;;;;;:::-;-1:-1;:::-;;;;",
+  "deployedSourceMap": "-1:-1:10:-;;;;;:::-;;:::-;:::-;;;;;;;;;;:::-;;;;:::-;708:492;;;;;:::-;853:20;839:34;:10;:34;832:41;:::-;;;;:::-;879:321;;;;;;;:::-;906:38;942:1;925:19;;;;;:::-;;;;:::-;:16;:19;;;;;;-1:-1;;;;;;;;;;;;;;;;;;;;;;;906:38;-1:-1;956:27;;953:49;;:::-;997:5;:::-;953:49::-;-1:-1;1012:37;;;:::-;;;;:::-;;;;-1:-1;;;;1012:37;-1:-1;1012:37;;;;:::-;;;;:::-;1076:34;;;-1:-1;;;1105:4;-1:-1;;;;1076:34;;;;:::-;;;;:::-;;;;;:::-;;;;:::-;;;;-1:-1;1058:52;906:38;1131:1;1122:6;:10;;1119:81;1146:54;1119:81::-;1153:47;;;-1:-1;;;1181:10;-1:-1;;1193:6;-1:-1;;;;1153:47;-1:-1;1153:47;;;;:::-;;;;:::-;;;;;:::-;;;;:::-;;;;1146:54;;:::-;;;;:::-;879:321;;;;;;;;;;;:::-;:::-;;;708:492;:::-;1213:430;;;;;:::-;-1:-1;;;;;1213:430;:::-;;;;:::-;-1:-1;;;;;1213:430;:::-;;;;:::-;1558:10;1544:24;:10;:24;1537:31;:::-;;;;:::-;1591:4;1574:22;;;;;:::-;;;;:::-;:16;:22;;;;;;-1:-1;;;;;1618:6;-1:-1;;;1634:7;-1:-1;;;;;1574:69;1213:430;:::-;1656:264;;;;;:::-;-1:-1;;;;;1656:264;:::-;;;;:::-;1859:10;1845:24;:10;:24;1838:31;:::-;;;;:::-;1914:6;-1:-1;1894:17;:26;1656:264;:::-;1933:213;;;;;:::-;2051:17;-1:-1;2034:34;1933:213;2094:5;2080:19;:10;:19;2073:26;:::-;;;;:::-;2141:5;-1:-1;2128:10;:18;1933:213;:::-;310:15;;;;;:::-;-1:-1;310:15;;;;;;:::-;340;;;;;:::-;-1:-1;340:15;;;;;;:::-;373;;;;;:::-;-1:-1;373:15;;;;;;:::-;403:21;;;;;:::-;-1:-1;;;;;;:::-;;;;:::-;;;;;;;;403:21;-1:-1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;403:21;;;;;;;;:::-;-1:-1;:::-;;;;",
   "language": "Vyper",
   "natspec": {
     "author": "Curve.Fi",

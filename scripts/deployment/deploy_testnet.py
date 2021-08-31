@@ -57,7 +57,7 @@ def repeat(f, *args):
 
 def save_abi(contract, name):
     with open("%s.abi" % name, "w") as f:
-        json.dump(contract.abi, indent=4)
+        json.dump(contract.abi, f)
 
 
 def deploy_erc20s_and_pool(deployer):
@@ -198,14 +198,18 @@ def main():
         "veCRV_0.99",
         {"from": deployer, "required_confs": CONFS}
     )
+    #print('escrow_without_proxy', escrow_without_proxy)
     # save_abi(escrow_without_proxy, "voting_escrow")
+
+    bytesArr = bytes()
 
     escrow = repeat(
         AdminUpgradeabilityProxy.deploy,
         escrow_without_proxy,
-        deployer,
-        '',
-        {"from": deployer, "required_confs": CONFS}
+        '0xB8A0db9905E5f90F4A2162603AfA9A655B821915',
+        bytesArr,
+        {"from": deployer, "required_confs": CONFS},
+        publish_source=True
     )
     save_abi(escrow, "voting_escrow")
 
