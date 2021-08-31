@@ -420,7 +420,7 @@ interface IERC20 {
 /**
  * @dev Collection of functions related to the address type
  */
-library Address {
+library Address2 {
     /**
      * @dev Returns true if `account` is a contract.
      *
@@ -502,7 +502,7 @@ library Address {
  */
 library SafeERC20 {
     using SafeMath for uint256;
-    using Address for address;
+    using Address2 for address;
 
     function safeTransfer(IERC20 token, address to, uint256 value) internal {
         callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
