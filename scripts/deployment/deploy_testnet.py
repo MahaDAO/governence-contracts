@@ -19,7 +19,8 @@ from brownie import (
     VotingEscrow,
     accounts,
     web3,
-    AdminUpgradeabilityProxy
+    AdminUpgradeabilityProxy,
+    Contract
 )
 from web3 import middleware
 from web3.gas_strategies.time_based import fast_gas_price_strategy as gas_strategy
@@ -203,14 +204,15 @@ def main():
 
     bytesArr = bytes()
 
-    escrow = repeat(
+    proxy = repeat(
         AdminUpgradeabilityProxy.deploy,
         escrow_without_proxy,
-        '0xB8A0db9905E5f90F4A2162603AfA9A655B821915',
+        '0x775C72FB1C28c46F5E9976FFa08F348298fBCEC0',
         bytesArr,
         {"from": deployer, "required_confs": CONFS},
-        publish_source=True
     )
+
+    escrow = Contract.from_abi('VotingEscrow', proxy.address, VotingEscrow.abi)
     save_abi(escrow, "voting_escrow")
 
     repeat(escrow.changeController, ARAGON_AGENT, {"from": deployer, "required_confs": CONFS})
