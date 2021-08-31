@@ -115,7 +115,7 @@ future_admin: public(address)
 
 
 @external
-def __init__(token_addr: address, _name: String[64], _symbol: String[32], _version: String[32]):
+def initialize(token_addr: address, _name: String[64], _symbol: String[32], _version: String[32]):
     """
     @notice Contract constructor
     @param token_addr `ERC20CRV` token address

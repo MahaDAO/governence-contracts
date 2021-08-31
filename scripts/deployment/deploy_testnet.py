@@ -193,29 +193,28 @@ def main():
 
     escrow_without_proxy = repeat(
         VotingEscrow.deploy,
+        {"from": deployer, "required_confs": CONFS}
+    )
+    proxy = repeat(
+        AdminUpgradeabilityProxy.deploy,
+        escrow_without_proxy,
+        '0x775C72FB1C28c46F5E9976FFa08F348298fBCEC0',
+        bytes(),
+        {"from": deployer, "required_confs": CONFS},
+    )
+    escrow_with_proxy = Contract.from_abi('VotingEscrow', proxy, VotingEscrow.abi)
+    save_abi(escrow_with_proxy, "voting_escrow")
+
+    repeat(
+        escrow_with_proxy.initialize,
         token,
         "Vote-escrowed CRV",
         "veCRV",
         "veCRV_0.99",
         {"from": deployer, "required_confs": CONFS}
     )
-    #print('escrow_without_proxy', escrow_without_proxy)
-    # save_abi(escrow_without_proxy, "voting_escrow")
 
-    bytesArr = bytes()
-
-    proxy = repeat(
-        AdminUpgradeabilityProxy.deploy,
-        escrow_without_proxy,
-        '0x775C72FB1C28c46F5E9976FFa08F348298fBCEC0',
-        bytesArr,
-        {"from": deployer, "required_confs": CONFS},
-    )
-
-    escrow = Contract.from_abi('VotingEscrow', proxy.address, VotingEscrow.abi)
-    save_abi(escrow, "voting_escrow")
-
-    repeat(escrow.changeController, ARAGON_AGENT, {"from": deployer, "required_confs": CONFS})
+    repeat(escrow_with_proxy.changeController, ARAGON_AGENT, {"from": deployer, "required_confs": CONFS})
 
     for account in DISTRIBUTION_ADDRESSES:
         repeat(
