@@ -19,6 +19,7 @@ from brownie import (
     VotingEscrow,
     accounts,
     web3,
+    AdminUpgradeabilityProxy
 )
 from web3 import middleware
 from web3.gas_strategies.time_based import fast_gas_price_strategy as gas_strategy
@@ -189,12 +190,21 @@ def main():
     )
     save_abi(token, "token_crv")
 
-    escrow = repeat(
+    escrow_without_proxy = repeat(
         VotingEscrow.deploy,
         token,
         "Vote-escrowed CRV",
         "veCRV",
         "veCRV_0.99",
+        {"from": deployer, "required_confs": CONFS}
+    )
+    # save_abi(escrow_without_proxy, "voting_escrow")
+
+    escrow = repeat(
+        AdminUpgradeabilityProxy.deploy,
+        escrow_without_proxy,
+        deployer,
+        '',
         {"from": deployer, "required_confs": CONFS}
     )
     save_abi(escrow, "voting_escrow")
