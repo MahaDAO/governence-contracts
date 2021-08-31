@@ -225,7 +225,7 @@ def main():
         )
 
     gauge_controller = repeat(
-        GaugeController.deploy, token, escrow, {"from": deployer, "required_confs": CONFS}
+        GaugeController.deploy, token, escrow_with_proxy, {"from": deployer, "required_confs": CONFS}
     )
     save_abi(gauge_controller, "gauge_controller")
 
@@ -297,9 +297,9 @@ def main():
     )
     repeat(gauge_controller.apply_transfer_ownership, {"from": deployer, "required_confs": CONFS})
     repeat(
-        escrow.commit_transfer_ownership, ARAGON_AGENT, {"from": deployer, "required_confs": CONFS}
+        escrow_with_proxy.commit_transfer_ownership, ARAGON_AGENT, {"from": deployer, "required_confs": CONFS}
     )
-    repeat(escrow.apply_transfer_ownership, {"from": deployer, "required_confs": CONFS})
+    repeat(escrow_with_proxy.apply_transfer_ownership, {"from": deployer, "required_confs": CONFS})
 
     repeat(PoolProxy.deploy, deployer, deployer, deployer, {"from": deployer, "required_confs": CONFS})
 
