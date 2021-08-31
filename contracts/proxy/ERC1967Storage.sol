@@ -3,8 +3,8 @@
 pragma solidity ^0.8.0;
 
 import "./IBeacon.sol";
-import "../Utils/Address.sol";
-import "../Utils/StorageSlot.sol";
+import "./Utils/Address.sol";
+import "./Utils/StorageSlot.sol";
 
 /**
  * @dev This abstract contract provides setters and getters for the different
