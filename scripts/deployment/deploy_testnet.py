@@ -187,7 +187,7 @@ def main():
     coin_a = coins[1]
 
     token = repeat(
-        ERC20.deploy, "Curve DAO Token", "CRV", 18, {"from": deployer, "required_confs": CONFS}
+        ERC20.deploy, "Curve DAO Token", "CRV", 18, 1303030303, {"from": deployer, "required_confs": CONFS}
     )
     save_abi(token, "token_crv")
 
@@ -198,7 +198,7 @@ def main():
     proxy = repeat(
         AdminUpgradeabilityProxy.deploy,
         escrow_without_proxy,
-        '0x775C72FB1C28c46F5E9976FFa08F348298fBCEC0',
+        '0xB8A0db9905E5f90F4A2162603AfA9A655B821915',
         bytes(),
         {"from": deployer, "required_confs": CONFS},
     )

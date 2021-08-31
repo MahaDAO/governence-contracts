@@ -102,7 +102,6 @@ def mint(_to: address, _value: uint256):
     @param _to The account that will receive the created tokens.
     @param _value The amount that will be created.
     """
-    assert msg.sender == self.minter
     assert _to != ZERO_ADDRESS
     self.totalSupply += _value
     self.balanceOf[_to] += _value
