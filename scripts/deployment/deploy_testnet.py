@@ -56,7 +56,7 @@ def repeat(f, *args):
 
 def save_abi(contract, name):
     with open("%s.abi" % name, "w") as f:
-        json.dump(contract.abi, f)
+        json.dump(contract.abi, indent=4)
 
 
 def deploy_erc20s_and_pool(deployer):
@@ -304,10 +304,10 @@ def main():
     )
     save_abi(vesting, "vesting")
 
-    repeat(token.approve, vesting, 100000e18, {"from": deployer, "required_confs": CONFS})
-    repeat(
-        vesting.fund,
-        VESTING_ADDRESSES + ["0x0000000000000000000000000000000000000000"] * 98,
-        ([1000e18] * 2) + [0] * 98,
-        {"from": deployer, "required_confs": CONFS},
-    )
+    # repeat(token.approve, vesting, 100000e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(
+    #     vesting.fund,
+    #     VESTING_ADDRESSES + ["0x0000000000000000000000000000000000000000"] * 98,
+    #     ([1000e18] * 2) + [0] * 98,
+    #     {"from": deployer, "required_confs": CONFS},
+    # )
