@@ -113,6 +113,7 @@ smart_wallet_checker: public(address)
 admin: public(address)  # Can and will be a smart contract
 future_admin: public(address)
 
+initialized: public(bool)
 
 @external
 def initialize(token_addr: address, _name: String[64], _symbol: String[32], _version: String[32]):
@@ -123,6 +124,7 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     @param _symbol Token symbol
     @param _version Contract version - required for Aragon compatibility
     """
+    assert self.initialized == False, "VotingEscrow: contract is already initialized"
     self.admin = msg.sender
     self.token = token_addr
     self.point_history[0].blk = block.number
@@ -137,6 +139,8 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.name = _name
     self.symbol = _symbol
     self.version = _version
+    self.initialized = True
+
 
 
 @external
