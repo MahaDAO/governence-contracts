@@ -58,8 +58,12 @@ def repeat(f, *args):
 
 
 def save_abi(contract, name):
-    with open("./output/abi%s.json" % name, "w") as f:
-        json.dump(contract.abi, f)
+    with open("./output/abi/%s.json" % name, "w") as f:
+        json.dump(contract.abi, f, indent=4)
+
+def save_output(deployment, name):
+    with open("./output/%s.json" % name, "w") as f:
+        json.dump(deployment, f, indent=4)
 
 
 def deploy_erc20s_and_pool(deployer):
@@ -252,6 +256,8 @@ def main():
         ARAGON_AGENT, 
         {"from": deployer, "required_confs": CONFS}
     )
+
+    save_output(output_file, 'maticMumbai')
 
     # for account in DISTRIBUTION_ADDRESSES:
     #     repeat(
