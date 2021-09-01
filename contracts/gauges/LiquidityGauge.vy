@@ -116,8 +116,8 @@ def __init__(lp_addr: address, _minter: address, _admin: address):
     self.controller = controller_addr
     self.voting_escrow = Controller(controller_addr).voting_escrow()
     self.period_timestamp[0] = block.timestamp
-    self.inflation_rate = CRV20(crv_addr).rate()
-    self.future_epoch_time = CRV20(crv_addr).future_epoch_time_write()
+    self.inflation_rate = 0 #CRV20(crv_addr).rate()
+    self.future_epoch_time = block.timestamp #CRV20(crv_addr).future_epoch_time_write()
     self.admin = _admin
 
 

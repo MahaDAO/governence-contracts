@@ -132,8 +132,8 @@ def __init__(lp_addr: address, _minter: address, _reward_contract: address, _rew
     self.controller = controller_addr
     self.voting_escrow = Controller(controller_addr).voting_escrow()
     self.period_timestamp[0] = block.timestamp
-    self.inflation_rate = CRV20(crv_addr).rate()
-    self.future_epoch_time = CRV20(crv_addr).future_epoch_time_write()
+    self.inflation_rate = 0#CRV20(crv_addr).rate()
+    self.future_epoch_time = block.timestamp#CRV20(crv_addr).future_epoch_time_write()
     self.reward_contract = _reward_contract
     assert ERC20(lp_addr).approve(_reward_contract, MAX_UINT256)
     self.rewarded_token = _rewarded_token

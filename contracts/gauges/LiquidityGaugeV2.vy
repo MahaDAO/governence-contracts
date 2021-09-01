@@ -152,8 +152,8 @@ def __init__(_lp_token: address, _minter: address, _admin: address):
     self.voting_escrow = Controller(controller).voting_escrow()
 
     self.period_timestamp[0] = block.timestamp
-    self.inflation_rate = CRV20(crv_token).rate()
-    self.future_epoch_time = CRV20(crv_token).future_epoch_time_write()
+    self.inflation_rate = 0#CRV20(crv_token).rate()
+    self.future_epoch_time = block.timestamp#CRV20(crv_token).future_epoch_time_write()
 
 
 @view

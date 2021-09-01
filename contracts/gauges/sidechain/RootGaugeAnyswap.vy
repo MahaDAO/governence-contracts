@@ -88,12 +88,12 @@ def __init__(
 
     # because we calculate the rate locally, this gauge cannot
     # be used prior to the start of the first emission period
-    rate: uint256 = CRV20(crv_token).rate()
+    rate: uint256 = 0#CRV20(crv_token).rate()
     assert rate != 0
     self.inflation_rate = rate
 
     self.period = block.timestamp / WEEK - 1
-    self.start_epoch_time = CRV20(crv_token).start_epoch_time_write()
+    self.start_epoch_time = block.timestamp#CRV20(crv_token).start_epoch_time_write()
 
 
 @external

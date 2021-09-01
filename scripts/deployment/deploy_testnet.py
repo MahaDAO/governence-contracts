@@ -29,6 +29,7 @@ USE_STRATEGIES = False  # Needed for the ganache-cli tester which doesn't like m
 POA = True
 
 DEPLOYER = accounts.load('0')
+#network = sys.argv[4]
 
 #DEPLOYER = "0xFD3DeCC0cF498bb9f54786cb65800599De505706"
 ARAGON_AGENT = "0x775C72FB1C28c46F5E9976FFa08F348298fBCEC0"
@@ -57,7 +58,14 @@ def repeat(f, *args):
 
 
 def save_abi(contract, name):
+    print(contract, name)
     with open("%s.abi" % name, "w") as f:
+        # jsonString = {} 
+    
+        # jsonString[] = {
+        #     'address': usdt.address,
+        #     'abi': 'MockERC20'
+        # }
         json.dump(contract.abi, f)
 
 
@@ -257,7 +265,7 @@ def main():
         {"from": deployer, "required_confs": CONFS}
     )
 
-    repeat(token.set_minter, minter, {"from": deployer, "required_confs": CONFS})
+    #repeat(token.set_minter, minter, {"from": deployer, "required_confs": CONFS})
     repeat(gauge_controller.add_type, b"Liquidity", {"from": deployer, "required_confs": CONFS})
     repeat(
         gauge_controller.change_type_weight,
