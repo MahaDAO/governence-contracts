@@ -81,9 +81,9 @@ event Supply:
     supply: uint256
 
 
-WEEK: constant(uint256) = 7 * 86400  # all future times are rounded by week
-MAXTIME: constant(uint256) = 4 * 365 * 86400  # 4 years
-MULTIPLIER: constant(uint256) = 10 ** 18
+WEEK: public(uint256) #= 7 * 86400  # all future times are rounded by week
+MAXTIME: public(uint256) #= 4 * 365 * 86400  # 4 years
+MULTIPLIER: public(uint256) #= 10 ** 18
 
 token: public(address)
 supply: public(uint256)
@@ -135,6 +135,11 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     _decimals: uint256 = ERC20(token_addr).decimals()
     assert _decimals <= 255
     self.decimals = _decimals
+
+    # changes regarding proxy
+    self.WEEK = 7 * 86400
+    self.MAXTIME = 4 * 365 * 86400
+    self.MULTIPLIER = 10 ** 18
 
     self.name = _name
     self.symbol = _symbol
@@ -252,10 +257,10 @@ def _checkpoint(addr: address, old_locked: LockedBalance, new_locked: LockedBala
         # Calculate slopes and biases
         # Kept at zero when they have to
         if old_locked.end > block.timestamp and old_locked.amount > 0:
-            u_old.slope = old_locked.amount / MAXTIME
+            u_old.slope = old_locked.amount / convert(self.MAXTIME, int128)
             u_old.bias = u_old.slope * convert(old_locked.end - block.timestamp, int128)
         if new_locked.end > block.timestamp and new_locked.amount > 0:
-            u_new.slope = new_locked.amount / MAXTIME
+            u_new.slope = new_locked.amount / convert(self.MAXTIME, int128)
             u_new.bias = u_new.slope * convert(new_locked.end - block.timestamp, int128)
 
         # Read values of scheduled changes in the slope
@@ -278,16 +283,16 @@ def _checkpoint(addr: address, old_locked: LockedBalance, new_locked: LockedBala
     initial_last_point: Point = last_point
     block_slope: uint256 = 0  # dblock/dt
     if block.timestamp > last_point.ts:
-        block_slope = MULTIPLIER * (block.number - last_point.blk) / (block.timestamp - last_point.ts)
+        block_slope = self.MULTIPLIER * (block.number - last_point.blk) / (block.timestamp - last_point.ts)
     # If last point is already recorded in this block, slope=0
     # But that's ok b/c we know the block in such case
 
     # Go over weeks to fill history and calculate what the current point is
-    t_i: uint256 = (last_checkpoint / WEEK) * WEEK
+    t_i: uint256 = (last_checkpoint / self.WEEK) * self.WEEK
     for i in range(255):
         # Hopefully it won't happen that this won't get used in 5 years!
         # If it does, users will be able to withdraw but vote weight will be broken
-        t_i += WEEK
+        t_i += self.WEEK
         d_slope: int128 = 0
         if t_i > block.timestamp:
             t_i = block.timestamp
@@ -301,7 +306,7 @@ def _checkpoint(addr: address, old_locked: LockedBalance, new_locked: LockedBala
             last_point.slope = 0
         last_checkpoint = t_i
         last_point.ts = t_i
-        last_point.blk = initial_last_point.blk + block_slope * (t_i - initial_last_point.ts) / MULTIPLIER
+        last_point.blk = initial_last_point.blk + block_slope * (t_i - initial_last_point.ts) / self.MULTIPLIER
         _epoch += 1
         if t_i == block.timestamp:
             last_point.blk = block.number
@@ -420,13 +425,13 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     @param _unlock_time Epoch time when tokens unlock, rounded down to whole weeks
     """
     self.assert_not_contract(msg.sender)
-    unlock_time: uint256 = (_unlock_time / WEEK) * WEEK  # Locktime is rounded down to weeks
+    unlock_time: uint256 = (_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
     _locked: LockedBalance = self.locked[msg.sender]
 
     assert _value > 0  # dev: need non-zero value
     assert _locked.amount == 0, "Withdraw old tokens first"
     assert unlock_time > block.timestamp, "Can only lock until time in the future"
-    assert unlock_time <= block.timestamp + MAXTIME, "Voting lock can be 4 years max"
+    assert unlock_time <= block.timestamp + self.MAXTIME, "Voting lock can be 4 years max"
 
     self._deposit_for(msg.sender, _value, unlock_time, _locked, CREATE_LOCK_TYPE)
 
@@ -458,12 +463,12 @@ def increase_unlock_time(_unlock_time: uint256):
     """
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
-    unlock_time: uint256 = (_unlock_time / WEEK) * WEEK  # Locktime is rounded down to weeks
+    unlock_time: uint256 = (_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
 
     assert _locked.end > block.timestamp, "Lock expired"
     assert _locked.amount > 0, "Nothing is locked"
     assert unlock_time > _locked.end, "Can only increase lock duration"
-    assert unlock_time <= block.timestamp + MAXTIME, "Voting lock can be 4 years max"
+    assert unlock_time <= block.timestamp + self.MAXTIME, "Voting lock can be 4 years max"
 
     self._deposit_for(msg.sender, 0, unlock_time, _locked, INCREASE_UNLOCK_TIME)
 
@@ -606,9 +611,9 @@ def supply_at(point: Point, t: uint256) -> uint256:
     @return Total voting power at that time
     """
     last_point: Point = point
-    t_i: uint256 = (last_point.ts / WEEK) * WEEK
+    t_i: uint256 = (last_point.ts / self.WEEK) * self.WEEK
     for i in range(255):
-        t_i += WEEK
+        t_i += self.WEEK
         d_slope: int128 = 0
         if t_i > t:
             t_i = t
