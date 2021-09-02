@@ -257,7 +257,8 @@ def main():
         {"from": deployer, "required_confs": CONFS}
     )
 
-    save_output(output_file, 'maticMumbai')
+    #save_output(output_file, 'maticMumbai')
+    save_output(output_file, 'rinkeby')
 
     # for account in DISTRIBUTION_ADDRESSES:
     #     repeat(

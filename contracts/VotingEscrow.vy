@@ -52,10 +52,10 @@ interface ERC20:
 interface SmartWalletChecker:
     def check(addr: address) -> bool: nonpayable
 
-DEPOSIT_FOR_TYPE: constant(int128) = 0
-CREATE_LOCK_TYPE: constant(int128) = 1
-INCREASE_LOCK_AMOUNT: constant(int128) = 2
-INCREASE_UNLOCK_TIME: constant(int128) = 3
+DEPOSIT_FOR_TYPE: public(int128) #= 0
+CREATE_LOCK_TYPE: public(int128) #= 1
+INCREASE_LOCK_AMOUNT: public(int128) #= 2
+INCREASE_UNLOCK_TIME: public(int128) #= 3
 
 
 event CommitOwnership:
@@ -140,6 +140,11 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.WEEK = 7 * 86400
     self.MAXTIME = 4 * 365 * 86400
     self.MULTIPLIER = 10 ** 18
+
+    self.DEPOSIT_FOR_TYPE = 0
+    self.CREATE_LOCK_TYPE = 1
+    self.INCREASE_LOCK_AMOUNT = 2
+    self.INCREASE_UNLOCK_TIME = 3
 
     self.name = _name
     self.symbol = _symbol
@@ -413,7 +418,7 @@ def deposit_for(_addr: address, _value: uint256):
     assert _locked.amount > 0, "No existing lock found"
     assert _locked.end > block.timestamp, "Cannot add to expired lock. Withdraw"
 
-    self._deposit_for(_addr, _value, 0, self.locked[_addr], DEPOSIT_FOR_TYPE)
+    self._deposit_for(_addr, _value, 0, self.locked[_addr], self.DEPOSIT_FOR_TYPE)
 
 
 @external
@@ -433,7 +438,7 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     assert unlock_time > block.timestamp, "Can only lock until time in the future"
     assert unlock_time <= block.timestamp + self.MAXTIME, "Voting lock can be 4 years max"
 
-    self._deposit_for(msg.sender, _value, unlock_time, _locked, CREATE_LOCK_TYPE)
+    self._deposit_for(msg.sender, _value, unlock_time, _locked, self.CREATE_LOCK_TYPE)
 
 
 @external
@@ -451,7 +456,7 @@ def increase_amount(_value: uint256):
     assert _locked.amount > 0, "No existing lock found"
     assert _locked.end > block.timestamp, "Cannot add to expired lock. Withdraw"
 
-    self._deposit_for(msg.sender, _value, 0, _locked, INCREASE_LOCK_AMOUNT)
+    self._deposit_for(msg.sender, _value, 0, _locked, self.INCREASE_LOCK_AMOUNT)
 
 
 @external
@@ -470,7 +475,7 @@ def increase_unlock_time(_unlock_time: uint256):
     assert unlock_time > _locked.end, "Can only increase lock duration"
     assert unlock_time <= block.timestamp + self.MAXTIME, "Voting lock can be 4 years max"
 
-    self._deposit_for(msg.sender, 0, unlock_time, _locked, INCREASE_UNLOCK_TIME)
+    self._deposit_for(msg.sender, 0, unlock_time, _locked, self.INCREASE_UNLOCK_TIME)
 
 
 @external
