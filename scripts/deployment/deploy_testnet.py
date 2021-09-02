@@ -29,6 +29,7 @@ USE_STRATEGIES = False  # Needed for the ganache-cli tester which doesn't like m
 POA = True
 
 DEPLOYER = accounts.load('0')
+print('Deployer', DEPLOYER)
 #network = sys.argv[4]
 
 #DEPLOYER = "0xFD3DeCC0cF498bb9f54786cb65800599De505706"
@@ -213,8 +214,8 @@ def main():
 
     token = repeat(
         ERC20.deploy, 
-        "Curve DAO Token", 
-        "CRV", 
+        "Maha DAO Token", 
+        "MAHA", 
         18, 
         1303030303, 
         {"from": deployer, "required_confs": CONFS}
@@ -229,6 +230,7 @@ def main():
         VotingEscrow.deploy,
         {"from": deployer, "required_confs": CONFS}
     )
+    
     proxy = repeat(
         AdminUpgradeabilityProxy.deploy,
         escrow_without_proxy,
@@ -237,6 +239,10 @@ def main():
         {"from": deployer, "required_confs": CONFS},
     )
     escrow_with_proxy = Contract.from_abi('VotingEscrow', proxy, VotingEscrow.abi)
+    print('WEEk', escrow_with_proxy.WEEK())
+    print('INCREASE_LOCK_AMOUNT', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
+    print('Supply', escrow_with_proxy.supply())
+
     save_abi(escrow_with_proxy, "VotingEscrow")
     output_file["VotingEscrow"] = {
         "abi": "VotingEscrow",
@@ -257,6 +263,9 @@ def main():
         {"from": deployer, "required_confs": CONFS}
     )
 
+    print('WEEk', escrow_with_proxy.WEEK())
+    print('INCREASE_LOCK_AMOUNT', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
+    print('Supply', escrow_with_proxy.supply())
     #save_output(output_file, 'maticMumbai')
     save_output(output_file, 'rinkeby')
 

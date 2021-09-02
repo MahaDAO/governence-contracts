@@ -140,6 +140,13 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.WEEK = 7 * 86400
     self.MAXTIME = 4 * 365 * 86400
     self.MULTIPLIER = 10 ** 18
+    self.supply = 0
+    self.epoch = 0
+    self.transfersEnabled = False
+    self.future_smart_wallet_checker = ZERO_ADDRESS
+    self.smart_wallet_checker= ZERO_ADDRESS
+    self.admin = msg.sender
+    self.future_admin = ZERO_ADDRESS
 
     self.DEPOSIT_FOR_TYPE = 0
     self.CREATE_LOCK_TYPE = 1
@@ -375,7 +382,7 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
 
     self.supply = supply_before + _value
     old_locked: LockedBalance = _locked
-    # Adding to existing lock, or if a lock is expired - creating a new one
+    # # Adding to existing lock, or if a lock is expired - creating a new one
     _locked.amount += convert(_value, int128)
     if unlock_time != 0:
         _locked.end = unlock_time
@@ -388,7 +395,7 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     self._checkpoint(_addr, old_locked, _locked)
 
     if _value != 0:
-        assert ERC20(self.token).transferFrom(_addr, self, _value)
+      assert ERC20(self.token).transferFrom(_addr, self, _value)
 
     log Deposit(_addr, _value, _locked.end, type, block.timestamp)
     log Supply(supply_before, supply_before + _value)
@@ -433,7 +440,7 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     unlock_time: uint256 = (_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
     _locked: LockedBalance = self.locked[msg.sender]
 
-    assert _value > 0  # dev: need non-zero value
+    assert _value > 0, "VotingEscrow: value smaller then 0"  # dev: need non-zero value
     assert _locked.amount == 0, "Withdraw old tokens first"
     assert unlock_time > block.timestamp, "Can only lock until time in the future"
     assert unlock_time <= block.timestamp + self.MAXTIME, "Voting lock can be 4 years max"
