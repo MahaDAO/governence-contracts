@@ -437,7 +437,7 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     @param _unlock_time Epoch time when tokens unlock, rounded down to whole weeks
     """
     self.assert_not_contract(msg.sender)
-    unlock_time: uint256 = (_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
+    unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
     _locked: LockedBalance = self.locked[msg.sender]
 
     assert _value > 0, "VotingEscrow: value smaller then 0"  # dev: need non-zero value

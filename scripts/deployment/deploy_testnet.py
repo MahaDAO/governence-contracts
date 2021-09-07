@@ -47,13 +47,13 @@ ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 CONFS = 1
 
 
-def repeat(f, *args):
+def repeat(f, *args, **kwargs):
     """
     Repeat when geth is not broadcasting (unaccounted error)
     """
     while True:
         try:
-            return f(*args)
+            return f(*args, **kwargs)
         except KeyError:
             continue
 
@@ -217,7 +217,7 @@ def main():
         "Maha DAO Token", 
         "MAHA", 
         18, 
-        1303030303, 
+        1303030303,
         {"from": deployer, "required_confs": CONFS}
     )
     save_abi(token, "MahaToken")
@@ -236,7 +236,7 @@ def main():
         escrow_without_proxy,
         ARAGON_AGENT,
         bytes(),
-        {"from": deployer, "required_confs": CONFS},
+        {"from": deployer, "required_confs": CONFS}
     )
     escrow_with_proxy = Contract.from_abi('VotingEscrow', proxy, VotingEscrow.abi)
     print('WEEk', escrow_with_proxy.WEEK())
@@ -252,9 +252,9 @@ def main():
     repeat(
         escrow_with_proxy.initialize,
         token,
-        "Vote-escrowed CRV",
-        "veCRV",
-        "veCRV_0.99",
+        "Vote-escrowed MAHA",
+        "MAHAX",
+        "maha_0.99",
         {"from": deployer, "required_confs": CONFS}
     )
     repeat(
@@ -266,8 +266,8 @@ def main():
     print('WEEk', escrow_with_proxy.WEEK())
     print('INCREASE_LOCK_AMOUNT', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
     print('Supply', escrow_with_proxy.supply())
-    #save_output(output_file, 'maticMumbai')
-    save_output(output_file, 'rinkeby')
+    save_output(output_file, 'maticMumbai')
+    #save_output(output_file, 'rinkeby')
 
     # for account in DISTRIBUTION_ADDRESSES:
     #     repeat(
