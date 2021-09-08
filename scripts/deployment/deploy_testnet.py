@@ -236,7 +236,7 @@ def main():
         escrow_without_proxy,
         ARAGON_AGENT,
         bytes(),
-        {"from": deployer, "required_confs": CONFS}
+        {"from": deployer, "required_confs": CONFS, publish=True}
     )
     escrow_with_proxy = Contract.from_abi('VotingEscrow', proxy, VotingEscrow.abi)
     print('WEEk', escrow_with_proxy.WEEK())

@@ -475,7 +475,7 @@ def increase_unlock_time(_unlock_time: uint256):
     """
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
-    unlock_time: uint256 = (_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
+    unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
 
     assert _locked.end > block.timestamp, "Lock expired"
     assert _locked.amount > 0, "Nothing is locked"
