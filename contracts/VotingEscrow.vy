@@ -80,6 +80,9 @@ event Supply:
     prevSupply: uint256
     supply: uint256
 
+event TriggerFallback:
+    fallbackWithdraw: bool
+
 
 WEEK: public(uint256) #= 7 * 86400  # all future times are rounded by week
 MAXTIME: public(uint256) #= 4 * 365 * 86400  # 4 years
@@ -115,6 +118,8 @@ future_admin: public(address)
 
 initialized: public(bool)
 
+fallback_Withdraw: public(bool)
+
 @external
 def initialize(token_addr: address, _name: String[64], _symbol: String[32], _version: String[32]):
     """
@@ -137,8 +142,8 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.decimals = _decimals
 
     # changes regarding proxy
-    self.WEEK = 7 * 86400
-    self.MAXTIME = 4 * 365 * 86400
+    self.WEEK = 7 * 86400 #5 * 60 #
+    self.MAXTIME = 4 * 365 * 86400 #86400 #
     self.MULTIPLIER = 10 ** 18
     self.supply = 0
     self.epoch = 0
@@ -157,7 +162,7 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.symbol = _symbol
     self.version = _version
     self.initialized = True
-
+    self.fallback_Withdraw = False
 
 
 @external
@@ -169,6 +174,16 @@ def commit_transfer_ownership(addr: address):
     assert msg.sender == self.admin  # dev: admin only
     self.future_admin = addr
     log CommitOwnership(addr)
+
+@external
+def trigger_fallback(status: bool):
+    """
+    @notice Trigger the fallback to withdraw funds
+    @param status bool of fallback execution
+    """
+    assert msg.sender == self.admin
+    self.fallback_Withdraw = status
+    log TriggerFallback(status)
 
 
 @external
@@ -513,6 +528,33 @@ def withdraw():
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
 
+@external
+@nonreentrant('lock')
+def withdrawFallback():
+    """
+    @notice Withdraw all tokens for `msg.sender`
+    @dev Only possible if the fallback_Withdraw is True
+    """
+    _locked: LockedBalance = self.locked[msg.sender]
+    assert self.fallback_Withdraw == True, "Fallback not initiated"
+    value: uint256 = convert(_locked.amount, uint256)
+
+    old_locked: LockedBalance = _locked
+    _locked.end = 0
+    _locked.amount = 0
+    self.locked[msg.sender] = _locked
+    supply_before: uint256 = self.supply
+    self.supply = supply_before - value
+
+    # old_locked can have either expired <= timestamp or zero end
+    # _locked has only 0 end
+    # Both can have >= 0 amount
+    self._checkpoint(msg.sender, old_locked, _locked)
+
+    assert ERC20(self.token).transfer(msg.sender, value)
+
+    log Withdraw(msg.sender, value, block.timestamp)
+    log Supply(supply_before, supply_before - value)
 
 # The following ERC20/minime-compatible methods are not real balanceOf and supply!
 # They measure the weights for the purpose of voting, so they don't represent

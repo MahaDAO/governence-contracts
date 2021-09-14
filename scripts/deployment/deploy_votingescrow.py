@@ -160,19 +160,19 @@ def main():
         "address": escrow_without_proxy.address
     }
 
-    repeat(
-        escrow_without_proxy.initialize,
-        token,
-        "Vote-escrowed MAHA",
-        "MAHAX",
-        "maha_0.99",
-        {"from": deployer, "required_confs": CONFS}
-    )
-    repeat(
-        escrow_without_proxy.changeController, 
-        ARAGON_AGENT, 
-        {"from": deployer, "required_confs": CONFS}
-    )
+    # repeat(
+    #     escrow_without_proxy.initialize,
+    #     token,
+    #     "Vote-escrowed MAHA",
+    #     "MAHAX",
+    #     "maha_0.99",
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
+    # repeat(
+    #     escrow_without_proxy.changeController, 
+    #     ARAGON_AGENT, 
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
 
     print('WEEk', escrow_without_proxy.WEEK())
     print('INCREASE_LOCK_AMOUNT', escrow_without_proxy.INCREASE_LOCK_AMOUNT())

@@ -11,6 +11,7 @@ from brownie import (
 CONFS = 1
 ADMIN_ACC = accounts.load('1')
 DEPLOYER_ACC = accounts.load('0')
+TESTER_ACC = accounts.load('2')
 
 print('Admin Account', ADMIN_ACC)
 print('Deployer Account', DEPLOYER_ACC)
@@ -30,17 +31,32 @@ def repeat(f, *args, **kwargs):
 def main():
     ADMIN = accounts.at(ADMIN_ACC)
     DEPLOYER = accounts.at(DEPLOYER_ACC)
+    TESTER = accounts.at(TESTER_ACC)
 
     current_proxy = Contract.from_abi(
         "AdminUpgradeabilityProxy", 
         '0x08abe0414b4adc5a73b02c5bebce8f8bd020d5eb',
         AdminUpgradeabilityProxy.abi
     )
-    repeat(
-        current_proxy.upgradeTo,
-        '0xb44b4654792036ebEe6f1B851d7bB8964420f0Ad',
-        {"from": ADMIN, "required_confs": CONFS},
+
+    current_implementaion = Contract.from_abi(
+        "VotingEscrow", 
+        '0x08abe0414b4adc5a73b02c5bebce8f8bd020d5eb',
+        VotingEscrow.abi
     )
+    
+    print('fallback status before', current_implementaion.fallback_Withdraw())
+    repeat(
+        current_implementaion.trigger_fallback,
+        True,
+        {"from": DEPLOYER, "required_confs": CONFS},
+    )
+    print('fallback status after', current_implementaion.fallback_Withdraw())
+    print('Triggering fallback withdraw')
+    # repeat(
+    #     current_proxy.withdrawFallback,
+    #     {"from": ADMIN, "required_confs": CONFS},
+    # )
 
     # escrow_with_proxy2 = Contract.from_abi('VotingEscrow', proxy, VotingEscrow.abi)
     # repeat(

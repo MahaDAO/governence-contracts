@@ -236,7 +236,7 @@ def main():
         escrow_without_proxy,
         ARAGON_AGENT,
         bytes(),
-        {"from": deployer, "required_confs": CONFS, publish=True}
+        {"from": deployer, "required_confs": CONFS}
     )
     escrow_with_proxy = Contract.from_abi('VotingEscrow', proxy, VotingEscrow.abi)
     print('WEEk', escrow_with_proxy.WEEK())
@@ -267,115 +267,4 @@ def main():
     print('INCREASE_LOCK_AMOUNT', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
     print('Supply', escrow_with_proxy.supply())
     save_output(output_file, 'maticMumbai')
-    #save_output(output_file, 'rinkeby')
-
-    # for account in DISTRIBUTION_ADDRESSES:
-    #     repeat(
-    #         token.transfer,
-    #         account,
-    #         DISTRIBUTION_AMOUNT,
-    #         {"from": deployer, "required_confs": CONFS},
-    #     )
-
-    # gauge_controller = repeat(
-    #     GaugeController.deploy, token, escrow_with_proxy, {"from": deployer, "required_confs": CONFS}
-    # )
-    # save_abi(gauge_controller, "gauge_controller")
-
-    # minter = repeat(
-    #     Minter.deploy, token, gauge_controller, {"from": deployer, "required_confs": CONFS}
-    # )
-    # save_abi(minter, "minter")
-
-    # liquidity_gauge = repeat(
-    #     LiquidityGauge.deploy, lp_token, minter, deployer, {"from": deployer, "required_confs": CONFS}
-    # )
-    # save_abi(liquidity_gauge, "liquidity_gauge")
-
-    # contract = repeat(
-    #     CurveRewards.deploy, lp_token, coin_a, {"from": accounts[0], "required_confs": CONFS}
-    # )
-    # repeat(
-    #     contract.setRewardDistribution, accounts[0], {"from": accounts[0], "required_confs": CONFS}
-    # )
-    # repeat(coin_a.transfer, contract, 100e18, {"from": accounts[0], "required_confs": CONFS})
-
-    # liquidity_gauge_rewards = repeat(
-    #     LiquidityGaugeReward.deploy,
-    #     lp_token,
-    #     minter,
-    #     contract,
-    #     coin_a,
-    #     DEPLOYER,
-    #     {"from": deployer, "required_confs": CONFS}
-    # )
-
-    # #repeat(token.set_minter, minter, {"from": deployer, "required_confs": CONFS})
-    # repeat(gauge_controller.add_type, b"Liquidity", {"from": deployer, "required_confs": CONFS})
-    # repeat(
-    #     gauge_controller.change_type_weight,
-    #     0,
-    #     10 ** 18,
-    #     {"from": deployer, "required_confs": CONFS},
-    # )
-    # repeat(
-    #     gauge_controller.add_gauge,
-    #     liquidity_gauge,
-    #     0,
-    #     10 ** 18,
-    #     {"from": deployer, "required_confs": CONFS},
-    # )
-
-    # repeat(
-    #     gauge_controller.add_type, b"LiquidityRewards", {"from": deployer, "required_confs": CONFS}
-    # )
-    # repeat(
-    #     gauge_controller.change_type_weight,
-    #     1,
-    #     10 ** 18,
-    #     {"from": deployer, "required_confs": CONFS},
-    # )
-    # repeat(
-    #     gauge_controller.add_gauge,
-    #     liquidity_gauge_rewards,
-    #     1,
-    #     10 ** 18,
-    #     {"from": deployer, "required_confs": CONFS},
-    # )
-
-    # repeat(
-    #     gauge_controller.commit_transfer_ownership,
-    #     ARAGON_AGENT,
-    #     {"from": deployer, "required_confs": CONFS},
-    # )
-    # repeat(gauge_controller.apply_transfer_ownership, {"from": deployer, "required_confs": CONFS})
-    # # repeat(
-    # #     escrow_with_proxy.commit_transfer_ownership, ARAGON_AGENT, {"from": deployer, "required_confs": CONFS}
-    # # )
-    # repeat(escrow_with_proxy.apply_transfer_ownership, {"from": deployer, "required_confs": CONFS})
-
-    # repeat(PoolProxy.deploy, deployer, deployer, deployer, {"from": deployer, "required_confs": CONFS})
-
-    # vesting = repeat(
-    #     VestingEscrow.deploy,
-    #     token,
-    #     time.time() + 300,
-    #     time.time() + 2000,
-    #     False,
-    #     [
-    #         deployer,
-    #         deployer,
-    #         deployer,
-    #         deployer
-    #     ],
-    #     {"from": deployer, "required_confs": CONFS}
-    # )
-    # save_abi(vesting, "vesting")
-
-    # # repeat(token.approve, vesting, 100000e18, {"from": deployer, "required_confs": CONFS})
-    # # repeat(
-    # #     vesting.fund,
-    # #     VESTING_ADDRESSES + ["0x0000000000000000000000000000000000000000"] * 98,
-    # #     ([1000e18] * 2) + [0] * 98,
-    # #     {"from": deployer, "required_confs": CONFS},
-    # # )
+   
