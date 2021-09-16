@@ -20,17 +20,21 @@
 ```
 1. deploy_tesnet.py
 path :- scripts/deployment/deploy_testnet.py
-( This file is main deployment script )
+( This file is testnet deployment script )
 
-2. deploy_votingescrow.py
+2. deploy_mainnet_matic.py
+path :- scripts/deployment/deploy_mainnet_matic.py
+( This file is mainnet deployment script )
+
+3. deploy_votingescrow.py
 path :- scripts/deployment/deploy_votingescrow.py
 ( This file deploy an seperate instance of voting escrow )
 
-3. update_proxy.py
+4. update_proxy.py
 path :- scripts/deployment/update_proxy.py
 ( This file updates the proxy contracts )
 
-4. update_fallback.py
+5. update_fallback.py
 path :- scripts/deployment/update_fallback.py
 ( This file triggers the fallback boolean function )
 ```
