@@ -39,4 +39,7 @@ path :- scripts/deployment/update_fallback.py
 ```
 1. brownie run ${path} --network ${network_id}
 Example :- brownie run scripts/deployment/deploy_testnet.py --network mumbaiMatic 
+
+Note :- the mainnet script needs an review and variables to be set 
+path - scripts/deployment/deploy_mainnet_matic.py
 ```
