@@ -9,7 +9,7 @@ from brownie import (
 )
 
 CONFS = 1
-MAHA_TOKEN_ADDR = ''  # TODO: fill in this address as per the network.
+MAHA_TOKEN_ADDR = ""  # TODO: fill in this address as per the network.
 DEPLOYER = accounts.load('0')  # This will be the admin for the state variables of voting escrow.
 PROXY_ADMIN = ""  # NOTE:- Please change this address. This will be the admin for proxy contract. This cannot call the fallback/delegate function via proxy.
 
