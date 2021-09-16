@@ -46,4 +46,7 @@ Example :- brownie run scripts/deployment/deploy_testnet.py --network mumbaiMati
 
 Note :- the mainnet script needs an review and variables to be set 
 path - scripts/deployment/deploy_mainnet_matic.py
+
+DEPLOYER :- This address is admin of votingescrow contract
+PROXY_ADMIN :- This address is the admin of proxy implementation
 ```
