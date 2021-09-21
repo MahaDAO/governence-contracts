@@ -1,4 +1,12 @@
-<h1 align="center"> governence-contracts </h1>
+MahaDAO Governance Contracts
+============================
+
+This repo contains the code for the MahaDAO Governance. This includes
+
+- MAHAX Staking 
+- Voting Contracts
+- Any Proxies being used
+- Boosted Staking Contracts
 
 # Setup Downloads
 ```
