@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import {IERC20} from "../interfaces/IERC20.sol";
-import {Address} from "../utils/Address.sol";
+import {Address} from "../proxy/Utils/Address.sol";
 import {SafeMath} from "../utils/SafeMath.sol";
 
 /**

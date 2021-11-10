@@ -7,10 +7,6 @@ interface IBasicStaking {
 
     function getRewardAndDistribute() external;
 
-    function stake(uint256 amount) external;
-
-    function withdraw(uint256 amount) external;
-
     function lastTimeRewardApplicable() external view returns (uint256);
 
     function rewardPerToken() external view returns (uint256);
