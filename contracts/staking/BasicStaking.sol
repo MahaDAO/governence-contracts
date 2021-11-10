@@ -61,16 +61,11 @@ contract BasicStaking is
 
     /* ========== VIEWS ========== */
 
-    function totalSupply() external view override returns (uint256) {
+    function totalSupply() public view override returns (uint256) {
         return stakingToken.totalSupply();
     }
 
-    function balanceOf(address account)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function balanceOf(address account) public view override returns (uint256) {
         return stakingToken.balanceOf(account);
     }
 
