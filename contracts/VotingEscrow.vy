@@ -44,6 +44,10 @@ interface ERC20:
     def transferFrom(spender: address, to: address, amount: uint256) -> bool: nonpayable
 
 
+interface StakingContract:
+    def updateRewards(account: address): nonpayable
+
+
 # Interface for checking whether address belongs to a whitelisted
 # type of a smart wallet.
 # When new types are added - the whole contract is changed
@@ -119,6 +123,7 @@ future_admin: public(address)
 initialized: public(bool)
 
 fallback_Withdraw: public(bool)
+staking_contract: public(address)
 
 @external
 def initialize(token_addr: address, _name: String[64], _symbol: String[32], _version: String[32]):
@@ -206,6 +211,16 @@ def commit_smart_wallet_checker(addr: address):
     """
     assert msg.sender == self.admin
     self.future_smart_wallet_checker = addr
+
+
+@external
+def set_staking_contract(addr: address):
+    """
+    @notice Set an external contract to check for approved smart contract wallets
+    @param addr Address of Smart contract checker
+    """
+    assert msg.sender == self.admin
+    self.staking_contract = addr
 
 
 @external
@@ -441,6 +456,7 @@ def deposit_for(_addr: address, _value: uint256):
     assert _locked.end > block.timestamp, "Cannot add to expired lock. Withdraw"
 
     self._deposit_for(_addr, _value, 0, self.locked[_addr], self.DEPOSIT_FOR_TYPE)
+    StakingContract(self.staking_contract).updateRewards()
 
 
 @external
@@ -461,6 +477,7 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     assert unlock_time <= block.timestamp + self.MAXTIME, "Voting lock can be 4 years max"
 
     self._deposit_for(msg.sender, _value, unlock_time, _locked, self.CREATE_LOCK_TYPE)
+    StakingContract(self.staking_contract).updateRewards()
 
 
 @external
@@ -479,6 +496,7 @@ def increase_amount(_value: uint256):
     assert _locked.end > block.timestamp, "Cannot add to expired lock. Withdraw"
 
     self._deposit_for(msg.sender, _value, 0, _locked, self.INCREASE_LOCK_AMOUNT)
+    StakingContract(self.staking_contract).updateRewards()
 
 
 @external
@@ -498,6 +516,7 @@ def increase_unlock_time(_unlock_time: uint256):
     assert unlock_time <= block.timestamp + self.MAXTIME, "Voting lock can be 4 years max"
 
     self._deposit_for(msg.sender, 0, unlock_time, _locked, self.INCREASE_UNLOCK_TIME)
+    StakingContract(self.staking_contract).updateRewards()
 
 
 @external
@@ -527,6 +546,8 @@ def withdraw():
 
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
+    StakingContract(self.staking_contract).updateRewards()
+
 
 @external
 @nonreentrant('lock')
@@ -555,6 +576,8 @@ def withdrawFallback():
 
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
+    StakingContract(self.staking_contract).updateRewards()
+
 
 # The following ERC20/minime-compatible methods are not real balanceOf and supply!
 # They measure the weights for the purpose of voting, so they don't represent
