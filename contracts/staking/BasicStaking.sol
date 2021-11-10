@@ -193,7 +193,6 @@ contract BasicStaking is
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
         }
-        _;
     }
 
     function updateReward(address account) external {
