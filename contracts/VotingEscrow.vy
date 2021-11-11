@@ -44,6 +44,10 @@ interface ERC20:
     def transferFrom(spender: address, to: address, amount: uint256) -> bool: nonpayable
 
 
+interface StakingContract:
+    def updateRewards(account: address): nonpayable
+
+
 # Interface for checking whether address belongs to a whitelisted
 # type of a smart wallet.
 # When new types are added - the whole contract is changed
@@ -119,6 +123,7 @@ future_admin: public(address)
 initialized: public(bool)
 
 fallback_Withdraw: public(bool)
+staking_contract: public(address)
 
 @external
 def initialize(token_addr: address, _name: String[64], _symbol: String[32], _version: String[32]):
@@ -206,6 +211,16 @@ def commit_smart_wallet_checker(addr: address):
     """
     assert msg.sender == self.admin
     self.future_smart_wallet_checker = addr
+
+
+@external
+def set_staking_contract(addr: address):
+    """
+    @notice Set an external contract to check for approved smart contract wallets
+    @param addr Address of Smart contract checker
+    """
+    assert msg.sender == self.admin
+    self.staking_contract = addr
 
 
 @external
@@ -415,6 +430,8 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     log Deposit(_addr, _value, _locked.end, type, block.timestamp)
     log Supply(supply_before, supply_before + _value)
 
+    StakingContract(self.staking_contract).updateRewards(_addr)
+
 
 @external
 def checkpoint():
@@ -527,6 +544,8 @@ def withdraw():
 
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
+    StakingContract(self.staking_contract).updateRewards(msg.sender)
+
 
 @external
 @nonreentrant('lock')
@@ -555,6 +574,8 @@ def withdrawFallback():
 
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
+    StakingContract(self.staking_contract).updateRewards(msg.sender)
+
 
 # The following ERC20/minime-compatible methods are not real balanceOf and supply!
 # They measure the weights for the purpose of voting, so they don't represent

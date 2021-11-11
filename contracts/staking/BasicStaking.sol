@@ -20,7 +20,6 @@ contract BasicStaking is
 {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    using SafeERC20 for IPoolToken;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -107,7 +106,7 @@ contract BasicStaking is
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            rewardsToken.safeTransfer(msg.sender, reward);
+            IERC20(address(rewardsToken)).safeTransfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }

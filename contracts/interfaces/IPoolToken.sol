@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC20} from "./IERC20.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/token/ERC20/IERC20.sol";
 
 interface IPoolToken is IERC20 {
     function withdraw(uint256 amount) external;
