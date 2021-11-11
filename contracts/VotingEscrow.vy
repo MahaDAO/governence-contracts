@@ -430,6 +430,8 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     log Deposit(_addr, _value, _locked.end, type, block.timestamp)
     log Supply(supply_before, supply_before + _value)
 
+    StakingContract(self.staking_contract).updateRewards(_addr)
+
 
 @external
 def checkpoint():
@@ -456,7 +458,6 @@ def deposit_for(_addr: address, _value: uint256):
     assert _locked.end > block.timestamp, "Cannot add to expired lock. Withdraw"
 
     self._deposit_for(_addr, _value, 0, self.locked[_addr], self.DEPOSIT_FOR_TYPE)
-    StakingContract(self.staking_contract).updateRewards(_addr) # TODO: confirm that the address passed is "addr".
 
 
 @external
@@ -477,7 +478,6 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     assert unlock_time <= block.timestamp + self.MAXTIME, "Voting lock can be 4 years max"
 
     self._deposit_for(msg.sender, _value, unlock_time, _locked, self.CREATE_LOCK_TYPE)
-    StakingContract(self.staking_contract).updateRewards(msg.sender)
 
 
 @external
@@ -496,7 +496,6 @@ def increase_amount(_value: uint256):
     assert _locked.end > block.timestamp, "Cannot add to expired lock. Withdraw"
 
     self._deposit_for(msg.sender, _value, 0, _locked, self.INCREASE_LOCK_AMOUNT)
-    StakingContract(self.staking_contract).updateRewards(msg.sender)
 
 
 @external
@@ -516,7 +515,6 @@ def increase_unlock_time(_unlock_time: uint256):
     assert unlock_time <= block.timestamp + self.MAXTIME, "Voting lock can be 4 years max"
 
     self._deposit_for(msg.sender, 0, unlock_time, _locked, self.INCREASE_UNLOCK_TIME)
-    StakingContract(self.staking_contract).updateRewards(msg.sender)
 
 
 @external
