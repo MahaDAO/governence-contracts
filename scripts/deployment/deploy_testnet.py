@@ -78,6 +78,10 @@ def main():
         NonStakableVotingEscrow.deploy,
         {"from": deployer, "required_confs": CONFS}
     )
+    stakeable_escrow_without_proxy = repeat(
+        VotingEscrow.deploy,
+        {"from": deployer, "required_confs": CONFS}
+    )
 
     proxy = repeat(
         AdminUpgradeabilityProxy.deploy,
@@ -91,7 +95,7 @@ def main():
     print('Fetching values from Proxy for VotingEscrow before initializing')
     print('- WEEK = ', escrow_with_proxy.WEEK())
     print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
-    print(- 'SUPPLY = ', escrow_with_proxy.supply())
+    print()
 
     save_abi(escrow_with_proxy, "VotingEscrow")
     output_file["VotingEscrow"] = {
@@ -116,8 +120,8 @@ def main():
     print('Fetching values from Proxy for VotingEscrow before initializing')
     print('- WEEK = ', escrow_with_proxy.WEEK())
     print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
-    print('- SUPPLY = ', escrow_with_proxy.supply())
-    
+    print()
+
     test_token_a = repeat(
         ERC20.deploy, 
         "PoolTokenA", 
@@ -142,6 +146,7 @@ def main():
         "PLTKN",
         [test_token_a, test_token_b],
         deployer,
+        deployer,
         {"from": deployer, "required_confs": CONFS}
     )
 
@@ -158,8 +163,9 @@ def main():
     )
 
     repeat(pool_token.transfer, basic_staking, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-
-    repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
+    repeat(basic_staking.notifyRewardAmount, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    
+    #repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
 
     repeat(
         basic_staking.initializeDefault,
