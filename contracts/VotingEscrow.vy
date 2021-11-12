@@ -45,7 +45,7 @@ interface ERC20:
 
 
 interface StakingContract:
-    def updateRewards(account: address): nonpayable
+    def updateReward(account: address): nonpayable
 
 
 # Interface for checking whether address belongs to a whitelisted
@@ -147,8 +147,8 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.decimals = _decimals
 
     # changes regarding proxy
-    self.WEEK = 7 * 86400 #5 * 60 #
-    self.MAXTIME = 4 * 365 * 86400 #86400 #
+    self.WEEK = 5 * 60 # 7 * 86400 #5 * 60 #
+    self.MAXTIME = 86400 # 4 * 365 * 86400 #86400 #
     self.MULTIPLIER = 10 ** 18
     self.supply = 0
     self.epoch = 0
@@ -407,6 +407,9 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     @param unlock_time New time when to unlock the tokens, or 0 if unchanged
     @param locked_balance Previous locked amount / timestamp
     """
+    
+    StakingContract(self.staking_contract).updateReward(_addr)
+    
     _locked: LockedBalance = locked_balance
     supply_before: uint256 = self.supply
 
@@ -429,8 +432,6 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
 
     log Deposit(_addr, _value, _locked.end, type, block.timestamp)
     log Supply(supply_before, supply_before + _value)
-
-    StakingContract(self.staking_contract).updateRewards(_addr)
 
 
 @external
@@ -524,6 +525,9 @@ def withdraw():
     @notice Withdraw all tokens for `msg.sender`
     @dev Only possible if the lock has expired
     """
+
+    StakingContract(self.staking_contract).updateReward(msg.sender)
+
     _locked: LockedBalance = self.locked[msg.sender]
     assert block.timestamp >= _locked.end, "The lock didn't expire"
     value: uint256 = convert(_locked.amount, uint256)
@@ -544,7 +548,6 @@ def withdraw():
 
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
-    StakingContract(self.staking_contract).updateRewards(msg.sender)
 
 
 @external
@@ -554,6 +557,9 @@ def withdrawFallback():
     @notice Withdraw all tokens for `msg.sender`
     @dev Only possible if the fallback_Withdraw is True
     """
+
+    StakingContract(self.staking_contract).updateReward(msg.sender)
+    
     _locked: LockedBalance = self.locked[msg.sender]
     assert self.fallback_Withdraw == True, "Fallback not initiated"
     value: uint256 = convert(_locked.amount, uint256)
@@ -574,7 +580,6 @@ def withdrawFallback():
 
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
-    StakingContract(self.staking_contract).updateRewards(msg.sender)
 
 
 # The following ERC20/minime-compatible methods are not real balanceOf and supply!
