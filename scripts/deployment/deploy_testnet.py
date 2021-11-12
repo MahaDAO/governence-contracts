@@ -20,7 +20,7 @@ POA = True
 
 DEPLOYER = accounts.load('0')
 print('Deployer is ', DEPLOYER)
-ARAGON_AGENT = "0xc6Fe899dBc7F99443E0dF05EBEBbAF7FC7C82bab"
+ARAGON_AGENT = "0x330f46D965469a3D1D419b426df0f45b06c625ad"
 
 DISTRIBUTION_AMOUNT = 10 ** 6 * 10 ** 18
 DISTRIBUTION_ADDRESSES = [
@@ -85,7 +85,7 @@ def main():
 
     proxy = repeat(
         AdminUpgradeabilityProxy.deploy,
-        escrow_without_proxy,
+        stakeable_escrow_without_proxy,
         ARAGON_AGENT,
         bytes(),
         {"from": deployer, "required_confs": CONFS}
@@ -165,12 +165,18 @@ def main():
     repeat(pool_token.transfer, basic_staking, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
     repeat(basic_staking.notifyRewardAmount, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
     
-    #repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
-
+    repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
+    
     repeat(
         basic_staking.initializeDefault,
         {"from": deployer, "required_confs": CONFS}
     )
+
+    save_abi(basic_staking, "BasicStaking")
+    output_file["MAHAXBasicStaking"] = {
+        "abi": "BasicStaking",
+        "address": basic_staking.address
+    }
 
     save_output(output_file, 'maticMumbai')
    

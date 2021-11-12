@@ -9,6 +9,7 @@ import {IPoolToken} from "../interfaces/IPoolToken.sol";
 import {SafeMath} from "../utils/SafeMath.sol";
 import {IBasicStaking} from "./IBasicStaking.sol";
 import {ReentrancyGuard} from "../utils/ReentrancyGuard.sol";
+import {IVotingEscrow} from "./IVotingEscrow.sol";
 import {BasicRewardsDistributionRecipient} from "./BasicRewardsDistributionRecipient.sol";
 
 // forked from https://github.com/SetProtocol/index-coop-contracts/blob/master/contracts/staking/StakingRewardsV2.sol
@@ -61,11 +62,16 @@ contract BasicStaking is
     /* ========== VIEWS ========== */
 
     function totalSupply() public view override returns (uint256) {
-        return stakingToken.totalSupply();
+        return
+            IVotingEscrow(address(stakingToken)).totalSupply(block.timestamp);
     }
 
     function balanceOf(address account) public view override returns (uint256) {
-        return stakingToken.balanceOf(account);
+        return
+            IVotingEscrow(address(stakingToken)).balanceOf(
+                account,
+                block.timestamp
+            );
     }
 
     function lastTimeRewardApplicable() public view override returns (uint256) {
