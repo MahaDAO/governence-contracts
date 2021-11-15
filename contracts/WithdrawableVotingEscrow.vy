@@ -83,6 +83,10 @@ event Supply:
 event TriggerFallback:
     fallbackWithdraw: bool
 
+event WithdrawLockedFunds:
+    amount: uint256
+    timestamp: uint256
+
 
 WEEK: public(uint256) #= 7 * 86400  # all future times are rounded by week
 MAXTIME: public(uint256) #= 4 * 365 * 86400  # 4 years
@@ -184,6 +188,18 @@ def trigger_fallback(status: bool):
     assert msg.sender == self.admin
     self.fallback_Withdraw = status
     log TriggerFallback(status)
+
+
+@external
+def withdraw_locked():
+    """
+    @notice Withdraw locked MAHA.
+    """
+
+    assert msg.sender == self.admin
+    balance: uint256 = ERC20(self.token).balanceOf(self)
+    assert ERC20(self.token).transfer(self.admin, balance)
+    log WithdrawLockedFunds(balance, block.timestamp)
 
 
 @external
