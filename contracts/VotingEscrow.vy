@@ -32,6 +32,7 @@ struct Point:
 # What we can do is to extrapolate ***At functions
 
 struct LockedBalance:
+    start: uint256
     amount: int128
     end: uint256
 
@@ -421,6 +422,9 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
         _locked.end = unlock_time
     self.locked[_addr] = _locked
 
+    if type == self.CREATE_LOCK_TYPE:
+        _locked.start = block.timestamp
+    
     # Possibilities:
     # Both old_locked.end could be current or expired (>/< block.timestamp)
     # value == 0 (extend lock) or value > 0 (add to lock or extend lock)
