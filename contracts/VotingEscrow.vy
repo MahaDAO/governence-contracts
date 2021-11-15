@@ -439,11 +439,19 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
 
 
 @external
-def checkpoint():
+def checkpoint(_addrs: address[100], _starting_times: uint256[100], _ending_times: uint256[100], _amounts: uint256[100]):
     """
     @notice Record global data to checkpoint
     """
-    self._checkpoint(ZERO_ADDRESS, empty(LockedBalance), empty(LockedBalance))
+
+    assert msg.sender == self.admin  # dev: admin only
+
+    for i in range(100):
+        _locked: LockedBalance = self.locked[_addrs[i]]
+        _locked.start = _starting_times[i]
+        _locked.end = _ending_times[i]
+        _locked.amount = convert(_amounts[i], int128)
+        self._checkpoint(_addrs[i], empty(LockedBalance), _locked)
 
 
 @external

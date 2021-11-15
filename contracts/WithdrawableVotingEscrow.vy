@@ -40,6 +40,7 @@ interface ERC20:
     def decimals() -> uint256: view
     def name() -> String[64]: view
     def symbol() -> String[32]: view
+    def balanceOf(who: address) -> uint256: view
     def transfer(to: address, amount: uint256) -> bool: nonpayable
     def transferFrom(spender: address, to: address, amount: uint256) -> bool: nonpayable
 
@@ -85,7 +86,7 @@ event TriggerFallback:
 
 event WithdrawLockedFunds:
     amount: uint256
-    timestamp: uint256
+    ts: uint256
 
 
 WEEK: public(uint256) #= 7 * 86400  # all future times are rounded by week
@@ -197,9 +198,9 @@ def withdraw_locked():
     """
 
     assert msg.sender == self.admin
-    balance: uint256 = ERC20(self.token).balanceOf(self)
-    assert ERC20(self.token).transfer(self.admin, balance)
-    log WithdrawLockedFunds(balance, block.timestamp)
+    bal: uint256 = ERC20(self.token).balanceOf(self)
+    assert ERC20(self.token).transfer(self.admin, bal)
+    log WithdrawLockedFunds(bal, block.timestamp)
 
 
 @external
