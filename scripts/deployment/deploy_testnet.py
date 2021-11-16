@@ -90,7 +90,7 @@ def main():
         bytes(),
         {"from": deployer, "required_confs": CONFS}
     )
-    escrow_with_proxy = Contract.from_abi('VotingEscrow', proxy, VotingEscrow.abi)
+    escrow_with_proxy = Contract.from_abi('NonStakableVotingEscrow', proxy, NonStakableVotingEscrow.abi)
     
     print('Fetching values from Proxy for VotingEscrow before initializing')
     print('- WEEK = ', escrow_with_proxy.WEEK())
@@ -122,96 +122,96 @@ def main():
     print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
     print()
 
-    maha = repeat(
-        ERC20.deploy, 
-        "MahaDAO", 
-        "MAHA", 
-        18, 
-        1303030303,
-        {"from": deployer, "required_confs": CONFS}
-    )
+    # maha = repeat(
+    #     ERC20.deploy, 
+    #     "MahaDAO", 
+    #     "MAHA", 
+    #     18, 
+    #     1303030303,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
 
-    arth = repeat(
-        ERC20.deploy, 
-        "ARTHStablecoin", 
-        "ARTH", 
-        18, 
-        1303030303,
-        {"from": deployer, "required_confs": CONFS}
-    )
+    # arth = repeat(
+    #     ERC20.deploy, 
+    #     "ARTHStablecoin", 
+    #     "ARTH", 
+    #     18, 
+    #     1303030303,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
 
-    usdc = repeat(
-        ERC20.deploy, 
-        "USDC Coin", 
-        "USDC", 
-        6, 
-        1303030303,
-        {"from": deployer, "required_confs": CONFS}
-    )
+    # usdc = repeat(
+    #     ERC20.deploy, 
+    #     "USDC Coin", 
+    #     "USDC", 
+    #     6, 
+    #     1303030303,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
 
-    sclp = repeat(
-        ERC20.deploy, 
-        "ScallopX", 
-        "SCLP", 
-        18, 
-        1303030303,
-        {"from": deployer, "required_confs": CONFS}
-    )
+    # sclp = repeat(
+    #     ERC20.deploy, 
+    #     "ScallopX", 
+    #     "SCLP", 
+    #     18, 
+    #     1303030303,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
 
-    pool_token = repeat(
-        PoolToken.deploy,
-        "PoolToken",
-        "PLTKN",
-        [maha, arth, usdc, sclp],
-        deployer,
-        deployer,
-        {"from": deployer, "required_confs": CONFS}
-    )
-    output_file["ARTH"] = {
-        "abi": "IERC20",
-        "address": arth.address
-    }
-    output_file["USDC"] = {
-        "abi": "IERC20",
-        "address": usdc.address
-    }
-    output_file["SCLP"] = {
-        "abi": "IERC20",
-        "address": sclp.address
-    }
-    output_file["PoolToken"] = {
-        "abi": "IERC20",
-        "address": pool_token.address
-    }
+    # pool_token = repeat(
+    #     PoolToken.deploy,
+    #     "PoolToken",
+    #     "PLTKN",
+    #     [maha, arth, usdc, sclp],
+    #     deployer,
+    #     deployer,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
+    # output_file["ARTH"] = {
+    #     "abi": "IERC20",
+    #     "address": arth.address
+    # }
+    # output_file["USDC"] = {
+    #     "abi": "IERC20",
+    #     "address": usdc.address
+    # }
+    # output_file["SCLP"] = {
+    #     "abi": "IERC20",
+    #     "address": sclp.address
+    # }
+    # output_file["PoolToken"] = {
+    #     "abi": "IERC20",
+    #     "address": pool_token.address
+    # }
 
-    repeat(maha.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    repeat(arth.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    repeat(sclp.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    repeat(usdc.transfer, pool_token, 10000 * 1e6, {"from": deployer, "required_confs": CONFS})
+    # repeat(maha.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(arth.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(sclp.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(usdc.transfer, pool_token, 10000 * 1e6, {"from": deployer, "required_confs": CONFS})
 
-    basic_staking = repeat(
-        BasicStaking.deploy,
-        deployer,
-        pool_token,
-        escrow_with_proxy,
-        24 * 60 * 60,  # 1 Day.
-        {"from": deployer, "required_confs": CONFS}
-    )
+    # basic_staking = repeat(
+    #     BasicStaking.deploy,
+    #     deployer,
+    #     pool_token,
+    #     escrow_with_proxy,
+    #     24 * 60 * 60,  # 1 Day.
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
 
-    repeat(pool_token.transfer, basic_staking, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    repeat(basic_staking.notifyRewardAmount, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(pool_token.transfer, basic_staking, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(basic_staking.notifyRewardAmount, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
     
-    # repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
+    # # repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
     
-    repeat(
-        basic_staking.initializeDefault,
-        {"from": deployer, "required_confs": CONFS}
-    )
+    # repeat(
+    #     basic_staking.initializeDefault,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
 
-    save_abi(basic_staking, "BasicStaking")
-    output_file["MAHAXBasicStaking"] = {
-        "abi": "BasicStaking",
-        "address": basic_staking.address
-    }
+    # save_abi(basic_staking, "BasicStaking")
+    # output_file["MAHAXBasicStaking"] = {
+    #     "abi": "BasicStaking",
+    #     "address": basic_staking.address
+    # }
 
     save_output(output_file, 'maticMumbai')
