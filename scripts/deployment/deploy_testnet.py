@@ -85,7 +85,7 @@ def main():
 
     proxy = repeat(
         AdminUpgradeabilityProxy.deploy,
-        stakeable_escrow_without_proxy,
+        escrow_without_proxy,
         ARAGON_AGENT,
         bytes(),
         {"from": deployer, "required_confs": CONFS}
@@ -122,19 +122,37 @@ def main():
     print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
     print()
 
-    test_token_a = repeat(
+    maha = repeat(
         ERC20.deploy, 
-        "PoolTokenA", 
-        "PLTKN-A", 
+        "MahaDAO", 
+        "MAHA", 
         18, 
         1303030303,
         {"from": deployer, "required_confs": CONFS}
     )
 
-    test_token_b = repeat(
+    arth = repeat(
         ERC20.deploy, 
-        "PoolTokenB", 
-        "PLTKN-B", 
+        "ARTHStablecoin", 
+        "ARTH", 
+        18, 
+        1303030303,
+        {"from": deployer, "required_confs": CONFS}
+    )
+
+    usdc = repeat(
+        ERC20.deploy, 
+        "USDC Coin", 
+        "USDC", 
+        6, 
+        1303030303,
+        {"from": deployer, "required_confs": CONFS}
+    )
+
+    sclp = repeat(
+        ERC20.deploy, 
+        "ScallopX", 
+        "SCLP", 
         18, 
         1303030303,
         {"from": deployer, "required_confs": CONFS}
@@ -144,14 +162,32 @@ def main():
         PoolToken.deploy,
         "PoolToken",
         "PLTKN",
-        [test_token_a, test_token_b],
+        [maha, arth, usdc, sclp],
         deployer,
         deployer,
         {"from": deployer, "required_confs": CONFS}
     )
+    output_file["ARTH"] = {
+        "abi": "IERC20",
+        "address": arth.address
+    }
+    output_file["USDC"] = {
+        "abi": "IERC20",
+        "address": usdc.address
+    }
+    output_file["SCLP"] = {
+        "abi": "IERC20",
+        "address": sclp.address
+    }
+    output_file["PoolToken"] = {
+        "abi": "IERC20",
+        "address": pool_token.address
+    }
 
-    repeat(test_token_a.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    repeat(test_token_b.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    repeat(maha.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    repeat(arth.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    repeat(sclp.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    repeat(usdc.transfer, pool_token, 10000 * 1e6, {"from": deployer, "required_confs": CONFS})
 
     basic_staking = repeat(
         BasicStaking.deploy,
@@ -165,7 +201,7 @@ def main():
     repeat(pool_token.transfer, basic_staking, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
     repeat(basic_staking.notifyRewardAmount, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
     
-    repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
+    # repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
     
     repeat(
         basic_staking.initializeDefault,
@@ -179,4 +215,3 @@ def main():
     }
 
     save_output(output_file, 'maticMumbai')
-   
