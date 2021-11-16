@@ -7,6 +7,10 @@ pragma solidity ^0.8.0;
  * the optional functions; to access them see {ERC20Detailed}.
  */
 interface IVotingEscrow {
+    function totalSupplyStart() external view returns (uint256);
+
+    function balanceOfStart() external view returns (uint256);
+
     function totalSupply(uint256 timestamp) external view returns (uint256);
 
     function balanceOf(address account, uint256 timestamp)
