@@ -458,9 +458,9 @@ def checkpoint(_addrs: address[100], _starting_times: uint256[100], _ending_time
 @internal
 def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uint256):
     if balanceAfter > balanceBefore:
-        totalSupplyWithoutDecay += _value
-    else if balanceAfter < balanceBefore:
-        totalSupplyWithoutDecay -= _value
+        self.totalSupplyWithoutDecay += (balanceAfter - balanceBefore)
+    elif balanceAfter < balanceBefore:
+        self.totalSupplyWithoutDecay -= (balanceBefore - balanceAfter)
 
 
 @external
@@ -474,7 +474,7 @@ def deposit_for(_addr: address, _value: uint256):
     @param _value Amount to add to user's lock
     """
 
-    balanceBefore: uint256 = self.balanceOf(_addr, block.timestamp)
+    balanceBefore: uint256 = self._balanceOf(_addr, block.timestamp)
 
     _locked: LockedBalance = self.locked[_addr]
 
@@ -484,8 +484,8 @@ def deposit_for(_addr: address, _value: uint256):
 
     self._deposit_for(_addr, _value, 0, self.locked[_addr], self.DEPOSIT_FOR_TYPE)
 
-    balanceAfter: uint256 = self.balanceOf(_addr, block.timestamp)
-    _update_total_supply_without_decay(balanceAfter, balanceBefore)
+    balanceAfter: uint256 = self._balanceOf(_addr, block.timestamp)
+    self._update_total_supply_without_decay(balanceAfter, balanceBefore)
 
 
 @external
@@ -497,7 +497,7 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     @param _unlock_time Epoch time when tokens unlock, rounded down to whole weeks
     """
 
-    balanceBefore: uint256 = self.balanceOf(_addr, block.timestamp)
+    balanceBefore: uint256 = self._balanceOf(msg.sender, block.timestamp)
 
     self.assert_not_contract(msg.sender)
     unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
@@ -510,8 +510,8 @@ def create_lock(_value: uint256, _unlock_time: uint256):
 
     self._deposit_for(msg.sender, _value, unlock_time, _locked, self.CREATE_LOCK_TYPE)
 
-    balanceAfter: uint256 = self.balanceOf(_addr, block.timestamp)
-    _update_total_supply_without_decay(balanceAfter, balanceBefore)
+    balanceAfter: uint256 = self._balanceOf(msg.sender, block.timestamp)
+    self._update_total_supply_without_decay(balanceAfter, balanceBefore)
 
 
 @external
@@ -523,7 +523,7 @@ def increase_amount(_value: uint256):
     @param _value Amount of tokens to deposit and add to the lock
     """
 
-    balanceBefore: uint256 = self.balanceOf(_addr, block.timestamp)
+    balanceBefore: uint256 = self._balanceOf(msg.sender, block.timestamp)
 
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
@@ -534,8 +534,8 @@ def increase_amount(_value: uint256):
 
     self._deposit_for(msg.sender, _value, 0, _locked, self.INCREASE_LOCK_AMOUNT)
 
-    balanceAfter: uint256 = self.balanceOf(_addr, block.timestamp)
-    _update_total_supply_without_decay(balanceAfter, balanceBefore)
+    balanceAfter: uint256 = self._balanceOf(msg.sender, block.timestamp)
+    self._update_total_supply_without_decay(balanceAfter, balanceBefore)
 
 
 @external
@@ -546,7 +546,7 @@ def increase_unlock_time(_unlock_time: uint256):
     @param _unlock_time New epoch time for unlocking
     """
 
-    balanceBefore: uint256 = self.balanceOf(_addr, block.timestamp)
+    balanceBefore: uint256 = self._balanceOf(msg.sender, block.timestamp)
 
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
@@ -559,8 +559,8 @@ def increase_unlock_time(_unlock_time: uint256):
 
     self._deposit_for(msg.sender, 0, unlock_time, _locked, self.INCREASE_UNLOCK_TIME)
 
-    balanceAfter: uint256 = self.balanceOf(_addr, block.timestamp)
-    _update_total_supply_without_decay(balanceAfter, balanceBefore)
+    balanceAfter: uint256 = self._balanceOf(msg.sender, block.timestamp)
+    self._update_total_supply_without_decay(balanceAfter, balanceBefore)
 
 
 @external
@@ -571,7 +571,7 @@ def withdraw():
     @dev Only possible if the lock has expired
     """
 
-    balanceBefore: uint256 = self.balanceOf(_addr, block.timestamp)
+    balanceBefore: uint256 = self._balanceOf(msg.sender, block.timestamp)
     
     StakingContract(self.staking_contract).updateReward(msg.sender)
 
@@ -593,11 +593,12 @@ def withdraw():
 
     assert ERC20(self.token).transfer(msg.sender, value)
 
-    balanceAfter: uint256 = self.balanceOf(_addr, block.timestamp)
-    _update_total_supply_without_decay(balanceAfter, balanceBefore)
+    balanceAfter: uint256 = self._balanceOf(msg.sender, block.timestamp)
+    self._update_total_supply_without_decay(balanceAfter, balanceBefore)
 
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
+
 
 @external
 @nonreentrant('lock')
@@ -607,7 +608,7 @@ def withdrawFallback():
     @dev Only possible if the fallback_Withdraw is True
     """
 
-    balanceBefore: uint256 = self.balanceOf(_addr, block.timestamp)
+    balanceBefore: uint256 = self._balanceOf(msg.sender, block.timestamp)
 
     StakingContract(self.staking_contract).updateReward(msg.sender)
     
@@ -629,8 +630,8 @@ def withdrawFallback():
 
     assert ERC20(self.token).transfer(msg.sender, value)
 
-    balanceAfter: uint256 = self.balanceOf(_addr, block.timestamp)
-    _update_total_supply_without_decay(balanceAfter, balanceBefore)
+    balanceAfter: uint256 = self._balanceOf(msg.sender, block.timestamp)
+    self._update_total_supply_without_decay(balanceAfter, balanceBefore)
     
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
@@ -663,9 +664,9 @@ def find_block_epoch(_block: uint256, max_epoch: uint256) -> uint256:
     return _min
 
 
-@external
+@internal
 @view
-def balanceOf(addr: address, _t: uint256 = block.timestamp) -> uint256:
+def _balanceOf(addr: address, _t: uint256 = block.timestamp) -> uint256:
     """
     @notice Get the current voting power for `msg.sender`
     @dev Adheres to the ERC20 `balanceOf` interface for Aragon compatibility
@@ -682,6 +683,19 @@ def balanceOf(addr: address, _t: uint256 = block.timestamp) -> uint256:
         if last_point.bias < 0:
             last_point.bias = 0
         return convert(last_point.bias, uint256)
+
+
+@external
+@view
+def balanceOf(addr: address, _t: uint256 = block.timestamp) -> uint256:
+    """
+    @notice Get the current voting power for `msg.sender`
+    @dev Adheres to the ERC20 `balanceOf` interface for Aragon compatibility
+    @param addr User wallet address
+    @param _t Epoch time to return voting power at
+    @return User voting power
+    """
+    return self._balanceOf(addr, _t)
 
 
 @external

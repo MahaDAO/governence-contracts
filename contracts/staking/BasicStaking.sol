@@ -62,11 +62,11 @@ contract BasicStaking is
     /* ========== VIEWS ========== */
 
     function totalSupply() public view override returns (uint256) {
-        return IVotingEscrow(address(stakingToken)).totalSupplyStart();
+        return IVotingEscrow(address(stakingToken)).totalSupplyWithoutDecay();
     }
 
     function balanceOf(address account) public view override returns (uint256) {
-        return IVotingEscrow(address(stakingToken)).balanceOfStart();
+        return IVotingEscrow(address(stakingToken)).balanceOfWithoutDecay();
     }
 
     function lastTimeRewardApplicable() public view override returns (uint256) {
