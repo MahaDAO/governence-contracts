@@ -16,8 +16,8 @@ POA = True
 
 DEPLOYER = accounts.load('0')
 print('Deployer is ', DEPLOYER)
-ARAGON_AGENT = "0x330f46D965469a3D1D419b426df0f45b06c625ad"
-print('Adming is ', ARAGON_AGENT)
+ARAGON_AGENT = accounts.load('2')
+print('Admin is ', ARAGON_AGENT)
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 CONFS = 1
 
@@ -51,7 +51,7 @@ def main():
 
     current_proxy = Contract.from_abi(
         "AdminUpgradeabilityProxy", 
-        '0x08abe0414b4adc5a73b02c5bebce8f8bd020d5eb', # Note: change everytime for new deployment.
+        '0x346ed83277744682123CA72bFe54A32C2C75FB9b', # Note: change everytime for new deployment.
         AdminUpgradeabilityProxy.abi
     )
     
