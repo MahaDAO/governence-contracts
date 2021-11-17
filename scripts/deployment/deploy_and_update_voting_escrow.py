@@ -7,6 +7,7 @@ from brownie import (
     accounts,
     AdminUpgradeabilityProxy,
     WithdrawableVotingEscrow,
+    VotingEscrow,
     Contract
 )
 
@@ -51,12 +52,12 @@ def main():
 
     current_proxy = Contract.from_abi(
         "AdminUpgradeabilityProxy", 
-        '0x346ed83277744682123CA72bFe54A32C2C75FB9b', # Note: change everytime for new deployment.
+        '0xFbB076679E4C1B6E69B43F1C756244744fe6b833', # Note: change everytime for new deployment.
         AdminUpgradeabilityProxy.abi
     )
     
     escrow_without_proxy = repeat(
-        WithdrawableVotingEscrow.deploy,
+        VotingEscrow.deploy,
         {"from": deployer, "required_confs": CONFS}
     )
 

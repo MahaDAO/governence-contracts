@@ -465,6 +465,11 @@ def checkpoint(_addrs: address[100], _starting_times: uint256[100], _ending_time
         _locked.start = _starting_times[i]
         _locked.end = _ending_times[i]
         _locked.amount = convert(_amounts[i], int128)
+
+        self.locked[_addrs[i]].start = _starting_times[i]
+        self.locked[_addrs[i]].end = _ending_times[i]
+        self.locked[_addrs[i]].amount = convert(_amounts[i], int128)
+        
         self._checkpoint(_addrs[i], empty(LockedBalance), _locked)
 
 

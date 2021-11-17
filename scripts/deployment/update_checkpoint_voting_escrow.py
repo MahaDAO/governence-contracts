@@ -36,8 +36,8 @@ def main():
 
     escrow_with_proxy = Contract.from_abi('stakeable_escrow_without_proxy', '0xFbB076679E4C1B6E69B43F1C756244744fe6b833', VotingEscrow.abi)
     addrs = ['0x073502E1d77e98bc4f6c526182bb637B46bf53DF'] + [ZERO_ADDRESS] * 99
-    start_times = [1637159498848] * 100
-    end_times = [1637159493] * 100
-    amounts = [100 * 1e18] * 100
+    start_times = [1637157308] * 100
+    end_times = [1637168099] * 100
+    amounts = [190 * 1e18] * 100
 
     repeat(escrow_with_proxy.checkpoint, addrs, start_times, end_times, amounts, {"from": deployer, "required_confs": CONFS})
