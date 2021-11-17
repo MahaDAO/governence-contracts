@@ -463,6 +463,27 @@ def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uin
         self.totalSupplyWithoutDecay -= (balanceBefore - balanceAfter)
 
 
+@internal
+@view
+def _balanceOf(addr: address, _t: uint256 = block.timestamp) -> uint256:
+    """
+    @notice Get the current voting power for `msg.sender`
+    @dev Adheres to the ERC20 `balanceOf` interface for Aragon compatibility
+    @param addr User wallet address
+    @param _t Epoch time to return voting power at
+    @return User voting power
+    """
+    _epoch: uint256 = self.user_point_epoch[addr]
+    if _epoch == 0:
+        return 0
+    else:
+        last_point: Point = self.user_point_history[addr][_epoch]
+        last_point.bias -= last_point.slope * convert(_t - last_point.ts, int128)
+        if last_point.bias < 0:
+            last_point.bias = 0
+        return convert(last_point.bias, uint256)
+
+
 @external
 @nonreentrant('lock')
 def deposit_for(_addr: address, _value: uint256):
@@ -662,27 +683,6 @@ def find_block_epoch(_block: uint256, max_epoch: uint256) -> uint256:
         else:
             _max = _mid - 1
     return _min
-
-
-@internal
-@view
-def _balanceOf(addr: address, _t: uint256 = block.timestamp) -> uint256:
-    """
-    @notice Get the current voting power for `msg.sender`
-    @dev Adheres to the ERC20 `balanceOf` interface for Aragon compatibility
-    @param addr User wallet address
-    @param _t Epoch time to return voting power at
-    @return User voting power
-    """
-    _epoch: uint256 = self.user_point_epoch[addr]
-    if _epoch == 0:
-        return 0
-    else:
-        last_point: Point = self.user_point_history[addr][_epoch]
-        last_point.bias -= last_point.slope * convert(_t - last_point.ts, int128)
-        if last_point.bias < 0:
-            last_point.bias = 0
-        return convert(last_point.bias, uint256)
 
 
 @external
