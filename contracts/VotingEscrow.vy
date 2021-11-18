@@ -299,7 +299,7 @@ def _balanceOfWithoutDecay(addr: address) -> uint256:
     if _locked.end == 0 or _locked.start == 0:
         return 0
 
-    return self._calculateBalanceAt(amount, _locked.end, _locked.start) 
+    return self._calculateBalanceAt(amount, _locked.start, _locked.end) 
 
 
 @internal
