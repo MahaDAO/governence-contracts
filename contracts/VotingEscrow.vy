@@ -284,7 +284,7 @@ def locked__end(_addr: address) -> uint256:
 
 
 @internal
-@pure
+@view
 def _calculateBalanceAt(amount: uint256, fromTs: uint256, toTs: uint256) -> uint256:    
     return amount * (toTs - fromTs) / self.MAXTIME
 
