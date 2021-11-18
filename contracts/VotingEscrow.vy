@@ -284,6 +284,12 @@ def locked__end(_addr: address) -> uint256:
 
 
 @internal
+@pure
+def _calculateBalanceAt(amount: uint256, fromTs: uint256, toTs: uint256) -> uint256:    
+    return amount * (toTs - fromTs) / self.MAXTIME
+
+
+@internal
 @view
 def _balanceOfWithoutDecay(addr: address) -> uint256:
     _locked: LockedBalance = self.locked[addr]
@@ -293,7 +299,7 @@ def _balanceOfWithoutDecay(addr: address) -> uint256:
     if _locked.end == 0 or _locked.start == 0:
         return 0
 
-    return amount / (_locked.end - _locked.start) 
+    return _calculateBalanceAt(amount, _locked.end, _locked.start) 
 
 
 @internal
