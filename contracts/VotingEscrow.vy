@@ -299,7 +299,7 @@ def _balanceOfWithoutDecay(addr: address) -> uint256:
     if _locked.end == 0 or _locked.start == 0:
         return 0
 
-    return _calculateBalanceAt(amount, _locked.end, _locked.start) 
+    return self._calculateBalanceAt(amount, _locked.end, _locked.start) 
 
 
 @internal
@@ -440,10 +440,10 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     _locked.amount += convert(_value, int128)
     if unlock_time != 0:
         _locked.end = unlock_time
-    self.locked[_addr] = _locked
-
     if type == self.CREATE_LOCK_TYPE:
         _locked.start = block.timestamp
+
+    self.locked[_addr] = _locked
     
     # Possibilities:
     # Both old_locked.end could be current or expired (>/< block.timestamp)
