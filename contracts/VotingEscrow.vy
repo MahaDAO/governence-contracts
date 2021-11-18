@@ -452,6 +452,14 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     log Supply(supply_before, supply_before + _value)
 
 
+@internal
+def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uint256):
+    if balanceAfter > balanceBefore:
+        self.totalSupplyWithoutDecay += (balanceAfter - balanceBefore)
+    elif balanceAfter < balanceBefore:
+        self.totalSupplyWithoutDecay -= (balanceBefore - balanceAfter)
+
+
 @external
 def checkpoint(_addrs: address[100], _starting_times: uint256[100], _ending_times: uint256[100], _amounts: uint256[100]):
     """
@@ -461,24 +469,20 @@ def checkpoint(_addrs: address[100], _starting_times: uint256[100], _ending_time
     assert msg.sender == self.admin  # dev: admin only
 
     for i in range(100):
-        _locked: LockedBalance = self.locked[_addrs[i]]
-        _locked.start = _starting_times[i]
-        _locked.end = _ending_times[i]
-        _locked.amount = convert(_amounts[i], int128)
-
-        self.locked[_addrs[i]].start = _starting_times[i]
-        self.locked[_addrs[i]].end = _ending_times[i]
-        self.locked[_addrs[i]].amount = convert(_amounts[i], int128)
+        balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addrs[i])
+        self.locked[_addrs[i]] = LockedBalance({
+            start: _starting_times[i],
+            amount: convert(_amounts[i], int128),
+            end: _ending_times[i]
+        })
         
-        self._checkpoint(_addrs[i], empty(LockedBalance), _locked)
+        self.supply += _amounts[i]
+        self._checkpoint(_addrs[i], empty(LockedBalance), self.locked[_addrs[i]])
+        balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(_addrs[i])
+        
+        self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
 
-
-@internal
-def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uint256):
-    if balanceAfter > balanceBefore:
-        self.totalSupplyWithoutDecay += (balanceAfter - balanceBefore)
-    elif balanceAfter < balanceBefore:
-        self.totalSupplyWithoutDecay -= (balanceBefore - balanceAfter)
+        StakingContract(self.staking_contract).updateReward(_addrs[i])
 
 
 @external
@@ -493,6 +497,8 @@ def deposit_for(_addr: address, _value: uint256):
     """
 
     balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addr)
+
+    StakingContract(self.staking_contract).updateReward(_addr)
 
     _locked: LockedBalance = self.locked[_addr]
 
@@ -516,6 +522,8 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     """
 
     balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
+
+    StakingContract(self.staking_contract).updateReward(msg.sender)
 
     self.assert_not_contract(msg.sender)
     unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
@@ -543,6 +551,8 @@ def increase_amount(_value: uint256):
 
     balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
 
+    StakingContract(self.staking_contract).updateReward(msg.sender)
+
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
 
@@ -565,6 +575,8 @@ def increase_unlock_time(_unlock_time: uint256):
     """
 
     balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
+
+    StakingContract(self.staking_contract).updateReward(msg.sender)
 
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]

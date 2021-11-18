@@ -66,7 +66,8 @@ contract BasicStaking is
     }
 
     function balanceOf(address account) public view override returns (uint256) {
-        return IVotingEscrow(address(stakingToken)).balanceOfWithoutDecay();
+        return
+            IVotingEscrow(address(stakingToken)).balanceOfWithoutDecay(account);
     }
 
     function lastTimeRewardApplicable() public view override returns (uint256) {
