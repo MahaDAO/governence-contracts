@@ -149,8 +149,8 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.decimals = _decimals
 
     # changes regarding proxy
-    self.WEEK = 5 * 60 # 7 * 86400 #5 * 60 #
-    self.MAXTIME = 86400 # 4 * 365 * 86400 #86400 #
+    self.WEEK = 7 * 86400 # 7 * 86400 #5 * 60 #
+    self.MAXTIME = 4 * 365 * 86400 # 4 * 365 * 86400 # 86400 #
     self.MULTIPLIER = 10 ** 18
     self.supply = 0
     self.epoch = 0
