@@ -616,6 +616,7 @@ def withdraw():
     value: uint256 = convert(_locked.amount, uint256)
 
     old_locked: LockedBalance = _locked
+    _locked.start = 0
     _locked.end = 0
     _locked.amount = 0
     self.locked[msg.sender] = _locked
@@ -653,6 +654,7 @@ def withdrawFallback():
     value: uint256 = convert(_locked.amount, uint256)
 
     old_locked: LockedBalance = _locked
+    _locked.start = 0
     _locked.end = 0
     _locked.amount = 0
     self.locked[msg.sender] = _locked
