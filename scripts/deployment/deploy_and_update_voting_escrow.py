@@ -52,12 +52,12 @@ def main():
 
     current_proxy = Contract.from_abi(
         "AdminUpgradeabilityProxy", 
-        '0xFbB076679E4C1B6E69B43F1C756244744fe6b833', # Note: change everytime for new deployment.
+        '0xFc528Ab9677eDEbC9f90c9F83888C7d7Ff5a7C62', # Note: change everytime for new deployment.
         AdminUpgradeabilityProxy.abi
     )
     
     escrow_without_proxy = repeat(
-        VotingEscrow.deploy,
+        WithdrawableVotingEscrow.deploy,
         {"from": deployer, "required_confs": CONFS}
     )
 

@@ -47,7 +47,7 @@ def main():
     output_file = {}
     deployer = accounts.at(DEPLOYER)
 
-    token = Contract.from_abi('mahadao_token', '0xD3E65feAf1710F86bfb8A8aA0A987b2dF60d4102', ERC20.abi)
+    token = Contract.from_abi('mahadao_token', '0x79B0C5a20c52f9c9a9aB34b64f973Af5e6803Cf4', ERC20.abi)
 
     stakeable_escrow_without_proxy = repeat(
         VotingEscrow.deploy,
