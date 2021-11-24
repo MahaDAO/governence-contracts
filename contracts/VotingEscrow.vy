@@ -467,14 +467,29 @@ def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uin
 
 
 @external
-def checkpoint(_addrs: address[100], _starting_times: uint256[100], _ending_times: uint256[100], _amounts: uint256[100]):
+def checkpoint():
     """
     @notice Record global data to checkpoint
+    """
+    self._checkpoint(ZERO_ADDRESS, empty(LockedBalance), empty(LockedBalance))
+
+
+@external
+def update_locked_state(_addrs: address[100], _starting_times: uint256[100], _ending_times: uint256[100], _amounts: uint256[100]):
+    """
+    @notice Update the locked status for _addrs
+    @param _addrs Addresses for which we have to update the locked state
+    @param _starting_times The lock start time for _addrs
+    @param _ending_times The lock end time for _addrs
+    @param _amounts The amount locked for _amounts
     """
 
     assert msg.sender == self.admin  # dev: admin only
 
     for i in range(100):
+        if _addrs[i] == ZERO_ADDRESS:
+            continue
+        
         balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addrs[i])
         self.locked[_addrs[i]] = LockedBalance({
             start: _starting_times[i],
