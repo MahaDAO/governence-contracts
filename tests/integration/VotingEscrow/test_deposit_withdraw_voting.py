@@ -36,10 +36,10 @@ class StateMachine:
         self.voting_balances = {i: {"value": 0, "unlock_time": 0} for i in self.accounts}
 
     def rule_create_lock(self, st_account, st_value, st_lock_duration):
-        unlock_time = (chain.time() + st_lock_duration * WEEK) // WEEK * WEEK
+        unlock_time = (chain.time() + st_lock_duration)
 
         if st_value == 0:
-            with brownie.reverts("dev: need non-zero value"):
+            with brownie.reverts("VotingEscrow: value smaller then 0"):
                 self.voting_escrow.create_lock(
                     st_value, unlock_time, {"from": st_account, "gas": GAS_LIMIT}
                 )
@@ -73,7 +73,7 @@ class StateMachine:
 
     def rule_increase_amount(self, st_account, st_value):
         if st_value == 0:
-            with brownie.reverts("dev: need non-zero value"):
+            with brownie.reverts():
                 self.voting_escrow.increase_amount(st_value, {"from": st_account, "gas": GAS_LIMIT})
 
         elif self.voting_balances[st_account]["value"] == 0:
@@ -89,7 +89,7 @@ class StateMachine:
             self.voting_balances[st_account]["value"] += st_value
 
     def rule_increase_unlock_time(self, st_account, st_lock_duration):
-        unlock_time = (chain.time() + st_lock_duration * WEEK) // WEEK * WEEK
+        unlock_time = (chain.time() + st_lock_duration)
 
         if self.voting_balances[st_account]["unlock_time"] <= chain.time():
             with brownie.reverts("Lock expired"):
@@ -187,10 +187,29 @@ class StateMachine:
         assert self.voting_escrow.totalSupplyAt(block_number) == total_supply
 
 
-def test_state_machine(state_machine, accounts, VotingEscrow):
-    token = ERC20("", "", 18)
-    voting_escrow = VotingEscrow.deploy(
-        token, "Voting-escrowed CRV", "veCRV", "veCRV_0.99", {"from": accounts[0]}
+def test_state_machine(state_machine, accounts, VotingEscrow, BasicStaking):
+    token = ERC20("MahaDAO", "MAHA", 18)
+    reward_token = ERC20("MAHAX Staking PoolToken", "MAHAX-Pool", 18)
+    reward_token._mint_for_testing(accounts[0], 1000 * 1e18)
+
+    voting_escrow = VotingEscrow.deploy({"from": accounts[0]})
+    voting_escrow.initialize(
+        token, 
+        "Voting-escrowed MAHA", 
+        "MAHAX", 
+        "mahax_0.99", 
+        {"from": accounts[0]}
     )
+
+    contract = BasicStaking.deploy(
+        accounts[0], 
+        reward_token, 
+        voting_escrow, 
+        90 * 24 * 60 * 60, 
+        {"from": accounts[0]}
+    )
+    reward_token.transfer(contract, 1000 * 1e18, {"from": accounts[0]})
+    contract.initializeDefault({"from": accounts[0]})
+    voting_escrow.set_staking_contract(contract, { "from": accounts[0]})
 
     state_machine(StateMachine, accounts[:10], token, voting_escrow, settings={"max_examples": 30})
