@@ -44,9 +44,9 @@ contract BasicStaking is
         address _stakingToken,
         uint256 _rewardsDuration
     ) {
+        rewardsDistribution = _rewardsDistribution;
         rewardsToken = IPoolToken(_rewardsToken);
         stakingToken = IERC20(_stakingToken);
-        rewardsDistribution = _rewardsDistribution;
         rewardsDuration = _rewardsDuration;
     }
 
