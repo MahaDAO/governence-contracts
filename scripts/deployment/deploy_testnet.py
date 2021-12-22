@@ -1,39 +1,26 @@
 # Testnet deployment script
 
 import json
-import time
 
 from brownie import (
     accounts,
     ERC20,
-    ERC20LP,
-    ERC20CRV,
-    CurvePool,
-    CurveRewards,
-    GaugeController,
-    LiquidityGauge,
-    LiquidityGaugeReward,
-    Minter,
-    PoolProxy,
-    VestingEscrow,
     VotingEscrow,
     accounts,
-    web3,
+    BasicStaking,
+    NonStakableVotingEscrow,
     AdminUpgradeabilityProxy,
-    Contract
+    Contract,
+    PoolToken
 )
-from web3 import middleware
-from web3.gas_strategies.time_based import fast_gas_price_strategy as gas_strategy
+
 
 USE_STRATEGIES = False  # Needed for the ganache-cli tester which doesn't like middlewares
 POA = True
 
 DEPLOYER = accounts.load('0')
-print('Deployer', DEPLOYER)
-#network = sys.argv[4]
-
-#DEPLOYER = "0xFD3DeCC0cF498bb9f54786cb65800599De505706"
-ARAGON_AGENT = "0xc6Fe899dBc7F99443E0dF05EBEBbAF7FC7C82bab"
+print('Deployer is ', DEPLOYER)
+ARAGON_AGENT = "0x330f46D965469a3D1D419b426df0f45b06c625ad"
 
 DISTRIBUTION_AMOUNT = 10 ** 6 * 10 ** 18
 DISTRIBUTION_ADDRESSES = [
@@ -62,155 +49,15 @@ def save_abi(contract, name):
     with open("./output/abi/%s.json" % name, "w") as f:
         json.dump(contract.abi, f, indent=4)
 
+
 def save_output(deployment, name):
     with open("./output/%s.json" % name, "w") as f:
         json.dump(deployment, f, indent=4)
 
 
-def deploy_erc20s_and_pool(deployer):
-    coin_a = repeat(ERC20.deploy, "Coin A", "USDA", 18, 100, {"from": deployer, "required_confs": CONFS})
-    repeat(
-        coin_a.mint, deployer, 10 ** 9 * 10 ** 18, {"from": deployer, "required_confs": CONFS}
-    )
-    coin_b = repeat(ERC20.deploy, "Coin B", "USDB", 18, 100, {"from": deployer, "required_confs": CONFS})
-    repeat(
-        coin_b.mint, deployer, 10 ** 9 * 10 ** 18, {"from": deployer, "required_confs": CONFS}
-    )
-
-    lp_token = repeat(
-        ERC20LP.deploy, "Some pool", "cPool", 18, 0, {"from": deployer, "required_confs": CONFS}
-    )
-    save_abi(lp_token, "lp_token")
-    pool = repeat(
-        CurvePool.deploy,
-        [coin_a, coin_b],
-        lp_token,
-        100,
-        4 * 10 ** 6,
-        {"from": deployer, "required_confs": CONFS},
-    )
-    save_abi(pool, "curve_pool")
-    repeat(lp_token.set_minter, pool, {"from": deployer, "required_confs": CONFS})
-
-    # registry = repeat(
-    #     Registry.deploy, [ZERO_ADDRESS] * 4, {"from": deployer, "required_confs": CONFS}
-    # )
-    # save_abi(registry, "registry")
-
-    for account in DISTRIBUTION_ADDRESSES:
-        repeat(
-            coin_a.transfer,
-            account,
-            DISTRIBUTION_AMOUNT,
-            {"from": deployer, "required_confs": CONFS},
-        )
-        repeat(
-            coin_b.transfer,
-            account,
-            DISTRIBUTION_AMOUNT,
-            {"from": deployer, "required_confs": CONFS},
-        )
-
-    repeat(
-        pool.commit_transfer_ownership, ARAGON_AGENT, {"from": deployer, "required_confs": CONFS}
-    )
-    repeat(pool.apply_transfer_ownership, {"from": deployer, "required_confs": CONFS})
-
-    return [lp_token, coin_a]
-
-
 def main():
     output_file = {}
     deployer = accounts.at(DEPLOYER)
-
-    # if USE_STRATEGIES:
-    #     web3.eth.setGasPriceStrategy(gas_strategy)
-    #     web3.middleware_onion.add(middleware.time_based_cache_middleware)
-    #     web3.middleware_onion.add(middleware.latest_block_based_cache_middleware)
-    #     web3.middleware_onion.add(middleware.simple_cache_middleware)
-    #     if POA:
-    #         web3.middleware_onion.inject(middleware.geth_poa_middleware, layer=0)
-
-    # # deploy pools and gauges
-
-    # coin_a = repeat(ERC20.deploy, "Coin A", "USDA", 18, 100, {"from": deployer, "required_confs": CONFS})
-    # output_file['USDA'] = {
-    #     "abi": 'IERC20',
-    #     "address": coin_a.address
-    # }
-    # repeat(
-    #     coin_a.mint, deployer, 10 ** 9 * 10 ** 18, {"from": deployer, "required_confs": CONFS}
-    # )
-
-    # coin_b = repeat(ERC20.deploy, "Coin B", "USDB", 18, 100, {"from": deployer, "required_confs": CONFS})
-    # repeat(
-    #     coin_b.mint, deployer, 10 ** 9 * 10 ** 18, {"from": deployer, "required_confs": CONFS}
-    # )
-    # output_file['USDB'] = {
-    #     "abi": 'IERC20',
-    #     "address": coin_b.address
-    # }
-
-    # lp_token = repeat(
-    #     ERC20LP.deploy, "Some pool", "cPool", 18, 0, {"from": deployer, "required_confs": CONFS}
-    # )
-    # output_file['LPToken'] = {
-    #     "abi": 'IERC20',
-    #     "address": lp_token.address
-    # }
-    # save_abi(lp_token, "lp_token")
-
-    # pool = repeat(
-    #     CurvePool.deploy,
-    #     [coin_a, coin_b],
-    #     lp_token,
-    #     100,
-    #     4 * 10 ** 6,
-    #     {"from": deployer, "required_confs": CONFS},
-    # )
-    # save_abi(pool, "curve_pool")
-    # output_file['pool'] = {
-    #     "abi": 'IERC20',
-    #     "address": pool.address
-    # }
-
-    # repeat(lp_token.set_minter, pool, {"from": deployer, "required_confs": CONFS})
-
-    # repeat(
-    #     coin_a.transfer,
-    #     "0x6cd85bbb9147b86201d882ae1068c67286855211",
-    #     DISTRIBUTION_AMOUNT,
-    #     {"from": deployer, "required_confs": CONFS},
-    # )
-    # repeat(
-    #     coin_b.transfer,
-    #     "0x6cd85bbb9147b86201d882ae1068c67286855211",
-    #     DISTRIBUTION_AMOUNT,
-    #     {"from": deployer, "required_confs": CONFS},
-    # )
-
-    # contract = repeat(
-    #     CurveRewards.deploy, lp_token, coin_a, {"from": accounts[0], "required_confs": CONFS}
-    # )
-    # repeat(
-    #     contract.setRewardDistribution, accounts[0], {"from": accounts[0], "required_confs": CONFS}
-    # )
-    # repeat(coin_a.transfer, contract, 100e18, {"from": accounts[0], "required_confs": CONFS})
-
-    # liquidity_gauge_rewards = repeat(
-    #     LiquidityGaugeReward.deploy,
-    #     lp_token,
-    #     "0xbE45e0E4a72aEbF9D08F93E64701964d2CC4cF96",
-    #     contract,
-    #     coin_a,
-    #     DEPLOYER,
-    #     {"from": deployer, "required_confs": CONFS}
-    # )
-
-    # coins = deploy_erc20s_and_pool(deployer)
-
-    # lp_token = coins[0]
-    # coin_a = coins[1]
 
     token = repeat(
         ERC20.deploy, 
@@ -220,6 +67,7 @@ def main():
         1303030303,
         {"from": deployer, "required_confs": CONFS}
     )
+
     save_abi(token, "MahaToken")
     output_file["MahaToken"] = {
         "abi": "MahaToken",
@@ -227,10 +75,14 @@ def main():
     }
 
     escrow_without_proxy = repeat(
+        NonStakableVotingEscrow.deploy,
+        {"from": deployer, "required_confs": CONFS}
+    )
+    stakeable_escrow_without_proxy = repeat(
         VotingEscrow.deploy,
         {"from": deployer, "required_confs": CONFS}
     )
-    
+
     proxy = repeat(
         AdminUpgradeabilityProxy.deploy,
         escrow_without_proxy,
@@ -238,10 +90,12 @@ def main():
         bytes(),
         {"from": deployer, "required_confs": CONFS}
     )
-    escrow_with_proxy = Contract.from_abi('VotingEscrow', proxy, VotingEscrow.abi)
-    print('WEEk', escrow_with_proxy.WEEK())
-    print('INCREASE_LOCK_AMOUNT', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
-    print('Supply', escrow_with_proxy.supply())
+    escrow_with_proxy = Contract.from_abi('NonStakableVotingEscrow', proxy, NonStakableVotingEscrow.abi)
+    
+    print('Fetching values from Proxy for VotingEscrow before initializing')
+    print('- WEEK = ', escrow_with_proxy.WEEK())
+    print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
+    print()
 
     save_abi(escrow_with_proxy, "VotingEscrow")
     output_file["VotingEscrow"] = {
@@ -263,8 +117,101 @@ def main():
         {"from": deployer, "required_confs": CONFS}
     )
 
-    print('WEEk', escrow_with_proxy.WEEK())
-    print('INCREASE_LOCK_AMOUNT', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
-    print('Supply', escrow_with_proxy.supply())
+    print('Fetching values from Proxy for VotingEscrow before initializing')
+    print('- WEEK = ', escrow_with_proxy.WEEK())
+    print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
+    print()
+
+    # maha = repeat(
+    #     ERC20.deploy, 
+    #     "MahaDAO", 
+    #     "MAHA", 
+    #     18, 
+    #     1303030303,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
+
+    # arth = repeat(
+    #     ERC20.deploy, 
+    #     "ARTHStablecoin", 
+    #     "ARTH", 
+    #     18, 
+    #     1303030303,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
+
+    # usdc = repeat(
+    #     ERC20.deploy, 
+    #     "USDC Coin", 
+    #     "USDC", 
+    #     6, 
+    #     1303030303,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
+
+    # sclp = repeat(
+    #     ERC20.deploy, 
+    #     "ScallopX", 
+    #     "SCLP", 
+    #     18, 
+    #     1303030303,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
+
+    # pool_token = repeat(
+    #     PoolToken.deploy,
+    #     "PoolToken",
+    #     "PLTKN",
+    #     [maha, arth, usdc, sclp],
+    #     deployer,
+    #     deployer,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
+    # output_file["ARTH"] = {
+    #     "abi": "IERC20",
+    #     "address": arth.address
+    # }
+    # output_file["USDC"] = {
+    #     "abi": "IERC20",
+    #     "address": usdc.address
+    # }
+    # output_file["SCLP"] = {
+    #     "abi": "IERC20",
+    #     "address": sclp.address
+    # }
+    # output_file["PoolToken"] = {
+    #     "abi": "IERC20",
+    #     "address": pool_token.address
+    # }
+
+    # repeat(maha.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(arth.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(sclp.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(usdc.transfer, pool_token, 10000 * 1e6, {"from": deployer, "required_confs": CONFS})
+
+    # basic_staking = repeat(
+    #     BasicStaking.deploy,
+    #     deployer,
+    #     pool_token,
+    #     escrow_with_proxy,
+    #     24 * 60 * 60,  # 1 Day.
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
+
+    # repeat(pool_token.transfer, basic_staking, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    # repeat(basic_staking.notifyRewardAmount, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
+    
+    # # repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
+    
+    # repeat(
+    #     basic_staking.initializeDefault,
+    #     {"from": deployer, "required_confs": CONFS}
+    # )
+
+    # save_abi(basic_staking, "BasicStaking")
+    # output_file["MAHAXBasicStaking"] = {
+    #     "abi": "BasicStaking",
+    #     "address": basic_staking.address
+    # }
+
     save_output(output_file, 'maticMumbai')
-   

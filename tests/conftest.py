@@ -10,8 +10,9 @@ from brownie import (
     YBurner,
     compile_source,
     convert,
+    ERC20
 )
-from brownie_tokens import ERC20
+
 
 YEAR = 365 * 86400
 INITIAL_RATE = 274_815_283
@@ -82,15 +83,29 @@ def receiver(accounts):
 
 
 @pytest.fixture(scope="module")
+def mahax_staking_pool_token(ERC20, accounts):
+    contract = ERC20.deploy("MAHAX Staking PoolToken", "MAHAX-Pool", 18, 130303303, {"from": accounts[0]})
+    contract.mint(accounts[0], 1000 * 1e18, {"from": accounts[0]})
+    yield contract
+
+
+@pytest.fixture(scope="module")
 def token(ERC20CRV, accounts):
     yield ERC20CRV.deploy("Curve DAO Token", "CRV", 18, {"from": accounts[0]})
 
 
 @pytest.fixture(scope="module")
 def voting_escrow(VotingEscrow, accounts, token):
-    yield VotingEscrow.deploy(
-        token, "Voting-escrowed CRV", "veCRV", "veCRV_0.99", {"from": accounts[0]}
-    )
+    contract =  VotingEscrow.deploy({"from": accounts[0]})
+    contract.initialize(token, "Voting-escrowed MAHA", "MAHAX", "mahax_0.99", {"from": accounts[0]})
+    yield contract
+
+
+@pytest.fixture(scope="module")
+def staking_contract(BasicStaking, voting_escrow, accounts, mahax_staking_pool_token):
+    contract = BasicStaking.deploy(accounts[0], mahax_staking_pool_token, voting_escrow, 90 * 24 * 60 * 60, {"from": accounts[0]})
+    voting_escrow.set_staking_contract(contract, {"from": accounts[0]})
+    yield contract
 
 
 @pytest.fixture(scope="module")

@@ -32,7 +32,6 @@ struct Point:
 # What we can do is to extrapolate ***At functions
 
 struct LockedBalance:
-    start: uint256
     amount: int128
     end: uint256
 
@@ -41,12 +40,9 @@ interface ERC20:
     def decimals() -> uint256: view
     def name() -> String[64]: view
     def symbol() -> String[32]: view
+    def balanceOf(who: address) -> uint256: view
     def transfer(to: address, amount: uint256) -> bool: nonpayable
     def transferFrom(spender: address, to: address, amount: uint256) -> bool: nonpayable
-
-
-interface StakingContract:
-    def updateReward(account: address): nonpayable
 
 
 # Interface for checking whether address belongs to a whitelisted
@@ -88,6 +84,10 @@ event Supply:
 event TriggerFallback:
     fallbackWithdraw: bool
 
+event WithdrawLockedFunds:
+    amount: uint256
+    ts: uint256
+
 
 WEEK: public(uint256) #= 7 * 86400  # all future times are rounded by week
 MAXTIME: public(uint256) #= 4 * 365 * 86400  # 4 years
@@ -112,7 +112,6 @@ name: public(String[64])
 symbol: public(String[32])
 version: public(String[32])
 decimals: public(uint256)
-totalSupplyWithoutDecay: public(uint256)
 
 # Checker for whitelisted (smart contract) wallets which are allowed to deposit
 # The goal is to prevent tokenizing the escrow
@@ -125,7 +124,6 @@ future_admin: public(address)
 initialized: public(bool)
 
 fallback_Withdraw: public(bool)
-staking_contract: public(address)
 
 @external
 def initialize(token_addr: address, _name: String[64], _symbol: String[32], _version: String[32]):
@@ -149,8 +147,8 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.decimals = _decimals
 
     # changes regarding proxy
-    self.WEEK = 7 * 86400 # 7 * 86400 #5 * 60 #
-    self.MAXTIME = 4 * 365 * 86400 # 4 * 365 * 86400 # 86400 #
+    self.WEEK = 7 * 86400 #5 * 60 #
+    self.MAXTIME = 4 * 365 * 86400 #86400 #
     self.MULTIPLIER = 10 ** 18
     self.supply = 0
     self.epoch = 0
@@ -194,6 +192,18 @@ def trigger_fallback(status: bool):
 
 
 @external
+def withdraw_locked():
+    """
+    @notice Withdraw locked MAHA.
+    """
+
+    assert msg.sender == self.admin
+    bal: uint256 = ERC20(self.token).balanceOf(self)
+    assert ERC20(self.token).transfer(self.admin, bal)
+    log WithdrawLockedFunds(bal, block.timestamp)
+
+
+@external
 def apply_transfer_ownership():
     """
     @notice Apply ownership transfer
@@ -213,16 +223,6 @@ def commit_smart_wallet_checker(addr: address):
     """
     assert msg.sender == self.admin
     self.future_smart_wallet_checker = addr
-
-
-@external
-def set_staking_contract(addr: address):
-    """
-    @notice Set an external contract to check for approved smart contract wallets
-    @param addr Address of Smart contract checker
-    """
-    assert msg.sender == self.admin
-    self.staking_contract = addr
 
 
 @external
@@ -281,25 +281,6 @@ def locked__end(_addr: address) -> uint256:
     @return Epoch time of the lock end
     """
     return self.locked[_addr].end
-
-
-@internal
-@view
-def _calculateBalanceAt(amount: uint256, fromTs: uint256, toTs: uint256) -> uint256:    
-    return amount * (toTs - fromTs) / self.MAXTIME
-
-
-@internal
-@view
-def _balanceOfWithoutDecay(addr: address) -> uint256:
-    _locked: LockedBalance = self.locked[addr]
-
-    amount: uint256 = convert(_locked.amount, uint256)
-
-    if _locked.end == 0 or _locked.start == 0:
-        return 0
-
-    return self._calculateBalanceAt(amount, _locked.start, _locked.end) 
 
 
 @internal
@@ -428,9 +409,6 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     @param unlock_time New time when to unlock the tokens, or 0 if unchanged
     @param locked_balance Previous locked amount / timestamp
     """
-    
-    StakingContract(self.staking_contract).updateReward(_addr)
-    
     _locked: LockedBalance = locked_balance
     supply_before: uint256 = self.supply
 
@@ -440,11 +418,8 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     _locked.amount += convert(_value, int128)
     if unlock_time != 0:
         _locked.end = unlock_time
-    if type == self.CREATE_LOCK_TYPE:
-        _locked.start = block.timestamp
-
     self.locked[_addr] = _locked
-    
+
     # Possibilities:
     # Both old_locked.end could be current or expired (>/< block.timestamp)
     # value == 0 (extend lock) or value > 0 (add to lock or extend lock)
@@ -452,18 +427,10 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     self._checkpoint(_addr, old_locked, _locked)
 
     if _value != 0:
-        assert ERC20(self.token).transferFrom(_addr, self, _value)
+      assert ERC20(self.token).transferFrom(_addr, self, _value)
 
     log Deposit(_addr, _value, _locked.end, type, block.timestamp)
     log Supply(supply_before, supply_before + _value)
-
-
-@internal
-def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uint256):
-    if balanceAfter > balanceBefore:
-        self.totalSupplyWithoutDecay += (balanceAfter - balanceBefore)
-    elif balanceAfter < balanceBefore:
-        self.totalSupplyWithoutDecay -= (balanceBefore - balanceAfter)
 
 
 @external
@@ -472,38 +439,6 @@ def checkpoint():
     @notice Record global data to checkpoint
     """
     self._checkpoint(ZERO_ADDRESS, empty(LockedBalance), empty(LockedBalance))
-
-
-@external
-def update_locked_state(_addrs: address[100], _starting_times: uint256[100], _ending_times: uint256[100], _amounts: uint256[100]):
-    """
-    @notice Update the locked status for _addrs
-    @param _addrs Addresses for which we have to update the locked state
-    @param _starting_times The lock start time for _addrs
-    @param _ending_times The lock end time for _addrs
-    @param _amounts The amount locked for _amounts
-    """
-
-    assert msg.sender == self.admin  # dev: admin only
-
-    for i in range(100):
-        if _addrs[i] == ZERO_ADDRESS:
-            continue
-        
-        balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addrs[i])
-        self.locked[_addrs[i]] = LockedBalance({
-            start: _starting_times[i],
-            amount: convert(_amounts[i], int128),
-            end: _ending_times[i]
-        })
-        
-        self.supply += _amounts[i]
-        self._checkpoint(_addrs[i], empty(LockedBalance), self.locked[_addrs[i]])
-        balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(_addrs[i])
-        
-        self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-
-        StakingContract(self.staking_contract).updateReward(_addrs[i])
 
 
 @external
@@ -516,11 +451,6 @@ def deposit_for(_addr: address, _value: uint256):
     @param _addr User's wallet address
     @param _value Amount to add to user's lock
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addr)
-
-    StakingContract(self.staking_contract).updateReward(_addr)
-
     _locked: LockedBalance = self.locked[_addr]
 
     assert _value > 0  # dev: need non-zero value
@@ -528,9 +458,6 @@ def deposit_for(_addr: address, _value: uint256):
     assert _locked.end > block.timestamp, "Cannot add to expired lock. Withdraw"
 
     self._deposit_for(_addr, _value, 0, self.locked[_addr], self.DEPOSIT_FOR_TYPE)
-
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(_addr)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
 
 
 @external
@@ -541,11 +468,6 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     @param _value Amount to deposit
     @param _unlock_time Epoch time when tokens unlock, rounded down to whole weeks
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-
-    StakingContract(self.staking_contract).updateReward(msg.sender)
-
     self.assert_not_contract(msg.sender)
     unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
     _locked: LockedBalance = self.locked[msg.sender]
@@ -557,9 +479,6 @@ def create_lock(_value: uint256, _unlock_time: uint256):
 
     self._deposit_for(msg.sender, _value, unlock_time, _locked, self.CREATE_LOCK_TYPE)
 
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-
 
 @external
 @nonreentrant('lock')
@@ -569,11 +488,6 @@ def increase_amount(_value: uint256):
             without modifying the unlock time
     @param _value Amount of tokens to deposit and add to the lock
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-
-    StakingContract(self.staking_contract).updateReward(msg.sender)
-
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
 
@@ -583,9 +497,6 @@ def increase_amount(_value: uint256):
 
     self._deposit_for(msg.sender, _value, 0, _locked, self.INCREASE_LOCK_AMOUNT)
 
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-
 
 @external
 @nonreentrant('lock')
@@ -594,11 +505,6 @@ def increase_unlock_time(_unlock_time: uint256):
     @notice Extend the unlock time for `msg.sender` to `_unlock_time`
     @param _unlock_time New epoch time for unlocking
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-
-    StakingContract(self.staking_contract).updateReward(msg.sender)
-
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
     unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
@@ -610,9 +516,6 @@ def increase_unlock_time(_unlock_time: uint256):
 
     self._deposit_for(msg.sender, 0, unlock_time, _locked, self.INCREASE_UNLOCK_TIME)
 
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-
 
 @external
 @nonreentrant('lock')
@@ -621,23 +524,17 @@ def withdraw():
     @notice Withdraw all tokens for `msg.sender`
     @dev Only possible if the lock has expired
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    
-    StakingContract(self.staking_contract).updateReward(msg.sender)
-
     _locked: LockedBalance = self.locked[msg.sender]
     assert block.timestamp >= _locked.end, "The lock didn't expire"
     value: uint256 = convert(_locked.amount, uint256)
 
     old_locked: LockedBalance = _locked
-    _locked.start = 0
     _locked.end = 0
     _locked.amount = 0
     self.locked[msg.sender] = _locked
     supply_before: uint256 = self.supply
     self.supply = supply_before - value
-    
+
     # old_locked can have either expired <= timestamp or zero end
     # _locked has only 0 end
     # Both can have >= 0 amount
@@ -645,12 +542,8 @@ def withdraw():
 
     assert ERC20(self.token).transfer(msg.sender, value)
 
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
-
 
 @external
 @nonreentrant('lock')
@@ -659,17 +552,11 @@ def withdrawFallback():
     @notice Withdraw all tokens for `msg.sender`
     @dev Only possible if the fallback_Withdraw is True
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-
-    StakingContract(self.staking_contract).updateReward(msg.sender)
-    
     _locked: LockedBalance = self.locked[msg.sender]
     assert self.fallback_Withdraw == True, "Fallback not initiated"
     value: uint256 = convert(_locked.amount, uint256)
 
     old_locked: LockedBalance = _locked
-    _locked.start = 0
     _locked.end = 0
     _locked.amount = 0
     self.locked[msg.sender] = _locked
@@ -683,12 +570,8 @@ def withdrawFallback():
 
     assert ERC20(self.token).transfer(msg.sender, value)
 
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-    
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
-
 
 # The following ERC20/minime-compatible methods are not real balanceOf and supply!
 # They measure the weights for the purpose of voting, so they don't represent
@@ -736,12 +619,6 @@ def balanceOf(addr: address, _t: uint256 = block.timestamp) -> uint256:
         if last_point.bias < 0:
             last_point.bias = 0
         return convert(last_point.bias, uint256)
-
-
-@external
-@view
-def balanceOfWithoutDecay(addr: address) -> uint256:
-    return self._balanceOfWithoutDecay(addr)
 
 
 @external
