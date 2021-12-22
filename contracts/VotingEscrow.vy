@@ -88,6 +88,10 @@ event Supply:
 event TriggerFallback:
     fallbackWithdraw: bool
 
+event Transfer:
+    sender: indexed(address)
+    receiver: indexed(address)
+    value: uint256
 
 WEEK: public(uint256) #= 7 * 86400  # all future times are rounded by week
 MAXTIME: public(uint256) #= 4 * 365 * 86400  # 4 years
@@ -443,6 +447,7 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
         assert ERC20(self.token).transferFrom(_addr, self, _value)
 
     log Deposit(_addr, _value, _locked.end, type, block.timestamp)
+    log Transfer(ZERO_ADDRESS, _addr, _value)
     log Supply(supply_before, supply_before + _value)
 
 
@@ -476,7 +481,7 @@ def update_locked_state(_addrs: address[100], _starting_times: uint256[100], _en
 
     for i in range(100):
         if _addrs[i] == ZERO_ADDRESS:
-            continue
+            break
 
         balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addrs[i])
         self.locked[_addrs[i]] = LockedBalance({
@@ -637,8 +642,8 @@ def withdraw():
     self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
 
     log Withdraw(msg.sender, value, block.timestamp)
+    log Transfer(msg.sender, ZERO_ADDRESS, value)
     log Supply(supply_before, supply_before - value)
-
 
 
 # The following ERC20/minime-compatible methods are not real balanceOf and supply!
