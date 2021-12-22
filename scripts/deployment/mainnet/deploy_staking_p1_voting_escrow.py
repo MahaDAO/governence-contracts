@@ -6,7 +6,7 @@ from brownie import (
     Contract
 )
 
-from staking_config import (
+from .staking_config import (
     MAHA_ADDRESS,
     PROXY_ADMIN,
     save_abi,
