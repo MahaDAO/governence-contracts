@@ -124,7 +124,6 @@ future_admin: public(address)
 
 initialized: public(bool)
 
-fallback_Withdraw: public(bool)
 staking_contract: public(address)
 
 @external
@@ -169,7 +168,6 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.symbol = _symbol
     self.version = _version
     self.initialized = True
-    self.fallback_Withdraw = False
 
 
 @external
@@ -181,16 +179,6 @@ def commit_transfer_ownership(addr: address):
     assert msg.sender == self.admin  # dev: admin only
     self.future_admin = addr
     log CommitOwnership(addr)
-
-@external
-def trigger_fallback(status: bool):
-    """
-    @notice Trigger the fallback to withdraw funds
-    @param status bool of fallback execution
-    """
-    assert msg.sender == self.admin
-    self.fallback_Withdraw = status
-    log TriggerFallback(status)
 
 
 @external
@@ -285,7 +273,7 @@ def locked__end(_addr: address) -> uint256:
 
 @internal
 @view
-def _calculateBalanceAt(amount: uint256, fromTs: uint256, toTs: uint256) -> uint256:    
+def _calculateBalanceAt(amount: uint256, fromTs: uint256, toTs: uint256) -> uint256:
     return amount * (toTs - fromTs) / self.MAXTIME
 
 
@@ -299,7 +287,7 @@ def _balanceOfWithoutDecay(addr: address) -> uint256:
     if _locked.end == 0 or _locked.start == 0:
         return 0
 
-    return self._calculateBalanceAt(amount, _locked.start, _locked.end) 
+    return self._calculateBalanceAt(amount, _locked.start, _locked.end)
 
 
 @internal
@@ -428,9 +416,9 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     @param unlock_time New time when to unlock the tokens, or 0 if unchanged
     @param locked_balance Previous locked amount / timestamp
     """
-    
+
     StakingContract(self.staking_contract).updateReward(_addr)
-    
+
     _locked: LockedBalance = locked_balance
     supply_before: uint256 = self.supply
 
@@ -444,7 +432,7 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
         _locked.start = block.timestamp
 
     self.locked[_addr] = _locked
-    
+
     # Possibilities:
     # Both old_locked.end could be current or expired (>/< block.timestamp)
     # value == 0 (extend lock) or value > 0 (add to lock or extend lock)
@@ -489,18 +477,18 @@ def update_locked_state(_addrs: address[100], _starting_times: uint256[100], _en
     for i in range(100):
         if _addrs[i] == ZERO_ADDRESS:
             continue
-        
+
         balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addrs[i])
         self.locked[_addrs[i]] = LockedBalance({
             start: _starting_times[i],
             amount: convert(_amounts[i], int128),
             end: _ending_times[i]
         })
-        
+
         self.supply += _amounts[i]
         self._checkpoint(_addrs[i], empty(LockedBalance), self.locked[_addrs[i]])
         balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(_addrs[i])
-        
+
         self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
 
         StakingContract(self.staking_contract).updateReward(_addrs[i])
@@ -623,7 +611,7 @@ def withdraw():
     """
 
     balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    
+
     StakingContract(self.staking_contract).updateReward(msg.sender)
 
     _locked: LockedBalance = self.locked[msg.sender]
@@ -637,7 +625,7 @@ def withdraw():
     self.locked[msg.sender] = _locked
     supply_before: uint256 = self.supply
     self.supply = supply_before - value
-    
+
     # old_locked can have either expired <= timestamp or zero end
     # _locked has only 0 end
     # Both can have >= 0 amount
@@ -651,43 +639,6 @@ def withdraw():
     log Withdraw(msg.sender, value, block.timestamp)
     log Supply(supply_before, supply_before - value)
 
-
-@external
-@nonreentrant('lock')
-def withdrawFallback():
-    """
-    @notice Withdraw all tokens for `msg.sender`
-    @dev Only possible if the fallback_Withdraw is True
-    """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-
-    StakingContract(self.staking_contract).updateReward(msg.sender)
-    
-    _locked: LockedBalance = self.locked[msg.sender]
-    assert self.fallback_Withdraw == True, "Fallback not initiated"
-    value: uint256 = convert(_locked.amount, uint256)
-
-    old_locked: LockedBalance = _locked
-    _locked.start = 0
-    _locked.end = 0
-    _locked.amount = 0
-    self.locked[msg.sender] = _locked
-    supply_before: uint256 = self.supply
-    self.supply = supply_before - value
-
-    # old_locked can have either expired <= timestamp or zero end
-    # _locked has only 0 end
-    # Both can have >= 0 amount
-    self._checkpoint(msg.sender, old_locked, _locked)
-
-    assert ERC20(self.token).transfer(msg.sender, value)
-
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-    
-    log Withdraw(msg.sender, value, block.timestamp)
-    log Supply(supply_before, supply_before - value)
 
 
 # The following ERC20/minime-compatible methods are not real balanceOf and supply!
