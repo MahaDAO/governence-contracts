@@ -6,6 +6,8 @@ from brownie import (
     Contract
 )
 
+from brownie.network.gas.strategies import GasNowStrategy
+
 from .staking_config import (
     MAHA_ADDRESS,
     PROXY_ADMIN,
@@ -20,6 +22,7 @@ CONFS = 1
 
 def main():
     output_file = {}
+    gas_strategy = GasNowStrategy("fast")
     deployer = accounts.at(DEPLOYER)
 
     output_file["MahaToken"] = {
@@ -58,12 +61,12 @@ def main():
         "Vote-escrowed MAHA",
         "MAHAX",
         "maha_0.99",
-        {"from": deployer, "required_confs": CONFS}
+        {"from": deployer, "required_confs": CONFS }
     )
     repeat(
         escrow_with_proxy.changeController,
         PROXY_ADMIN,
-        {"from": deployer, "required_confs": CONFS}
+        {"from": deployer, "required_confs": CONFS }
     )
 
     print('Fetching values from Proxy for VotingEscrow before initializing')

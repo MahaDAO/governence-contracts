@@ -3,11 +3,12 @@ from brownie import (
     VotingEscrow,
     accounts,
     BasicStaking,
+    interface,
     Contract,
     PoolToken
 )
 
-from staking_config import (
+from .staking_config import (
     MAHA_ADDRESS,
     ARTH_ADDRESS,
     USDC_ADDRESS,
@@ -25,6 +26,8 @@ CONFS = 1
 def main():
     output_file = {}
     deployer = accounts.at(DEPLOYER)
+    voting_escrow = Contract.from_abi("VotingEscrow", DEPLOYED_VOTING_ESCROW, VotingEscrow.abi)
+
 
     output_file["MahaToken"] = {
         "abi": "IERC20",
@@ -75,8 +78,6 @@ def main():
         24 * 60 * 60,  # 1 day.
         {"from": deployer, "required_confs": CONFS}
     )
-
-    voting_escrow = VotingEscrow.at(DEPLOYED_VOTING_ESCROW)
 
     repeat(pool_token.transfer, basic_staking, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
     repeat(basic_staking.notifyRewardAmount, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
