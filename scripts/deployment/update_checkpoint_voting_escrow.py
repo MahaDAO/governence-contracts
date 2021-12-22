@@ -35,4 +35,4 @@ def main():
     end_times = [1763404200, 1645295400, 1653935400, 1706207400] + [1706207400] * 96
     amounts = [100 * 1e18, 100 * 1e18, 70 * 1e18, 89.333 * 1e18] + [89.333 * 1e18] * 96
 
-    repeat(escrow_with_proxy.checkpoint, addrs, start_times, end_times, amounts, {"from": deployer, "required_confs": CONFS})
+    repeat(escrow_with_proxy.update_locked_state, addrs, start_times, end_times, amounts, {"from": deployer, "required_confs": CONFS})

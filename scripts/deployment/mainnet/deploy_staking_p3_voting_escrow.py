@@ -13,11 +13,12 @@ from brownie import (
     PoolToken
 )
 
+MAHA_TOKEN_ADDR = "0xedd6ca8a4202d4a36611e2fff109648c4863ae19" # TODO: fill in this address as per the network.
+PROXY_ADMIN = "0x112ae96ce47f9506cdc4668655ae1ad880109d5c" # NOTE:- Please change this address. This will be the
+# admin for proxy contract. This cannot call the fallback/delegate function via proxy.
 
 DEPLOYER = accounts.load('0')
 print('Deployer is ', DEPLOYER)
-ARAGON_AGENT = "0x330f46D965469a3D1D419b426df0f45b06c625ad"
-print("Aragon agent is ", ARAGON_AGENT)
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 CONFS = 1
 
@@ -47,7 +48,10 @@ def main():
     output_file = {}
     deployer = accounts.at(DEPLOYER)
 
-    token = Contract.from_abi('mahadao_token', '0x79B0C5a20c52f9c9a9aB34b64f973Af5e6803Cf4', ERC20.abi)
+    output_file["MahaToken"] = {
+        "abi": "IERC20",
+        "address": MAHA_TOKEN_ADDR
+    }
 
     stakeable_escrow_without_proxy = repeat(
         VotingEscrow.deploy,
@@ -57,12 +61,12 @@ def main():
     proxy = repeat(
         AdminUpgradeabilityProxy.deploy,
         stakeable_escrow_without_proxy,
-        ARAGON_AGENT,
+        PROXY_ADMIN,
         bytes(),
         {"from": deployer, "required_confs": CONFS}
     )
     escrow_with_proxy = Contract.from_abi('stakeable_escrow_without_proxy', proxy, stakeable_escrow_without_proxy.abi)
-    
+
     print('Fetching values from Proxy for VotingEscrow before initializing')
     print('- WEEK = ', escrow_with_proxy.WEEK())
     print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
@@ -76,15 +80,15 @@ def main():
 
     repeat(
         escrow_with_proxy.initialize,
-        token,
+        MAHA_TOKEN_ADDR,
         "Vote-escrowed MAHA",
         "MAHAX",
         "maha_0.99",
         {"from": deployer, "required_confs": CONFS}
     )
     repeat(
-        escrow_with_proxy.changeController, 
-        ARAGON_AGENT, 
+        escrow_with_proxy.changeController,
+        PROXY_ADMIN,
         {"from": deployer, "required_confs": CONFS}
     )
 
@@ -94,28 +98,28 @@ def main():
     print()
 
     arth = repeat(
-        ERC20.deploy, 
-        "ARTHStablecoin", 
-        "ARTH", 
-        18, 
+        ERC20.deploy,
+        "ARTHStablecoin",
+        "ARTH",
+        18,
         1303030303,
         {"from": deployer, "required_confs": CONFS}
     )
 
     usdc = repeat(
-        ERC20.deploy, 
-        "USDC Coin", 
-        "USDC", 
-        6, 
+        ERC20.deploy,
+        "USDC Coin",
+        "USDC",
+        6,
         1303030303,
         {"from": deployer, "required_confs": CONFS}
     )
 
     sclp = repeat(
-        ERC20.deploy, 
-        "ScallopX", 
-        "SCLP", 
-        18, 
+        ERC20.deploy,
+        "ScallopX",
+        "SCLP",
+        18,
         1303030303,
         {"from": deployer, "required_confs": CONFS}
     )
@@ -162,9 +166,9 @@ def main():
 
     repeat(pool_token.transfer, basic_staking, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
     repeat(basic_staking.notifyRewardAmount, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    
+
     repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
-    
+
     repeat(
         basic_staking.initializeDefault,
         {"from": deployer, "required_confs": CONFS}
