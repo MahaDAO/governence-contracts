@@ -31,116 +31,17 @@ CONFS = 1
 
 
 def main():
-    output_file = {}
-    deployer = accounts.at(DEPLOYER)
+    voting_escrow = Contract.from_abi("VotingEscrow", DEPLOYED_VOTING_ESCROW, VotingEscrow.abi)
 
+    addrs = [
+        '0xF152dA370FA509f08685Fa37a09BA997E41Fb65b',
+        '0x073502E1d77e98bc4f6c526182bb637B46bf53DF',
+        '0x4165e9DF3244628ED81530F5Ff7f9ae0dDC5A647',
+        '0x53080D8B6a198aF3bb2C74f21A509Af41374e6B1'
+    ]
 
-    save_abi(escrow_with_proxy, "VotingEscrow")
-    output_file["VotingEscrow"] = {
-        "abi": "VotingEscrow",
-        "address": escrow_with_proxy.address
-    }
+    start_times = [1637325632] * 100
+    end_times = [1763404200, 1645295400, 1653935400, 1706207400] + [1706207400] * 96
+    amounts = [100 * 1e18, 100 * 1e18, 70 * 1e18, 89.333 * 1e18] + [89.333 * 1e18] * 96
 
-    repeat(
-        escrow_with_proxy.initialize,
-        MAHA_TOKEN_ADDR,
-        "Vote-escrowed MAHA",
-        "MAHAX",
-        "maha_0.99",
-        {"from": deployer, "required_confs": CONFS}
-    )
-    repeat(
-        escrow_with_proxy.changeController,
-        PROXY_ADMIN,
-        {"from": deployer, "required_confs": CONFS}
-    )
-
-    print('Fetching values from Proxy for VotingEscrow before initializing')
-    print('- WEEK = ', escrow_with_proxy.WEEK())
-    print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
-    print()
-
-    arth = repeat(
-        ERC20.deploy,
-        "ARTHStablecoin",
-        "ARTH",
-        18,
-        1303030303,
-        {"from": deployer, "required_confs": CONFS}
-    )
-
-    usdc = repeat(
-        ERC20.deploy,
-        "USDC Coin",
-        "USDC",
-        6,
-        1303030303,
-        {"from": deployer, "required_confs": CONFS}
-    )
-
-    sclp = repeat(
-        ERC20.deploy,
-        "ScallopX",
-        "SCLP",
-        18,
-        1303030303,
-        {"from": deployer, "required_confs": CONFS}
-    )
-
-    pool_token = repeat(
-        PoolToken.deploy,
-        "PoolToken",
-        "PLTKN",
-        [token, arth, usdc, sclp],
-        deployer,
-        deployer,
-        {"from": deployer, "required_confs": CONFS}
-    )
-    output_file["ARTH"] = {
-        "abi": "IERC20",
-        "address": arth.address
-    }
-    output_file["USDC"] = {
-        "abi": "IERC20",
-        "address": usdc.address
-    }
-    output_file["SCLP"] = {
-        "abi": "IERC20",
-        "address": sclp.address
-    }
-    output_file["PoolToken"] = {
-        "abi": "IERC20",
-        "address": pool_token.address
-    }
-
-    repeat(token.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    repeat(arth.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    repeat(sclp.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    repeat(usdc.transfer, pool_token, 10000 * 1e6, {"from": deployer, "required_confs": CONFS})
-
-    basic_staking = repeat(
-        BasicStaking.deploy,
-        deployer,
-        pool_token,
-        escrow_with_proxy,
-        24 * 60 * 60,  # 1 Day.
-        {"from": deployer, "required_confs": CONFS}
-    )
-
-    repeat(pool_token.transfer, basic_staking, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    repeat(basic_staking.notifyRewardAmount, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-
-    repeat(escrow_with_proxy.set_staking_contract, basic_staking, {"from": deployer, "required_confs": CONFS})
-
-    repeat(
-        basic_staking.initializeDefault,
-        {"from": deployer, "required_confs": CONFS}
-    )
-
-    save_abi(basic_staking, "BasicStaking")
-    output_file["MAHAXBasicStaking"] = {
-        "abi": "BasicStaking",
-        "address": basic_staking.address
-    }
-
-    save_output(output_file, 'maticMumbai')
+    repeat(escrow_with_proxy.update_locked_state, addrs, start_times, end_times, amounts, {"from": deployer, "required_confs": CONFS})

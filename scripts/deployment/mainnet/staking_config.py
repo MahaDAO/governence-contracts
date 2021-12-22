@@ -1,8 +1,8 @@
 import json
 
-
-PROXY_ADMIN = "0x112ae96ce47f9506cdc4668655ae1ad880109d5c" # NOTE:- Please change this address. This will be the
+# NOTE:- Please change this address. This will be the
 # admin for proxy contract. This cannot call the fallback/delegate function via proxy.
+PROXY_ADMIN = "0x112ae96ce47f9506cdc4668655ae1ad880109d5c"
 
 ARTH_ADDRESS = "0xe52509181feb30eb4979e29ec70d50fd5c44d590"
 USDC_ADDRESS = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174"
