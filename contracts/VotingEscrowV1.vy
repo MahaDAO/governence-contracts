@@ -409,9 +409,8 @@ def _checkpoint(addr: address, old_locked: LockedBalance, new_locked: LockedBala
         u_new.blk = block.number
         self.user_point_history[addr][user_epoch] = u_new
 
-
 @internal
-def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_balance: LockedBalance, type: int128):
+def _deposit_and_transfer_for(_addr: address, _value: uint256, unlock_time: uint256, locked_balance: LockedBalance, type: int128, transfer: bool):
     """
     @notice Deposit and lock tokens for a user
     @param _addr User's wallet address
@@ -442,7 +441,7 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     # _locked.end > block.timestamp (always)
     self._checkpoint(_addr, old_locked, _locked)
 
-    if _value != 0:
+    if _value != 0 and transfer:
         assert ERC20(self.token).transferFrom(_addr, self, _value)
 
     # emit events
@@ -455,6 +454,17 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
     StakingContract(self.staking_contract).updateReward(_addr)
 
+@internal
+def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_balance: LockedBalance, _type: int128):
+    """
+    @notice Deposit and lock tokens for a user
+    @param _addr User's wallet address
+    @param _value Amount to deposit
+    @param unlock_time New time when to unlock the tokens, or 0 if unchanged
+    @param locked_balance Previous locked amount / timestamp
+    """
+    self._deposit_and_transfer_for(_addr, _value, unlock_time, locked_balance, _type, True)
+
 
 @external
 def checkpoint():
@@ -465,35 +475,37 @@ def checkpoint():
 
 
 @external
-def update_locked_state(_addrs: address[100], _starting_times: uint256[100], _ending_times: uint256[100], _amounts: uint256[100]):
+def manual_add_users(_addrs: address[100], _ending_times: uint256[100], _amounts: uint256[100]):
     """
-    @notice Update the locked status for _addrs
+    @notice Manually add users who have missed the lock
     @param _addrs Addresses for which we have to update the locked state
     @param _starting_times The lock start time for _addrs
     @param _ending_times The lock end time for _addrs
     @param _amounts The amount locked for _amounts
     """
-
     assert msg.sender == self.owner  # dev: owner only
 
     for i in range(100):
         if _addrs[i] == ZERO_ADDRESS:
             break
 
-        balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addrs[i])
-        self.locked[_addrs[i]] = LockedBalance({
-            start: _starting_times[i],
-            amount: convert(_amounts[i], int128),
-            end: _ending_times[i]
-        })
+        who: address = _addrs[i]
+        amount: uint256 = _amounts[i]
+        unlock_time: uint256 = (_ending_times[i] / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
+        _locked: LockedBalance = self.locked[who]
 
-        self.supply += _amounts[i]
-        self._checkpoint(_addrs[i], empty(LockedBalance), self.locked[_addrs[i]])
-        balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(_addrs[i])
+        if _locked.amount > 0:
+            # user already added; so we skip this address
+            continue
 
-        self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-
-        StakingContract(self.staking_contract).updateReward(_addrs[i])
+        self._deposit_and_transfer_for(
+            who,
+            amount,
+            unlock_time,
+            _locked,
+            self.CREATE_LOCK_TYPE,
+            False # false as we are just uploading a snapshot; should manualy deposit the tokens into the contract
+        )
 
 
 @external
@@ -524,7 +536,7 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     @param _unlock_time Epoch time when tokens unlock, rounded down to whole weeks
     """
     self.assert_not_contract(msg.sender)
-    unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
+    unlock_time: uint256 = (_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
     _locked: LockedBalance = self.locked[msg.sender]
 
     assert _value > 0, "VotingEscrow: value smaller then 0"  # dev: need non-zero value
@@ -562,7 +574,7 @@ def increase_unlock_time(_unlock_time: uint256):
     """
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
-    unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
+    unlock_time: uint256 = (_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
 
     assert _locked.end > block.timestamp, "Lock expired"
     assert _locked.amount > 0, "Nothing is locked"
