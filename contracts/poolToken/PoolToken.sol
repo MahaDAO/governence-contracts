@@ -5,9 +5,10 @@ import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/token/ERC20/ERC20.so
 import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/access/AccessControl.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/utils/math/SafeMath.sol";
 
+import "./ERC20Proxy.sol";
 import "../interfaces/IPoolToken.sol";
 
-contract PoolToken is AccessControl, ERC20, IPoolToken {
+contract PoolToken is AccessControl, ERC20Proxy, IPoolToken {
     using SafeMath for uint256;
 
     IERC20[] public poolTokens;
