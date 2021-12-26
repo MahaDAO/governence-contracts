@@ -64,7 +64,7 @@ def main():
         {"from": deployer, "required_confs": CONFS }
     )
 
-    print('Fetching values from Proxy for VotingEscrow before initializing')
+    print('Fetching values from Proxy for VotingEscrow after initializing')
     print('- WEEK = ', escrow_with_proxy.WEEK())
     print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
     print()

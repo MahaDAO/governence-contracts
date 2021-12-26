@@ -48,7 +48,8 @@ def main():
 
     pool_token = repeat(
         PoolToken.deploy,
-        {"from": deployer, "required_confs": CONFS}
+        {"from": deployer, "required_confs": CONFS},
+        publish_source=True
     )
 
     print("instance deployed", pool_token.address)
@@ -68,15 +69,15 @@ def main():
         "address": pool_token.address
     }
 
-    instance = Contract.from_abi('PoolToken', proxy, pool_token.abi)
+    instance = Contract.from_abi('pool_token', proxy, pool_token.abi)
     repeat(
         instance.initialize,
         "PoolToken",
         "MAHAX-PL",
         [ARTH_ADDRESS, USDC_ADDRESS, MAHA_ADDRESS, SCLP_ADDRESS],
-        deployer,
-        deployer,
-        {"from": deployer, "required_confs": CONFS}
+        deployer, # owner
+        deployer, # governance
+        {"from": deployer, "required_confs": CONFS, "allow_revert": True},
     )
 
     save_output(output_file, 'PoolToken')
