@@ -5,12 +5,13 @@ import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/token/ERC20/ERC20.so
 import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/access/AccessControl.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/utils/math/SafeMath.sol";
 
-import "./interfaces/IPoolToken.sol";
+import "../interfaces/IPoolToken.sol";
 
 contract PoolToken is AccessControl, ERC20, IPoolToken {
     using SafeMath for uint256;
 
     IERC20[] public poolTokens;
+    bool public initialized;
     bool public enableWithdrawals = true;
     bytes32 public constant GOVERNANCE_ROLE = keccak256("GOVERNANCE_ROLE");
 
@@ -24,18 +25,23 @@ contract PoolToken is AccessControl, ERC20, IPoolToken {
         _;
     }
 
-    constructor(
+    function initialize(
         string memory name,
         string memory symbol,
         IERC20[] memory poolTokens_,
         address owner,
         address governance
-    ) ERC20(name, symbol) {
+    ) external {
+        require(!initialized);
+
+        initializeERC20(name, symbol);
         poolTokens = poolTokens_;
 
         _setupRole(DEFAULT_ADMIN_ROLE, owner);
         _setupRole(GOVERNANCE_ROLE, governance);
-        _mint(_msgSender(), 10000 * 1e18);
+
+        _mint(owner, 10000 * 1e18);
+        initialized = true;
     }
 
     function addPoolToken(IERC20 token) external onlyGovernance {
