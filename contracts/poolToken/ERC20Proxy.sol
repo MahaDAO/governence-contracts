@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.6.0 <0.8.0;
+pragma solidity ^0.8.0;
 
 import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/utils/Context.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/token/ERC20/IERC20.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/math/SafeMath.sol";
-
+import "../utils/SafeMath.sol";
 /**
  * @dev Implementation of the {IERC20} interface.
  *
