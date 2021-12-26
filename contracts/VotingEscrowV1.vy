@@ -28,6 +28,7 @@ struct Point:
     slope: int128  # - dweight / dt
     ts: uint256
     blk: uint256  # block
+
 # We cannot really do block numbers per se b/c slope is per time, not per block
 # and per block could be fairly bad b/c Ethereum changes blocktimes.
 # What we can do is to extrapolate ***At functions
@@ -65,10 +66,10 @@ INCREASE_UNLOCK_TIME: public(int128) #= 3
 
 
 event CommitOwnership:
-    admin: address
+    owner: address
 
 event ApplyOwnership:
-    admin: address
+    owner: address
 
 event Deposit:
     provider: indexed(address)
@@ -120,8 +121,8 @@ totalSupplyWithoutDecay: public(uint256)
 future_smart_wallet_checker: public(address)
 smart_wallet_checker: public(address)
 
-admin: public(address)  # Can and will be a smart contract
-future_admin: public(address)
+owner: public(address)  # Can and will be a smart contract
+future_owner: public(address)
 
 initialized: public(bool)
 
@@ -137,7 +138,7 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     @param _version Contract version - required for Aragon compatibility
     """
     assert self.initialized == False, "VotingEscrow: contract is already initialized"
-    self.admin = msg.sender
+    self.owner = msg.sender
     self.token = token_addr
     self.point_history[0].blk = block.number
     self.point_history[0].ts = block.timestamp
@@ -154,8 +155,8 @@ def initialize(token_addr: address, _name: String[64], _symbol: String[32], _ver
     self.epoch = 0
     self.future_smart_wallet_checker = ZERO_ADDRESS
     self.smart_wallet_checker= ZERO_ADDRESS
-    self.admin = msg.sender
-    self.future_admin = ZERO_ADDRESS
+    self.owner = msg.sender
+    self.future_owner = ZERO_ADDRESS
 
     self.DEPOSIT_FOR_TYPE = 0
     self.CREATE_LOCK_TYPE = 1
@@ -174,8 +175,8 @@ def commit_transfer_ownership(addr: address):
     @notice Transfer ownership of VotingEscrow contract to `addr`
     @param addr Address to have ownership transferred to
     """
-    assert msg.sender == self.admin  # dev: admin only
-    self.future_admin = addr
+    assert msg.sender == self.owner  # dev: owner only
+    self.future_owner = addr
     log CommitOwnership(addr)
 
 
@@ -184,11 +185,11 @@ def apply_transfer_ownership():
     """
     @notice Apply ownership transfer
     """
-    assert msg.sender == self.admin  # dev: admin only
-    _admin: address = self.future_admin
-    assert _admin != ZERO_ADDRESS  # dev: admin not set
-    self.admin = _admin
-    log ApplyOwnership(_admin)
+    assert msg.sender == self.owner  # dev: owner only
+    _owner: address = self.future_owner
+    assert _owner != ZERO_ADDRESS  # dev: owner not set
+    self.owner = _owner
+    log ApplyOwnership(_owner)
 
 
 @external
@@ -197,7 +198,7 @@ def commit_smart_wallet_checker(addr: address):
     @notice Set an external contract to check for approved smart contract wallets
     @param addr Address of Smart contract checker
     """
-    assert msg.sender == self.admin
+    assert msg.sender == self.owner
     self.future_smart_wallet_checker = addr
 
 
@@ -207,7 +208,7 @@ def set_staking_contract(addr: address):
     @notice Set an external contract to check for approved smart contract wallets
     @param addr Address of Smart contract checker
     """
-    assert msg.sender == self.admin
+    assert msg.sender == self.owner
     self.staking_contract = addr
 
 
@@ -216,7 +217,7 @@ def apply_smart_wallet_checker():
     """
     @notice Apply setting external contract to check approved smart contract wallets
     """
-    assert msg.sender == self.admin
+    assert msg.sender == self.owner
     self.smart_wallet_checker = self.future_smart_wallet_checker
 
 
@@ -279,13 +280,17 @@ def _calculateBalanceAt(amount: uint256, fromTs: uint256, toTs: uint256) -> uint
 @view
 def _balanceOfWithoutDecay(addr: address) -> uint256:
     _locked: LockedBalance = self.locked[addr]
-
     amount: uint256 = convert(_locked.amount, uint256)
 
-    if _locked.end == 0 or _locked.start == 0:
-        return 0
-
+    if _locked.end == 0 or _locked.start == 0: return 0
     return self._calculateBalanceAt(amount, _locked.start, _locked.end)
+
+@internal
+def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uint256):
+    if balanceAfter > balanceBefore:
+        self.totalSupplyWithoutDecay += (balanceAfter - balanceBefore)
+    elif balanceAfter < balanceBefore:
+        self.totalSupplyWithoutDecay -= (balanceBefore - balanceAfter)
 
 
 @internal
@@ -414,7 +419,7 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     @param unlock_time New time when to unlock the tokens, or 0 if unchanged
     @param locked_balance Previous locked amount / timestamp
     """
-
+    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addr)
     StakingContract(self.staking_contract).updateReward(_addr)
 
     _locked: LockedBalance = locked_balance
@@ -440,17 +445,15 @@ def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_b
     if _value != 0:
         assert ERC20(self.token).transferFrom(_addr, self, _value)
 
+    # emit events
     log Deposit(_addr, _value, _locked.end, type, block.timestamp)
     log Transfer(ZERO_ADDRESS, _addr, _value)
     log Supply(supply_before, supply_before + _value)
 
-
-@internal
-def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uint256):
-    if balanceAfter > balanceBefore:
-        self.totalSupplyWithoutDecay += (balanceAfter - balanceBefore)
-    elif balanceAfter < balanceBefore:
-        self.totalSupplyWithoutDecay -= (balanceBefore - balanceAfter)
+    # update total supply and staking rewards
+    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(_addr)
+    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
+    StakingContract(self.staking_contract).updateReward(_addr)
 
 
 @external
@@ -471,7 +474,7 @@ def update_locked_state(_addrs: address[100], _starting_times: uint256[100], _en
     @param _amounts The amount locked for _amounts
     """
 
-    assert msg.sender == self.admin  # dev: admin only
+    assert msg.sender == self.owner  # dev: owner only
 
     for i in range(100):
         if _addrs[i] == ZERO_ADDRESS:
@@ -503,11 +506,6 @@ def deposit_for(_addr: address, _value: uint256):
     @param _addr User's wallet address
     @param _value Amount to add to user's lock
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addr)
-
-    StakingContract(self.staking_contract).updateReward(_addr)
-
     _locked: LockedBalance = self.locked[_addr]
 
     assert _value > 0  # dev: need non-zero value
@@ -515,9 +513,6 @@ def deposit_for(_addr: address, _value: uint256):
     assert _locked.end > block.timestamp, "Cannot add to expired lock. Withdraw"
 
     self._deposit_for(_addr, _value, 0, self.locked[_addr], self.DEPOSIT_FOR_TYPE)
-
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(_addr)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
 
 
 @external
@@ -528,11 +523,6 @@ def create_lock(_value: uint256, _unlock_time: uint256):
     @param _value Amount to deposit
     @param _unlock_time Epoch time when tokens unlock, rounded down to whole weeks
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-
-    StakingContract(self.staking_contract).updateReward(msg.sender)
-
     self.assert_not_contract(msg.sender)
     unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
     _locked: LockedBalance = self.locked[msg.sender]
@@ -544,9 +534,6 @@ def create_lock(_value: uint256, _unlock_time: uint256):
 
     self._deposit_for(msg.sender, _value, unlock_time, _locked, self.CREATE_LOCK_TYPE)
 
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-
 
 @external
 @nonreentrant('lock')
@@ -556,11 +543,6 @@ def increase_amount(_value: uint256):
             without modifying the unlock time
     @param _value Amount of tokens to deposit and add to the lock
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-
-    StakingContract(self.staking_contract).updateReward(msg.sender)
-
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
 
@@ -570,9 +552,6 @@ def increase_amount(_value: uint256):
 
     self._deposit_for(msg.sender, _value, 0, _locked, self.INCREASE_LOCK_AMOUNT)
 
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-
 
 @external
 @nonreentrant('lock')
@@ -581,11 +560,6 @@ def increase_unlock_time(_unlock_time: uint256):
     @notice Extend the unlock time for `msg.sender` to `_unlock_time`
     @param _unlock_time New epoch time for unlocking
     """
-
-    balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-
-    StakingContract(self.staking_contract).updateReward(msg.sender)
-
     self.assert_not_contract(msg.sender)
     _locked: LockedBalance = self.locked[msg.sender]
     unlock_time: uint256 = _unlock_time #(_unlock_time / self.WEEK) * self.WEEK  # Locktime is rounded down to weeks
@@ -597,8 +571,6 @@ def increase_unlock_time(_unlock_time: uint256):
 
     self._deposit_for(msg.sender, 0, unlock_time, _locked, self.INCREASE_UNLOCK_TIME)
 
-    balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
 
 
 @external
@@ -610,7 +582,6 @@ def withdraw():
     """
 
     balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-
     StakingContract(self.staking_contract).updateReward(msg.sender)
 
     _locked: LockedBalance = self.locked[msg.sender]
@@ -634,6 +605,7 @@ def withdraw():
 
     balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
     self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
+    StakingContract(self.staking_contract).updateReward(msg.sender)
 
     log Withdraw(msg.sender, value, block.timestamp)
     log Transfer(msg.sender, ZERO_ADDRESS, value)

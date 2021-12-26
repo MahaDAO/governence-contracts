@@ -29,6 +29,7 @@ contract BasicStaking is
 
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
+    bool public initialized;
     uint256 public rewardsDuration;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
@@ -36,18 +37,18 @@ contract BasicStaking is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
-    /* ========== CONSTRUCTOR ========== */
-
-    constructor(
+    function initialize(
         address _rewardsDistribution,
         address _rewardsToken,
         address _stakingToken,
         uint256 _rewardsDuration
-    ) {
+    ) external {
+        require(!initialized);
         rewardsDistribution = _rewardsDistribution;
         rewardsToken = IPoolToken(_rewardsToken);
         stakingToken = IERC20(_stakingToken);
         rewardsDuration = _rewardsDuration;
+        initialized =  true;
     }
 
     function initializeDefault() external onlyRewardsDistribution {
@@ -161,41 +162,21 @@ contract BasicStaking is
         emit RewardAdded(reward);
     }
 
-    // Added to support recovering LP Rewards from other systems such as BAL to be distributed to holders
-    function recoverERC20(
-        address tokenAddress,
-        address to,
-        uint256 tokenAmount
-    ) external onlyRewardsDistribution {
-        require(
-            tokenAddress != address(stakingToken),
-            "Cannot withdraw the staking token"
-        );
-        require(
-            tokenAddress != address(rewardsToken),
-            "Cannot withdraw the rewards token"
-        );
-
-        IERC20(tokenAddress).safeTransfer(to, tokenAmount);
-        emit Recovered(tokenAddress, to, tokenAmount);
-    }
-
     /* ========== MODIFIERS ========== */
 
-    function _updateReward(address account) internal {
+    function _updateReward(address who) internal {
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
-        if (account != address(0)) {
-            rewards[account] = earned(account);
-            userRewardPerTokenPaid[account] = rewardPerTokenStored;
+        if (who != address(0)) {
+            rewards[who] = earned(who);
+            userRewardPerTokenPaid[who] = rewardPerTokenStored;
         }
     }
 
-    function updateReward(address account) external {
+    function updateReward(address who) external {
         // Dev: only stakingToken(MAHAX) can call this update on change to lock state.
         require(msg.sender == address(stakingToken), "Not staking token");
-
-        _updateReward(account);
+        _updateReward(who);
     }
 
     /* ========== EVENTS ========== */

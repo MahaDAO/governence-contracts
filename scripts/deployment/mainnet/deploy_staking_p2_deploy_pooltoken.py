@@ -1,9 +1,9 @@
 from brownie import (
     accounts,
-    VotingEscrow,
+    VotingEscrowV1,
     accounts,
     BasicStaking,
-    interface,
+    AdminUpgradeabilityProxy,
     Contract,
     PoolToken
 )
@@ -12,6 +12,8 @@ from .staking_config import (
     MAHA_ADDRESS,
     ARTH_ADDRESS,
     USDC_ADDRESS,
+    PROXY_ADMIN,
+    SCLP_ADDRESS,
     DEPLOYED_VOTING_ESCROW,
     save_abi,
     save_output,
@@ -26,7 +28,7 @@ CONFS = 1
 def main():
     output_file = {}
     deployer = accounts.at(DEPLOYER)
-    voting_escrow = Contract.from_abi("VotingEscrow", DEPLOYED_VOTING_ESCROW, VotingEscrow.abi)
+    voting_escrow = Contract.from_abi("VotingEscrowV1", DEPLOYED_VOTING_ESCROW, VotingEscrowV1.abi)
 
 
     output_file["MahaToken"] = {
@@ -44,16 +46,16 @@ def main():
         "address": USDC_ADDRESS
     }
 
-    # output_file["SCLP"] = {
-    #     "abi": "IERC20",
-    #     "address": ''
-    # }
+    output_file["SCLP"] = {
+        "abi": "IERC20",
+        "address": SCLP_ADDRESS
+    }
 
     pool_token = repeat(
         PoolToken.deploy,
         "PoolToken",
         "PLTKN",
-        [ARTH_ADDRESS, USDC_ADDRESS, MAHA_ADDRESS],
+        [ARTH_ADDRESS, USDC_ADDRESS, MAHA_ADDRESS, SCLP_ADDRESS],
         deployer,
         deployer,
         {"from": deployer, "required_confs": CONFS}
@@ -70,8 +72,22 @@ def main():
     # repeat(sclp.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
     # repeat(usdc.transfer, pool_token, 10000 * 1e6, {"from": deployer, "required_confs": CONFS})
 
-    basic_staking = repeat(
+    basic_staking_without_proxy = repeat(
         BasicStaking.deploy,
+        {"from": deployer, "required_confs": CONFS}
+    )
+
+
+    basic_staking = repeat(
+        AdminUpgradeabilityProxy.deploy,
+        basic_staking_without_proxy,
+        PROXY_ADMIN,
+        bytes(),
+        {"from": deployer, "required_confs": CONFS}
+    )
+
+    repeat(
+        basic_staking.initialize,
         deployer,
         pool_token,
         DEPLOYED_VOTING_ESCROW,

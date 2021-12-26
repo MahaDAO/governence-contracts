@@ -4,11 +4,9 @@ import json
 
 from brownie import (
     accounts,
-    ERC20,
     VotingEscrow,
     accounts,
-    BasicStaking,
-    AdminUpgradeabilityProxy,
+
     Contract,
     PoolToken
 )

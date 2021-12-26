@@ -1,6 +1,6 @@
 from brownie import (
     accounts,
-    VotingEscrow,
+    VotingEscrowV1,
     accounts,
     AdminUpgradeabilityProxy,
     Contract
@@ -31,7 +31,7 @@ def main():
     }
 
     stakeable_escrow_without_proxy = repeat(
-        VotingEscrow.deploy,
+        VotingEscrowV1.deploy,
         {"from": deployer, "required_confs": CONFS}
     )
 
@@ -61,11 +61,6 @@ def main():
         "Vote-escrowed MAHA",
         "MAHAX",
         "maha_0.99",
-        {"from": deployer, "required_confs": CONFS }
-    )
-    repeat(
-        escrow_with_proxy.changeController,
-        PROXY_ADMIN,
         {"from": deployer, "required_confs": CONFS }
     )
 
