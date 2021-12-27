@@ -123,7 +123,6 @@ future_admin: public(address)
 def withdraw():
     """
     @notice Withdraw all tokens for `msg.sender`
-    @dev Only possible if the lock has expired
     """
     assert msg.sender == self.admin
     value: uint256 = ERC20(self.token).balanceOf(self)

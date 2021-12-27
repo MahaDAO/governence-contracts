@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../utils/Math.sol";
 import "../utils/SafeERC20.sol";
+import "../interfaces/IERC20.sol";
 import "../interfaces/IPoolToken.sol";
 import "../utils/SafeMath.sol";
 import "./IBasicStaking.sol";
