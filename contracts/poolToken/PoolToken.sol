@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/token/ERC20/IERC20.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/access/AccessControl.sol";
 import "./ERC20Proxy.sol";
 import "../utils/SafeMath.sol";
@@ -12,7 +11,8 @@ contract PoolToken is AccessControl, ERC20Proxy, IPoolToken {
 
     IERC20[] public poolTokens;
     bool public initialized;
-    bool public enableWithdrawals = true;
+    bool public enableWithdrawals;
+
     bytes32 public constant GOVERNANCE_ROLE = keccak256("GOVERNANCE_ROLE");
 
     modifier onlyAdmin() {
@@ -41,6 +41,7 @@ contract PoolToken is AccessControl, ERC20Proxy, IPoolToken {
         _setupRole(GOVERNANCE_ROLE, governance);
 
         _mint(owner, 10000 * 1e18);
+        enableWithdrawals = true;
         initialized = true;
     }
 

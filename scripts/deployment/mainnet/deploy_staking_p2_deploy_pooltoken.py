@@ -62,11 +62,11 @@ def main():
         {"from": deployer, "required_confs": CONFS}
     )
 
-    print("proxy deployed", pool_token.address)
+    print("proxy deployed", proxy.address)
 
     output_file["PoolToken"] = {
         "abi": "IERC20",
-        "address": pool_token.address
+        "address": proxy.address
     }
 
     instance = Contract.from_abi('pool_token', proxy, pool_token.abi)

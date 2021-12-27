@@ -2,15 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC20} from "../interfaces/IERC20.sol";
-import {Math} from "../utils/Math.sol";
-import {SafeERC20} from "../utils/SafeERC20.sol";
-import {IPoolToken} from "../interfaces/IPoolToken.sol";
-import {SafeMath} from "../utils/SafeMath.sol";
-import {IBasicStaking} from "./IBasicStaking.sol";
-import {ReentrancyGuard} from "../utils/ReentrancyGuard.sol";
-import {IVotingEscrow} from "./IVotingEscrow.sol";
-import {BasicRewardsDistributionRecipient} from "./BasicRewardsDistributionRecipient.sol";
+import "../utils/Math.sol";
+import "../utils/SafeERC20.sol";
+import "../interfaces/IPoolToken.sol";
+import "../utils/SafeMath.sol";
+import "./IBasicStaking.sol";
+import "./IVotingEscrow.sol";
+import "./BasicRewardsDistributionRecipient.sol";
+import "../utils/ReentrancyGuard.sol";
 
 // forked from https://github.com/SetProtocol/index-coop-contracts/blob/master/contracts/staking/StakingRewardsV2.sol
 // NOTE: V2 allows setting of rewardsDuration in constructor

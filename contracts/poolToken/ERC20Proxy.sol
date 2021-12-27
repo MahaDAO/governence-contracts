@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/utils/Context.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.3.2/contracts/token/ERC20/IERC20.sol";
+import "../utils/Context.sol";
+import "../interfaces/IERC20.sol";
 import "../utils/SafeMath.sol";
 
 /**
@@ -86,7 +86,7 @@ contract ERC20Proxy is Context, IERC20 {
      * no way affects any of the arithmetic of the contract, including
      * {IERC20-balanceOf} and {IERC20-transfer}.
      */
-    function decimals() public view virtual returns (uint8) {
+    function decimals() public view virtual override returns (uint8) {
         return _decimals;
     }
 

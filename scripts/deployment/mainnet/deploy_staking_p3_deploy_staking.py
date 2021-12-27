@@ -2,18 +2,16 @@ from brownie import (
     accounts,
     VotingEscrowV1,
     accounts,
+    PoolToken,
     BasicStaking,
     AdminUpgradeabilityProxy,
-    Contract,
-    PoolToken
+    Contract
 )
 
 from .staking_config import (
-    MAHA_ADDRESS,
-    ARTH_ADDRESS,
-    USDC_ADDRESS,
+
     PROXY_ADMIN,
-    SCLP_ADDRESS,
+    DEPLOYED_POOL_TOKEN,
     DEPLOYED_VOTING_ESCROW,
     save_abi,
     save_output,
@@ -28,57 +26,15 @@ CONFS = 1
 def main():
     output_file = {}
     deployer = accounts.at(DEPLOYER)
+
     voting_escrow = Contract.from_abi("VotingEscrowV1", DEPLOYED_VOTING_ESCROW, VotingEscrowV1.abi)
+    pool_token = Contract.from_abi("PoolToken", DEPLOYED_POOL_TOKEN, PoolToken.abi)
 
-
-    output_file["MahaToken"] = {
-        "abi": "IERC20",
-        "address": MAHA_ADDRESS
-    }
-
-    output_file["ARTH"] = {
-        "abi": "IERC20",
-        "address": ARTH_ADDRESS
-    }
-
-    output_file["USDC"] = {
-        "abi": "IERC20",
-        "address": USDC_ADDRESS
-    }
-
-    output_file["SCLP"] = {
-        "abi": "IERC20",
-        "address": SCLP_ADDRESS
-    }
-
-    pool_token = repeat(
-        PoolToken.deploy,
-        "PoolToken",
-        "MAHAX-PL",
-        [ARTH_ADDRESS, USDC_ADDRESS, MAHA_ADDRESS, SCLP_ADDRESS],
-        deployer,
-        deployer,
-        {"from": deployer, "required_confs": CONFS}
+    basic_staking_without_proxy = BasicStaking.deploy(
+        {"from": deployer, "required_confs": CONFS},
+        publish_source=True
     )
-
-    print("pool token deployed")
-
-    output_file["PoolToken"] = {
-        "abi": "IERC20",
-        "address": pool_token.address
-    }
-
-    # fund the pool tokens
-    # repeat(token.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    # repeat(arth.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    # repeat(sclp.transfer, pool_token, 10000 * 1e18, {"from": deployer, "required_confs": CONFS})
-    # repeat(usdc.transfer, pool_token, 10000 * 1e6, {"from": deployer, "required_confs": CONFS})
-
-    basic_staking_without_proxy = repeat(
-        BasicStaking.deploy,
-        {"from": deployer, "required_confs": CONFS}
-    )
-
+    print("instance at", basic_staking_without_proxy.address)
 
     proxy = repeat(
         AdminUpgradeabilityProxy.deploy,
@@ -87,6 +43,9 @@ def main():
         bytes(),
         {"from": deployer, "required_confs": CONFS}
     )
+
+    print("proxy at", proxy.address)
+
     basic_staking = Contract.from_abi('basic_staking_without_proxy', proxy, basic_staking_without_proxy.abi)
 
     repeat(
