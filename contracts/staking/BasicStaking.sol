@@ -37,6 +37,8 @@ contract BasicStaking is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
+    event ChangeRewardsDistribution(address indexed old, address indexed current);
+    
     function initialize(
         address _rewardsDistribution,
         address _rewardsToken,
@@ -49,6 +51,12 @@ contract BasicStaking is
         stakingToken = IERC20(_stakingToken);
         rewardsDuration = _rewardsDuration;
         initialized =  true;
+    }
+
+    function changeRewardsDistribution(address account) external onlyRewardsDistribution {
+        address oldRewardsDistribution = rewardsDistribution;
+        rewardsDistribution = account;
+        emit ChangeRewardsDistribution(oldRewardsDistribution, account);
     }
 
     function initializeDefault() external onlyRewardsDistribution {
