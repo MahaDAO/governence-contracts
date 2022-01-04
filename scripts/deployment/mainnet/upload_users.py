@@ -1,4 +1,5 @@
 from math import ceil
+
 from brownie import (
     accounts,
     VotingEscrowV1,
@@ -17,7 +18,6 @@ ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 CONFS = 1
 
 
-
 def main():
     deployer = accounts.at(DEPLOYER)
     voting_escrow = Contract.from_abi("VotingEscrowV1", DEPLOYED_VOTING_ESCROW, VotingEscrowV1.abi)
@@ -32,10 +32,11 @@ def main():
     end_times = [int(l[2]) for l in parsed_files]
 
     end_times_final = []
-    tomorrow = 1640649600
+    week = 7 * 86400
+    today = 1641301063
 
     for l in end_times:
-        if (l < tomorrow): end_times_final += [tomorrow]
+        if (l < today + 2 * week): end_times_final += [today + 2 * week]
         else: end_times_final += [l]
 
     batch_size = 30
