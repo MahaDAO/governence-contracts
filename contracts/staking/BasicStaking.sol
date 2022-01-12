@@ -9,7 +9,7 @@ import "../interfaces/IPoolToken.sol";
 import "../utils/SafeMath.sol";
 import "./IBasicStaking.sol";
 import "./IVotingEscrow.sol";
-import "./BasicRewardsDistributionRecipient.sol";
+import "./distribution/BasicRewardsDistributionRecipient.sol";
 import "../utils/ReentrancyGuard.sol";
 
 // forked from https://github.com/SetProtocol/index-coop-contracts/blob/master/contracts/staking/StakingRewardsV2.sol
@@ -37,8 +37,11 @@ contract BasicStaking is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
-    event ChangeRewardsDistribution(address indexed old, address indexed current);
-    
+    event ChangeRewardsDistribution(
+        address indexed old,
+        address indexed current
+    );
+
     function initialize(
         address _rewardsDistribution,
         address _rewardsToken,
@@ -50,10 +53,13 @@ contract BasicStaking is
         rewardsToken = IPoolToken(_rewardsToken);
         stakingToken = IERC20(_stakingToken);
         rewardsDuration = _rewardsDuration;
-        initialized =  true;
+        initialized = true;
     }
 
-    function changeRewardsDistribution(address account) external onlyRewardsDistribution {
+    function changeRewardsDistribution(address account)
+        external
+        onlyRewardsDistribution
+    {
         address oldRewardsDistribution = rewardsDistribution;
         rewardsDistribution = account;
         emit ChangeRewardsDistribution(oldRewardsDistribution, account);
@@ -75,8 +81,7 @@ contract BasicStaking is
     }
 
     function balanceOf(address account) public view override returns (uint256) {
-        return
-            IVotingEscrow(address(stakingToken)).balanceOfWithoutDecay(account);
+        return IVotingEscrow(address(stakingToken)).balanceOf(account);
     }
 
     function lastTimeRewardApplicable() public view override returns (uint256) {
