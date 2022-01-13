@@ -58,4 +58,12 @@ contract Collector is Ownable {
         emit DistributorChanged(distributor, who);
         distributor = who;
     }
+
+    function changeRewardsDistribution(address who) external onlyOwner {
+        stakingContract.changeRewardsDistribution(who);
+    }
+
+    function changeRewardsDuration(uint256 duration) external onlyOwner {
+        stakingContract.changeRewardsDuration(duration);
+    }
 }

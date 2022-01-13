@@ -42,6 +42,11 @@ contract BasicStaking is
         address indexed current
     );
 
+    event ChangeRewardsDuration(
+        uint256 old,
+        uint256 current
+    );
+
     function initialize(
         address _rewardsDistribution,
         address _rewardsToken,
@@ -58,11 +63,22 @@ contract BasicStaking is
 
     function changeRewardsDistribution(address account)
         external
+        override
         onlyRewardsDistribution
     {
         address oldRewardsDistribution = rewardsDistribution;
         rewardsDistribution = account;
         emit ChangeRewardsDistribution(oldRewardsDistribution, account);
+    }
+
+    function changeRewardsDuration(uint256 duration)
+        external
+        override
+        onlyRewardsDistribution
+    {
+        uint256 oldRewardsDuration = rewardsDuration;
+        rewardsDuration = duration;
+        emit ChangeRewardsDuration(oldRewardsDuration, duration);
     }
 
     function initializeDefault() external onlyRewardsDistribution {
@@ -191,6 +207,7 @@ contract BasicStaking is
         require(msg.sender == address(stakingToken), "Not staking token");
         _updateReward(who);
     }
+
 
     /* ========== EVENTS ========== */
     event DefaultInitialization();

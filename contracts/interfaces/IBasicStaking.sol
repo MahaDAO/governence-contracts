@@ -20,4 +20,8 @@ interface IBasicStaking {
     function totalSupply() external view returns (uint256);
 
     function balanceOf(address account) external view returns (uint256);
+
+    function changeRewardsDistribution(address account) external;
+
+    function changeRewardsDuration(uint256 duration) external;
 }
