@@ -23,6 +23,7 @@ const chainIds = {
   mainnet: 1,
   rinkeby: 4,
   ropsten: 3,
+  "polygon-mumbai": 80001,
 };
 
 const MNEMONIC = process.env.MNEMONIC || "";
@@ -40,7 +41,9 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
   }
 });
 
-function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
+function createTestnetConfig(
+  network: keyof typeof chainIds
+): NetworkUserConfig {
   const url: string = "https://" + network + ".infura.io/v3/" + INFURA_API_KEY;
   return {
     accounts: {
@@ -71,6 +74,7 @@ const config: HardhatUserConfig = {
     kovan: createTestnetConfig("kovan"),
     rinkeby: createTestnetConfig("rinkeby"),
     ropsten: createTestnetConfig("ropsten"),
+    polygonMumbai: createTestnetConfig("polygon-mumbai"),
   },
   solidity: {
     compilers: [

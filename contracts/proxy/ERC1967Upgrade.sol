@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.0;
 
 import "./ERC1967Storage.sol";
 
-/**
+/*
  * @dev This abstract contract provides event emitting update functions for
  * https://eips.ethereum.org/EIPS/eip-1967[EIP1967] slots.
  *
