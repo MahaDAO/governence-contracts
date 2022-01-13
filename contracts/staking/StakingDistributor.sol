@@ -5,34 +5,30 @@ pragma solidity ^0.8.0;
 import {IBasicStaking} from "../interfaces/IBasicStaking.sol";
 import {IERC20} from "../interfaces/IERC20.sol";
 import {IPoolToken} from "../interfaces/IPoolToken.sol";
-import {Epoch} from "../utils/Epoch.sol";
+import {IStakingDistributor} from "../interfaces/IStakingDistributor.sol";
+import {Ownable} from "../utils/Ownable.sol";
 import {SafeMath} from "../utils/SafeMath.sol";
 
-contract Collector is Epoch {
+contract StakingDistributor is Ownable, IStakingDistributor {
     using SafeMath for uint256;
 
     IBasicStaking public stakingContract;
     IPoolToken public poolToken;
-    address public operator;
-
-    event OperatorChanged(address indexed _before, address _after);
+    address public collector;
 
     constructor(
         address _stakingContract,
-        address _poolToken,
-        address _operator,
-        uint256 _period
-    ) Epoch(_period, block.timestamp, 0) {
+        address _poolToken
+    ) {
         stakingContract = IBasicStaking(_stakingContract);
         poolToken = IPoolToken(_poolToken);
-        operator = _operator;
     }
 
     function distributeRewards(
         address[] memory tokens,
         uint256[] memory usdPrices18 // usd prices in base 18
-    ) external {
-        require(msg.sender == operator, "not operator");
+    ) external override {
+        require(msg.sender == collector, "not collector");
         uint256 usdAmountToMint = 0;
 
         for (uint256 index = 0; index < tokens.length; index++) {
@@ -54,9 +50,9 @@ contract Collector is Epoch {
         stakingContract.notifyRewardAmount(usdAmountToMint);
     }
 
-    function changeOperator(address who) external onlyOwner {
-        emit OperatorChanged(operator, who);
-        operator = who;
+    function changeCollector(address who) external onlyOwner {
+        emit CollectorChanged(collector, who);
+        collector = who;
     }
 
     function changeRewardsDistribution(address who) external onlyOwner {
