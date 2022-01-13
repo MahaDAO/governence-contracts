@@ -25,13 +25,13 @@ const chainIds = {
   mainnet: 1,
   rinkeby: 4,
   ropsten: 3,
+  polygon: 137,
   "polygon-mumbai": 80001,
 };
 
 const MNEMONIC = process.env.MNEMONIC || "";
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
 const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
-const ALCHEMY_KEY = process.env.ALCHEMY_KEY || "";
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -64,6 +64,9 @@ function createTestnetConfig(
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
+  paths: {
+    sources: "./contracts",
+  },
   networks: {
     hardhat: {
       accounts: {
@@ -77,6 +80,7 @@ const config: HardhatUserConfig = {
     rinkeby: createTestnetConfig("rinkeby"),
     ropsten: createTestnetConfig("ropsten"),
     polygonMumbai: createTestnetConfig("polygon-mumbai"),
+    polygon: createTestnetConfig("polygon"),
   },
   solidity: {
     compilers: [

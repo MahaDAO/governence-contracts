@@ -507,10 +507,8 @@ def manual_add_users(_addrs: address[100], _ending_times: uint256[100], _amounts
 @external
 def refresh_users(_addrs: address[100]):
     """
-    @notice Manually add users who have missed the lock
-    @param _addrs Addresses for which we have to update the locked state
-    @param _ending_times The lock end time for _addrs
-    @param _amounts The amount locked for _amounts
+    @notice Refresh users for the staking contract
+    @param _addrs Addresses for which we have to update the staking state
     """
     assert msg.sender == self.owner  # dev: owner only
 
