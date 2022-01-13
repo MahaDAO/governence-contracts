@@ -7,6 +7,7 @@ dotenvConfig({ path: resolve(__dirname, "./.env") });
 import { HardhatUserConfig } from "hardhat/types";
 import { NetworkUserConfig } from "hardhat/types";
 
+import "@nomiclabs/hardhat-vyper";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
