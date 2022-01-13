@@ -220,6 +220,15 @@ def apply_smart_wallet_checker():
     assert msg.sender == self.owner
     self.smart_wallet_checker = self.future_smart_wallet_checker
 
+@external
+def change_name_symbol(name: String[64], symbol: String[32]):
+    """
+    @notice Apply setting external contract to check approved smart contract wallets
+    """
+    assert msg.sender == self.owner
+    self.name = name
+    self.symbol = symbol
+
 
 @internal
 def assert_not_contract(addr: address):
