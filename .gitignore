@@ -107,3 +107,6 @@ dist
 
 output/
 venv
+typechain
+artifacts
+cache
