@@ -2,7 +2,7 @@
 
 """
 @title Voting Escrow
-@author Curve Finance
+@author Curve Finance, MahaDAO
 @license MIT
 @notice Votes have a weight depending on time, so that users are
         committed to the future of (whatever they are voting for)
@@ -280,7 +280,9 @@ def _calculateBalanceAt(amount: uint256, fromTs: uint256, toTs: uint256) -> uint
 @view
 def _balanceOfWithoutDecay(addr: address) -> uint256:
     _locked: LockedBalance = self.locked[addr]
-    return convert(_locked.amount, uint256)
+    amount: uint256 = convert(_locked.amount, uint256)
+    if _locked.end == 0 or _locked.start == 0: return 0
+    return self._calculateBalanceAt(amount, _locked.start, _locked.end)
 
 @internal
 def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uint256):
