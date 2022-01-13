@@ -9,14 +9,11 @@ pragma solidity ^0.8.0;
 interface IVotingEscrow {
     function totalSupplyWithoutDecay() external view returns (uint256);
 
-    function balanceOfWithoutDecay(address account)
-        external
-        view
-        returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
 
     function totalSupply(uint256 timestamp) external view returns (uint256);
 
-    function balanceOf(address account, uint256 timestamp)
+    function balanceOfWithDecay(address account, uint256 timestamp)
         external
         view
         returns (uint256);

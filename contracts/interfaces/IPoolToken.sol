@@ -9,6 +9,8 @@ interface IPoolToken is IERC20 {
 
     function withdrawTo(uint256 amount, address to) external;
 
+    function mint(address to, uint256 amount) external;
+
     event ToggleWithdrawals(bool state);
     event TokenAdded(address indexed token);
     event Withdraw(address indexed who, address to, uint256 amount);

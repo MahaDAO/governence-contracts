@@ -58,7 +58,7 @@ contract PoolToken is AccessControl, ERC20Proxy, IPoolToken {
         emit TokenReplaced(address(token), index);
     }
 
-    function mint(address to, uint256 amount) external onlyGovernance {
+    function mint(address to, uint256 amount) external override onlyGovernance {
         _mint(to, amount);
     }
 
@@ -103,6 +103,10 @@ contract PoolToken is AccessControl, ERC20Proxy, IPoolToken {
         uint256 balance = token.balanceOf(address(this));
         token.transfer(_msgSender(), balance);
         emit TokensRetrieved(address(token), _msgSender(), balance);
+    }
+
+    function burnFor(address who, uint256 amount) external onlyAdmin {
+        _burn(who, amount);
     }
 
     function ratePerToken() external view returns (uint256[] memory rates) {
