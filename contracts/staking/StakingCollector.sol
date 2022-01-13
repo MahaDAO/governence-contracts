@@ -8,7 +8,7 @@ import {Epoch} from "../utils/Epoch.sol";
 import {Math} from "../utils/Math.sol";
 import {SafeMath} from "../utils/SafeMath.sol";
 
-contract Collector is Epoch {
+contract StakingCollector is Epoch {
     using SafeMath for uint256;
 
     IStakingDistributor public distributor;
@@ -20,11 +20,10 @@ contract Collector is Epoch {
 
     constructor(
         address _distributor,
-        address _operator,
         uint256 _period
     ) Epoch(_period, block.timestamp, 0) {
         distributor = IStakingDistributor(_distributor);
-        operator = _operator;
+        operator = msg.sender;
     }
 
     // set the epoch rates; ie how much tokens to add to the staking contract every epoch

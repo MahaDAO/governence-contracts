@@ -2,7 +2,7 @@
 
 from brownie import (
     accounts,
-    StakingCollector,
+    StakingDistributor,
     accounts
 )
 
@@ -14,9 +14,9 @@ CONFS = 1
 def main():
     deployer = accounts.at(DEPLOYER)
 
-    instance = StakingCollector.deploy(
-        "0x4040E361DfC8426c5229867d018cAcD619aE5921",  # _distributor,
-        86400,
+    instance = StakingDistributor.deploy(
+        "0x89DA855d94dD60396E585B19072A30397A9355A1",  # _stakingContract,
+        "0x48202b3f81e345c8f72aae88cc386dd1fbbeab97",  # _poolToken,
         {"from": deployer, "required_confs": CONFS},
         publish_source=True
     )
