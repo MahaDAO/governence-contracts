@@ -1,4 +1,4 @@
-# @version 0.2.16
+# @version 0.3.1
 
 """
 @title Voting Escrow
@@ -280,10 +280,7 @@ def _calculateBalanceAt(amount: uint256, fromTs: uint256, toTs: uint256) -> uint
 @view
 def _balanceOfWithoutDecay(addr: address) -> uint256:
     _locked: LockedBalance = self.locked[addr]
-    amount: uint256 = convert(_locked.amount, uint256)
-
-    if _locked.end == 0 or _locked.start == 0: return 0
-    return self._calculateBalanceAt(amount, _locked.start, _locked.end)
+    return convert(_locked.amount, uint256)
 
 @internal
 def _update_total_supply_without_decay(balanceAfter: uint256, balanceBefore: uint256):

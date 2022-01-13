@@ -1,4 +1,4 @@
-# @version 0.2.16
+# @version 0.3.1
 
 """
 @title Voting Escrow
@@ -28,6 +28,7 @@ struct Point:
     slope: int128  # - dweight / dt
     ts: uint256
     blk: uint256  # block
+
 # We cannot really do block numbers per se b/c slope is per time, not per block
 # and per block could be fairly bad b/c Ethereum changes blocktimes.
 # What we can do is to extrapolate ***At functions
