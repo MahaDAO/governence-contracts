@@ -1,4 +1,4 @@
-# @version 0.2.4
+# @version 0.3.1
 """
 @title Simple Vesting Escrow
 @author Curve Finance

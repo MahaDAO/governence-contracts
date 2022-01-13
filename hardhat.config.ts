@@ -2,6 +2,7 @@ import { task } from "hardhat/config";
 
 import { config as dotenvConfig } from "dotenv";
 import { resolve } from "path";
+
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
 import { HardhatUserConfig } from "hardhat/types";
@@ -97,6 +98,9 @@ const config: HardhatUserConfig = {
     currency: "USD",
     gasPrice: 100,
     // enabled: process.env.REPORT_GAS ? true : false,
+  },
+  vyper: {
+    version: "0.3.1",
   },
   typechain: {
     outDir: "typechain",

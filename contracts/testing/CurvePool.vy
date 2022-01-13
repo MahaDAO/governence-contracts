@@ -1,6 +1,6 @@
 # (c) Curve.Fi, 2020
 # Pool for two plain coins
-# @version 0.2.4
+# @version 0.3.1
 
 from vyper.interfaces import ERC20
 

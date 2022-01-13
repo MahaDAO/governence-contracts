@@ -1,4 +1,4 @@
-# @version 0.2.4
+# @version 0.3.1
 """
 @title Staking Liquidity Gauge
 @author Curve Finance
@@ -435,8 +435,8 @@ def apply_transfer_ownership():
 @external
 def toggle_external_rewards_claim(val: bool):
     """
-    @notice Switch claiming rewards on/off. 
+    @notice Switch claiming rewards on/off.
             This is to prevent a malicious rewards contract from preventing CRV claiming
-    """ 
+    """
     assert msg.sender == self.admin
     self.is_claiming_rewards = val
