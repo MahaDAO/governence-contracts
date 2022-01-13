@@ -652,7 +652,7 @@ def find_block_epoch(_block: uint256, max_epoch: uint256) -> uint256:
 
 @external
 @view
-def balanceOf(addr: address, _t: uint256 = block.timestamp) -> uint256:
+def balanceOfWithDecay(addr: address, _t: uint256 = block.timestamp) -> uint256:
     """
     @notice Get the current voting power for `msg.sender`
     @dev Adheres to the ERC20 `balanceOf` interface for Aragon compatibility
@@ -669,6 +669,12 @@ def balanceOf(addr: address, _t: uint256 = block.timestamp) -> uint256:
         if last_point.bias < 0:
             last_point.bias = 0
         return convert(last_point.bias, uint256)
+
+
+@external
+@view
+def balanceOf(addr: address) -> uint256:
+    return self._balanceOfWithoutDecay(addr)
 
 
 @external
