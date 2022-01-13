@@ -1,4 +1,4 @@
-# @version 0.2.7
+# @version 0.3.1
 """
 @title USDN Burner
 @notice Return 50% of USDN to pool LPs, convert remaining to 3CRV

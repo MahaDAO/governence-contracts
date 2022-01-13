@@ -1,4 +1,4 @@
-# @version 0.2.7
+# @version 0.3.1
 """
 @title Meta Burner
 @notice Converts Metapool-paired coins to 3CRV and transfers to fee distributor

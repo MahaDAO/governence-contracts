@@ -1,4 +1,4 @@
-# @version 0.2.7
+# @version 0.3.1
 """
 @title LP Burner
 @notice Converts Curve LP tokens to a single asset and forwards to another burner

@@ -5,7 +5,7 @@ ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
 owner_functions_mock = """
-# @version 0.2.7
+# @version 0.3.1
 
 aave: public(uint256)
 donated: public(bool)

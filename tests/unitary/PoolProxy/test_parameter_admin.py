@@ -44,7 +44,7 @@ def revert_new_parameters():
 @pytest.fixture(scope="module")
 def registry(accounts):
     registry_mock = """
-# @version 0.2.7
+# @version 0.3.1
 
 @view
 @external
@@ -65,7 +65,7 @@ def get_underlying_balances(pool: address) -> uint256[8]:
 @pytest.fixture(scope="module", autouse=True)
 def provider(registry):
     provider_mock = f"""
-# @version 0.2.7
+# @version 0.3.1
 @view
 @external
 def get_registry() -> address:

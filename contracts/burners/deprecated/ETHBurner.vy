@@ -1,4 +1,4 @@
-# @version 0.2.8
+# @version 0.3.1
 """
 @title Synth Burner
 @notice Converts ETH denominated coins to USDC and transfers to `UnderlyingBurner`

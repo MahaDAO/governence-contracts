@@ -9,7 +9,7 @@ LP_AMOUNT = 10 ** 18
 
 
 code = """
-# @version 0.2.7
+# @version 0.3.1
 
 from vyper.interfaces import ERC20
 

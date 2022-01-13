@@ -1,4 +1,4 @@
-# @version 0.2.8
+# @version 0.3.1
 """
 @title Tokenized Liquidity Gauge Wrapper
 @author Curve Finance

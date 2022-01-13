@@ -1,4 +1,4 @@
-# @version 0.2.12
+# @version 0.3.1
 """
 @title Curve Crypto Pool Proxy
 @author Curve Finance
@@ -355,12 +355,12 @@ def commit_new_parameters(
     @notice Commit new parameters for `_pool`, A: `amplification`, fee: `new_fee` and admin fee: `new_admin_fee`
     @param _pool Pool address
     @param _new_mid_fee New mid fee, less than or equal to `_new_out_fee`
-    @param _new_out_fee New out fee, greater than MIN_FEE and less than MAX_FEE 
+    @param _new_out_fee New out fee, greater than MIN_FEE and less than MAX_FEE
     @param _new_admin_fee New admin fee, less than MAX_ADMIN_FEE
     @param _new_fee_gamma New fee gamma, within the bounds of [1, 2**100]
     @param _new_price_threshold New price threshold, greater than `_new_mid_fee`
     @param _new_adjustment_step New adjustment step, less than `_new_price_threshold`
-    @param _new_ma_half_time New MA half time, less than 7 days 
+    @param _new_ma_half_time New MA half time, less than 7 days
     """
     assert msg.sender == self.parameter_admin, "Access denied"
     Curve(_pool).commit_new_parameters(

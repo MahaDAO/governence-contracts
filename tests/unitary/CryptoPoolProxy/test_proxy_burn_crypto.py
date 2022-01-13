@@ -3,7 +3,7 @@ import pytest
 from brownie import ETH_ADDRESS, ZERO_ADDRESS
 
 burner_mock = """
-# @version 0.2.7
+# @version 0.3.1
 
 is_burned: public(HashMap[address, bool])
 

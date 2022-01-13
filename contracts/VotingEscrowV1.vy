@@ -505,6 +505,22 @@ def manual_add_users(_addrs: address[100], _ending_times: uint256[100], _amounts
 
 
 @external
+def refresh_users(_addrs: address[100]):
+    """
+    @notice Manually add users who have missed the lock
+    @param _addrs Addresses for which we have to update the locked state
+    @param _ending_times The lock end time for _addrs
+    @param _amounts The amount locked for _amounts
+    """
+    assert msg.sender == self.owner  # dev: owner only
+
+    for i in range(100):
+        if _addrs[i] == ZERO_ADDRESS:
+            break
+        StakingContract(self.staking_contract).updateReward(_addrs[i])
+
+
+@external
 @nonreentrant('lock')
 def deposit_for(_addr: address, _value: uint256):
     """

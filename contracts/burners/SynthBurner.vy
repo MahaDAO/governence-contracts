@@ -1,4 +1,4 @@
-# @version 0.2.8
+# @version 0.3.1
 """
 @title Synth Burner
 @notice Swaps non-USD denominated assets for synths, converts synths to sUSD,

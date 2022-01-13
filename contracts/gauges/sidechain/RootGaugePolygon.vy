@@ -1,4 +1,4 @@
-# @version 0.2.12
+# @version 0.3.1
 """
 @title Root-Chain Gauge
 @author Curve Finance

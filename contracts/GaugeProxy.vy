@@ -1,4 +1,4 @@
-# @version 0.2.8
+# @version 0.3.1
 """
 @title Curve LiquidityGaugeV2 Ownerhip Proxy
 @author Curve Finance

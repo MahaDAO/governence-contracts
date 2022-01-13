@@ -84,7 +84,8 @@ def receiver(accounts):
 
 @pytest.fixture(scope="module")
 def mahax_staking_pool_token(ERC20, accounts):
-    contract = ERC20.deploy("MAHAX Staking PoolToken", "MAHAX-Pool", 18, 130303303, {"from": accounts[0]})
+    contract = ERC20.deploy("MAHAX Staking PoolToken", "MAHAX-Pool",
+                            18, 130303303, {"from": accounts[0]})
     contract.mint(accounts[0], 1000 * 1e18, {"from": accounts[0]})
     yield contract
 
@@ -96,14 +97,15 @@ def token(ERC20CRV, accounts):
 
 @pytest.fixture(scope="module")
 def voting_escrow(VotingEscrow, accounts, token):
-    contract =  VotingEscrow.deploy({"from": accounts[0]})
+    contract = VotingEscrow.deploy({"from": accounts[0]})
     contract.initialize(token, "Voting-escrowed MAHA", "MAHAX", "mahax_0.99", {"from": accounts[0]})
     yield contract
 
 
 @pytest.fixture(scope="module")
 def staking_contract(BasicStaking, voting_escrow, accounts, mahax_staking_pool_token):
-    contract = BasicStaking.deploy(accounts[0], mahax_staking_pool_token, voting_escrow, 90 * 24 * 60 * 60, {"from": accounts[0]})
+    contract = BasicStaking.deploy(
+        accounts[0], mahax_staking_pool_token, voting_escrow, 90 * 24 * 60 * 60, {"from": accounts[0]})
     voting_escrow.set_staking_contract(contract, {"from": accounts[0]})
     yield contract
 
@@ -350,7 +352,7 @@ def crypto_views(alice, crypto_project, crypto_math, crypto_coins):
     for idx, coin in enumerate(crypto_coins):
         new_value = 10 ** (18 - coin.decimals())
         source = source.replace(f"1,#{idx}", f"{new_value},")
-    Views = compile_source(source, vyper_version="0.2.12").Vyper
+    Views = compile_source(source, vyper_version="0.3.1").Vyper
     return Views.deploy(crypto_math, {"from": alice})
 
 
@@ -386,7 +388,7 @@ def crypto_pool(
             k = convert.to_address(convert.to_bytes(k, "bytes20"))
         source.replace(k, v)
 
-    CryptoPool = compile_source(source, vyper_version="0.2.12").Vyper
+    CryptoPool = compile_source(source, vyper_version="0.3.1").Vyper
     swap = CryptoPool.deploy(
         alice,
         135 * 3 ** 3,  # A

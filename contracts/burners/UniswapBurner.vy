@@ -1,4 +1,4 @@
-# @version 0.2.8
+# @version 0.3.1
 """
 @title Uniswap Burner
 @notice Swaps coins to USDC using Uniswap or Sushi, and transfers to `UnderlyingBurner`

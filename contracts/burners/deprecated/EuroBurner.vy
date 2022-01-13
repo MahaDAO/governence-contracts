@@ -1,4 +1,4 @@
-# @version 0.2.8
+# @version 0.3.1
 """
 @title Synth Burner
 @notice Converts EUR denominated coins to sEUR and transfers to `UnderlyingBurner`

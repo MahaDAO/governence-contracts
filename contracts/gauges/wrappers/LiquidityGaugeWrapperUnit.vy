@@ -1,4 +1,4 @@
-# @version 0.2.11
+# @version 0.3.1
 """
 @title Tokenized Gauge Wrapper: Unit Protocol Edition
 @author Curve Finance

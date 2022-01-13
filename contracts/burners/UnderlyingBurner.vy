@@ -1,4 +1,4 @@
-# @version 0.2.8
+# @version 0.3.1
 """
 @title Underlying Burner
 @notice Converts underlying coins to USDC, adds liquidity to 3pool

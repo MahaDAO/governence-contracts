@@ -1,4 +1,4 @@
-# @version 0.2.12
+# @version 0.3.1
 """
 @title Crypto LP Burner
 @notice Converts Crypto Pool LP tokens to a single asset and forwards to another burner
