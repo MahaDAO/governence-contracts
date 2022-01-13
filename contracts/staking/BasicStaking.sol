@@ -7,9 +7,9 @@ import "../utils/SafeERC20.sol";
 import "../interfaces/IERC20.sol";
 import "../interfaces/IPoolToken.sol";
 import "../utils/SafeMath.sol";
-import "./IBasicStaking.sol";
-import "./IVotingEscrow.sol";
-import "./distribution/BasicRewardsDistributionRecipient.sol";
+import "../interfaces/IBasicStaking.sol";
+import "../interfaces/IVotingEscrow.sol";
+import "./BasicRewardsDistributionRecipient.sol";
 import "../utils/ReentrancyGuard.sol";
 
 // forked from https://github.com/SetProtocol/index-coop-contracts/blob/master/contracts/staking/StakingRewardsV2.sol
