@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "npx hardhat compile",
-    "test": "npx hardhat test",
-    "preinstall": "npm i -g ganache-cli@6.12.1"
+    "test": "npx hardhat test"
   },
   "author": "",
   "license": "MIT",
