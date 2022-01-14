@@ -1,4 +1,4 @@
-# @version 0.3.1
+# @version 0.2.16
 
 """
 @title Voting Escrow
@@ -451,10 +451,14 @@ def _deposit_and_transfer_for(_addr: address, _value: uint256, unlock_time: uint
 
     if _value != 0 and transfer:
         assert ERC20(self.token).transferFrom(_addr, self, _value)
+        log Transfer(ZERO_ADDRESS, _addr, _value)
+    else if type == self.INCREASE_LOCK_AMOUNT or type == self.INCREASE_UNLOCK_TIME
+        # diff_value = mahax_to_be_added
+        # log Transfer(ZERO_ADDRESS, _addr, diff_value)
+        pass
 
     # emit events
     log Deposit(_addr, _value, _locked.end, type, block.timestamp)
-    log Transfer(ZERO_ADDRESS, _addr, _value)
     log Supply(supply_before, supply_before + _value)
 
     # update total supply and staking rewards
