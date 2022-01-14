@@ -1,6 +1,6 @@
 from brownie import (
     accounts,
-    VotingEscrowV1,
+    MAHAX,
     accounts,
     AdminUpgradeabilityProxy,
     Contract
@@ -20,6 +20,7 @@ DEPLOYER = accounts.load('0')
 print('Deployer is ', DEPLOYER)
 CONFS = 1
 
+
 def main():
     output_file = {}
     gas_strategy = GasNowStrategy("fast")
@@ -31,7 +32,7 @@ def main():
     }
 
     stakeable_escrow_without_proxy = repeat(
-        VotingEscrowV1.deploy,
+        MAHAX.deploy,
         {"from": deployer, "required_confs": CONFS}
     )
 
@@ -42,26 +43,27 @@ def main():
         bytes(),
         {"from": deployer, "required_confs": CONFS}
     )
-    escrow_with_proxy = Contract.from_abi('stakeable_escrow_without_proxy', proxy, stakeable_escrow_without_proxy.abi)
+    escrow_with_proxy = Contract.from_abi(
+        'stakeable_escrow_without_proxy', proxy, stakeable_escrow_without_proxy.abi)
 
-    print('Fetching values from Proxy for VotingEscrow before initializing')
+    print('Fetching values from Proxy for MAHAX before initializing')
     print('- WEEK = ', escrow_with_proxy.WEEK())
     print('- INCREASE_LOCK_AMOUNT = ', escrow_with_proxy.INCREASE_LOCK_AMOUNT())
     print()
 
     save_abi(escrow_with_proxy, "VotingEscrow")
-    output_file["VotingEscrow"] = {
-        "abi": "VotingEscrow",
+    output_file["MAHAX"] = {
+        "abi": "MAHAX",
         "address": escrow_with_proxy.address
     }
 
     repeat(
         escrow_with_proxy.initialize,
         MAHA_ADDRESS,
-        "Vote-escrowed MAHA",
+        "Locked MAHA",
         "MAHAX",
         "maha_0.99",
-        {"from": deployer, "required_confs": CONFS }
+        {"from": deployer, "required_confs": CONFS}
     )
 
     print('Fetching values from Proxy for VotingEscrow after initializing')
