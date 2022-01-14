@@ -15,7 +15,7 @@ def main():
     deployer = accounts.at(DEPLOYER)
 
     instance = StakingCollector.deploy(
-        "0x4040E361DfC8426c5229867d018cAcD619aE5921",  # _distributor,
+        "0xCD732777f330eCa5c1c7A0Ac50eA89123d9EBAf1",  # _distributor,
         86400,
         {"from": deployer, "required_confs": CONFS},
         publish_source=True
