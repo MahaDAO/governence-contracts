@@ -60,4 +60,8 @@ contract StakingCollector is Epoch {
         emit OperatorChanged(operator, who);
         operator = who;
     }
+
+    function refundTokens (address token) external onlyOwner {
+        IERC20(token).transfer(owner(), IERC20(token).balanceOf(address(this)));
+    }
 }

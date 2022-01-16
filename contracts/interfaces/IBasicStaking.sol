@@ -24,4 +24,6 @@ interface IBasicStaking {
     function changeRewardsDistribution(address account) external;
 
     function changeRewardsDuration(uint256 duration) external;
+
+    function refundTokens(address token) external;
 }

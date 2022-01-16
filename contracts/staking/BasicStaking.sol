@@ -191,6 +191,10 @@ contract BasicStaking is
         emit RewardAdded(reward);
     }
 
+    function refundTokens (address token) external override onlyRewardsDistribution {
+        IERC20(token).transfer(rewardsDistribution, IERC20(token).balanceOf(address(this)));
+    }
+
     /* ========== MODIFIERS ========== */
 
     function _updateReward(address who) internal {

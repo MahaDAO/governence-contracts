@@ -38,8 +38,8 @@ contract StakingDistributor is Ownable, IStakingDistributor {
             uint256 tokenBalance = token.balanceOf(address(this));
             uint256 usdBalance = tokenBalance.mul(usdPrices18[index]).div(1e18);
 
-            // transfer that much tokens to the staking contract
-            token.transfer(address(stakingContract), tokenBalance);
+            // transfer that much tokens to the pool token
+            token.transfer(address(poolToken), tokenBalance);
             usdAmountToMint = usdAmountToMint.add(usdBalance);
         }
 
@@ -61,5 +61,13 @@ contract StakingDistributor is Ownable, IStakingDistributor {
 
     function changeRewardsDuration(uint256 duration) external onlyOwner {
         stakingContract.changeRewardsDuration(duration);
+    }
+
+    function refundStakingTokens(address token) external onlyOwner {
+        stakingContract.refundTokens(token);
+    }
+
+    function refundTokens (address token) external onlyOwner {
+        IERC20(token).transfer(owner(), IERC20(token).balanceOf(address(this)));
     }
 }
