@@ -17,6 +17,8 @@ contract StakingCollector is Epoch {
     mapping(address => uint256) public tokenRatePerEpoch;
 
     event OperatorChanged(address indexed _before, address _after);
+    event DistributorChanged(address indexed _before, address _after);
+
 
     constructor(
         address _distributor,
@@ -59,6 +61,11 @@ contract StakingCollector is Epoch {
     function changeOperator(address who) external onlyOwner {
         emit OperatorChanged(operator, who);
         operator = who;
+    }
+
+    function changeDistributor(address who) external onlyOwner {
+        emit DistributorChanged(address(distributor), who);
+        distributor = IStakingDistributor(who);
     }
 
     function refundTokens (address token) external onlyOwner {

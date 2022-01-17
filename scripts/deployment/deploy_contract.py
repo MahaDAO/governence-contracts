@@ -2,7 +2,7 @@
 
 from brownie import (
     accounts,
-    BasicStaking,
+    PoolToken,
 )
 
 DEPLOYER = accounts.load('0')
@@ -13,7 +13,7 @@ CONFS = 1
 def main():
     deployer = accounts.at(DEPLOYER)
 
-    instance = BasicStaking.deploy(
+    instance = PoolToken.deploy(
         {"from": deployer, "required_confs": CONFS},
         publish_source=True
     )
