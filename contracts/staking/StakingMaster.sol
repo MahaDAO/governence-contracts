@@ -24,6 +24,7 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
 
     IVotingEscrow public votingEscrow;
     address[] public pools;
+    mapping(address => bool) public isPoolValid;
 
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
@@ -54,11 +55,25 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
         }
     }
 
-    function addPool(address pool) external override {
-        require(hasRole(POOL_MAINTAINER_ROLE, _msgSender()), "not pool maintainer");
+    function _addPool(address pool) internal {
+        require(isPoolValid[pool], "pool already added");
         pools.push(pool);
+        isPoolValid[pool] = true;
         emit PoolAdded(pool);
     }
+
+    function addPool(address pool) external override {
+        require(hasRole(POOL_MAINTAINER_ROLE, _msgSender()), "not pool maintainer");
+        _addPool(pool);
+    }
+
+    function addPools(address[] memory _pools) external override {
+        require(hasRole(POOL_MAINTAINER_ROLE, _msgSender()), "not pool maintainer");
+        for (uint256 index = 0; index < _pools.length; index++) {
+            _addPool(_pools[index]);
+        }
+    }
+
 
     function updateRewardFor(address who) external override {
         require(hasRole(UPDATER_ROLE, _msgSender()), "not updater");
