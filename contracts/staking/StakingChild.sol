@@ -12,8 +12,12 @@ import {ReentrancyGuard} from "../utils/ReentrancyGuard.sol";
 import {SafeERC20} from "../utils/SafeERC20.sol";
 import {SafeMath} from "../utils/SafeMath.sol";
 
-// forked from https://github.com/SetProtocol/index-coop-contracts/blob/master/contracts/staking/StakingRewardsV2.sol
-// NOTE: V2 allows setting of rewardsDuration in constructor
+/**
+ * The staking child is a low-level contract that maintains for a single token all the staking logic.
+ * It's functions are to only be called by the master staking contract.
+ *
+ * forked from https://github.com/SetProtocol/index-coop-contracts/blob/master/contracts/staking/StakingRewardsV2.sol
+ */
 contract StakingChild is
     Ownable,
     IStakingChild,

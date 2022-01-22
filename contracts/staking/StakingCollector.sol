@@ -8,6 +8,11 @@ import {Epoch} from "../utils/Epoch.sol";
 import {Math} from "../utils/Math.sol";
 import {SafeMath} from "../utils/SafeMath.sol";
 
+
+/**
+ * The staking collector is an automated distribution contract, that distributes rewards in the contract's
+ * balance at every epoch.
+ */
 contract StakingCollector is Epoch {
     using SafeMath for uint256;
 

@@ -10,6 +10,12 @@ import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
 import {ReentrancyGuard} from "../utils/ReentrancyGuard.sol";
 import {AccessControl} from "../utils/AccessControl.sol";
 
+
+/**
+ * The staking master contract is the high level contract responsible
+ * for interfacing with the end user. It takes into account, account balances,
+ * withdrawing rewards and updating staking balances.
+ */
 contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
     using SafeERC20 for IERC20;
 
