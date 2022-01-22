@@ -2,30 +2,30 @@
 
 pragma solidity ^0.8.0;
 
-import "../utils/Math.sol";
-import "../utils/SafeERC20.sol";
-import "../interfaces/IERC20.sol";
-import "../interfaces/IPoolToken.sol";
-import "../utils/SafeMath.sol";
-import "../interfaces/IBasicStaking.sol";
-import "../interfaces/IVotingEscrow.sol";
-import "./BasicRewardsDistributionRecipient.sol";
-import "../utils/ReentrancyGuard.sol";
+import {IERC20} from "../interfaces/IERC20.sol";
+import {IStakingChild} from "../interfaces/IStakingChild.sol";
+import {IStakingCollector} from "../interfaces/IStakingCollector.sol";
+import {IStakingMaster} from "../interfaces/IStakingMaster.sol";
+import {Math} from "../utils/Math.sol";
+import {Ownable} from "../utils/Ownable.sol";
+import {ReentrancyGuard} from "../utils/ReentrancyGuard.sol";
+import {SafeERC20} from "../utils/SafeERC20.sol";
+import {SafeMath} from "../utils/SafeMath.sol";
 
 // forked from https://github.com/SetProtocol/index-coop-contracts/blob/master/contracts/staking/StakingRewardsV2.sol
 // NOTE: V2 allows setting of rewardsDuration in constructor
-contract BasicStaking is
-    IBasicStaking,
-    BasicRewardsDistributionRecipient,
+contract StakingChild is
+    Ownable,
+    IStakingChild,
     ReentrancyGuard
 {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
-
-    IPoolToken public rewardsToken;
-    IERC20 public stakingToken;
+    IStakingMaster public stakingMaster;
+    IStakingCollector public stakingCollector;
+    IERC20 public rewardsToken;
 
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
@@ -37,67 +37,65 @@ contract BasicStaking is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
-    event ChangeRewardsDistribution(
-        address indexed old,
-        address indexed current
-    );
-
-    event ChangeRewardsDuration(
-        uint256 old,
-        uint256 current
-    );
-
     function initialize(
-        address _rewardsDistribution,
         address _rewardsToken,
-        address _stakingToken,
+        address _stakingMaster,
+        address _stakingCollector,
         uint256 _rewardsDuration
     ) external {
         require(!initialized);
-        rewardsDistribution = _rewardsDistribution;
-        rewardsToken = IPoolToken(_rewardsToken);
-        stakingToken = IERC20(_stakingToken);
+        stakingCollector = IStakingCollector(_stakingCollector);
+        stakingMaster = IStakingMaster(_stakingMaster);
+        rewardsToken = IERC20(_rewardsToken);
         rewardsDuration = _rewardsDuration;
-        initialized = true;
-    }
 
-    function changeRewardsDistribution(address account)
-        external
-        override
-        onlyRewardsDistribution
-    {
-        address oldRewardsDistribution = rewardsDistribution;
-        rewardsDistribution = account;
-        emit ChangeRewardsDistribution(oldRewardsDistribution, account);
-    }
-
-    function changeRewardsDuration(uint256 duration)
-        external
-        override
-        onlyRewardsDistribution
-    {
-        uint256 oldRewardsDuration = rewardsDuration;
-        rewardsDuration = duration;
-        emit ChangeRewardsDuration(oldRewardsDuration, duration);
-    }
-
-    function initializeDefault() external onlyRewardsDistribution {
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardsDuration);
 
         rewardRate = rewardsToken.balanceOf(address(this)).div(rewardsDuration);
 
         emit DefaultInitialization();
+        initialized = true;
+    }
+
+    function changeStakingMaster(address account)
+        external
+        override
+        onlyOwner
+    {
+        address old = address(stakingMaster);
+        stakingMaster = IStakingMaster(account);
+        emit ChangeStakingMaster(old, account);
+    }
+
+    function changeStakingCollector(address account)
+        external
+        override
+        onlyOwner
+    {
+        address old = address(stakingCollector);
+        stakingCollector = IStakingCollector(account);
+        emit ChangeStakingCollector(old, account);
+    }
+
+    function changeRewardsDuration(uint256 duration)
+        external
+        override
+        onlyOwner
+    {
+        uint256 oldRewardsDuration = rewardsDuration;
+        rewardsDuration = duration;
+        emit ChangeRewardsDuration(oldRewardsDuration, duration);
     }
 
     /* ========== VIEWS ========== */
 
     function totalSupply() public view override returns (uint256) {
-        return IVotingEscrow(address(stakingToken)).totalSupplyWithoutDecay();
+        return stakingMaster.totalSupply();
     }
 
     function balanceOf(address account) public view override returns (uint256) {
-        return IVotingEscrow(address(stakingToken)).balanceOf(account);
+        return stakingMaster.balanceOf(account);
     }
 
     function lastTimeRewardApplicable() public view override returns (uint256) {
@@ -118,12 +116,12 @@ contract BasicStaking is
             );
     }
 
-    function earned(address account) public view override returns (uint256) {
+    function earned(address who) public view override returns (uint256) {
         return
-            balanceOf(account)
-                .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
+            balanceOf(who)
+                .mul(rewardPerToken().sub(userRewardPerTokenPaid[who]))
                 .div(1e18)
-                .add(rewards[account]);
+                .add(rewards[who]);
     }
 
     function getRewardForDuration() external view override returns (uint256) {
@@ -132,31 +130,16 @@ contract BasicStaking is
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    function getReward() public override nonReentrant {
-        _updateReward(msg.sender);
+    function getRewardFor(address who) public override {
+        require(_msgSender() == address(stakingMaster), "not master");
+        _updateReward(who);
 
-        uint256 reward = rewards[msg.sender];
+        uint256 reward = rewards[who];
         if (reward > 0) {
-            rewards[msg.sender] = 0;
-            IERC20(address(rewardsToken)).safeTransfer(msg.sender, reward);
-            emit RewardPaid(msg.sender, reward);
+            rewards[who] = 0;
+            rewardsToken.safeTransfer(who, reward);
+            emit RewardPaid(who, reward);
         }
-    }
-
-    function getRewardAndDistribute() public override nonReentrant {
-        _updateReward(msg.sender);
-
-        uint256 reward = rewards[msg.sender];
-        require(reward > 0, "BoostedStaking: rewards = 0");
-
-        rewards[msg.sender] = 0;
-        emit RewardPaid(msg.sender, reward);
-
-        rewardsToken.withdrawTo(reward, msg.sender);
-    }
-
-    function exit() external {
-        getRewardAndDistribute();
     }
 
     /* ========== RESTRICTED FUNCTIONS ========== */
@@ -164,8 +147,8 @@ contract BasicStaking is
     function notifyRewardAmount(uint256 reward)
         external
         override
-        onlyRewardsDistribution
     {
+        require(_msgSender() == address(stakingCollector), "not collector");
         _updateReward(address(0));
 
         if (block.timestamp >= periodFinish) {
@@ -191,8 +174,8 @@ contract BasicStaking is
         emit RewardAdded(reward);
     }
 
-    function refundTokens (address token) external override onlyRewardsDistribution {
-        IERC20(token).transfer(rewardsDistribution, IERC20(token).balanceOf(address(this)));
+    function refundTokens (address token) external override onlyOwner {
+        IERC20(token).transfer(owner(), IERC20(token).balanceOf(address(this)));
     }
 
     /* ========== MODIFIERS ========== */
@@ -206,9 +189,9 @@ contract BasicStaking is
         }
     }
 
-    function updateReward(address who) external {
+    function updateReward(address who) external override {
         // Dev: only stakingToken(MAHAX) can call this update on change to lock state.
-        require(msg.sender == address(stakingToken), "Not staking token");
+        require(msg.sender == address(stakingMaster), "Not staking master");
         _updateReward(who);
     }
 
@@ -221,5 +204,17 @@ contract BasicStaking is
         address indexed tokenAddress,
         address indexed to,
         uint256 amount
+    );
+    event ChangeStakingMaster(
+        address indexed old,
+        address indexed current
+    );
+    event ChangeStakingCollector(
+        address indexed old,
+        address indexed current
+    );
+    event ChangeRewardsDuration(
+        uint256 old,
+        uint256 current
     );
 }
