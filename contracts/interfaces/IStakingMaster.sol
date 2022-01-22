@@ -11,7 +11,8 @@ interface IStakingMaster {
     function getReward() external ;
 
     function addPool(address pool) external;
-    function addPools(address memory pools) external;
+
+    function addPools(address[] memory pools) external;
 
     function updateRewardFor(address who) external ;
 
