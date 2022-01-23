@@ -12,7 +12,6 @@ from .staking_config import (
     USDC_ADDRESS,
     PROXY_ADMIN,
     SCLP_ADDRESS,
-    save_abi,
     save_output,
     repeat
 )

@@ -16,5 +16,9 @@ interface IStakingMaster {
 
     function updateRewardFor(address who) external ;
 
+    function updateRewardForMultiple(address[] memory whom) external ;
+
     function refundTokens (address token) external ;
+
+    function setVotingEscrow (address _escrow) external;
 }

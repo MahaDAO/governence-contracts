@@ -31,12 +31,14 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
 
     event PoolAdded(address indexed pool);
 
-    constructor(address owner) {
-        _setupRole(DEFAULT_ADMIN_ROLE, owner);
-        _setupRole(UPDATER_ROLE, owner);
+    constructor(address _owner, address _votingEscrow) {
+        _setupRole(DEFAULT_ADMIN_ROLE, _owner);
+        _setupRole(UPDATER_ROLE, _owner);
 
-        grantRole(UPDATER_ROLE, _msgSender());
-        grantRole(POOL_MAINTAINER_ROLE, _msgSender());
+        _setupRole(UPDATER_ROLE, _msgSender());
+        _setupRole(POOL_MAINTAINER_ROLE, _msgSender());
+
+        votingEscrow = IVotingEscrow(_votingEscrow);
     }
 
     function totalSupply() external view override returns (uint256) {
@@ -62,29 +64,38 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
         emit PoolAdded(pool);
     }
 
-    function addPool(address pool) external override {
-        require(hasRole(POOL_MAINTAINER_ROLE, _msgSender()), "not pool maintainer");
+    function addPool(address pool) external override onlyRole(POOL_MAINTAINER_ROLE) {
         _addPool(pool);
     }
 
-    function addPools(address[] memory _pools) external override {
-        require(hasRole(POOL_MAINTAINER_ROLE, _msgSender()), "not pool maintainer");
+    function addPools(address[] memory _pools) external override onlyRole(POOL_MAINTAINER_ROLE) {
         for (uint256 index = 0; index < _pools.length; index++) {
             _addPool(_pools[index]);
         }
     }
 
-
-    function updateRewardFor(address who) external override {
-        require(hasRole(UPDATER_ROLE, _msgSender()), "not updater");
+    function updateRewardFor(address who) external override onlyRole(UPDATER_ROLE) {
         for (uint256 index = 0; index < pools.length; index++) {
             IStakingChild pool = IStakingChild(pools[index]);
             pool.updateReward(who);
         }
     }
 
-    function refundTokens (address token) external override {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "not admin");
+    function updateRewardForMultiple(address[] memory whom) external override onlyRole(UPDATER_ROLE) {
+        for (uint256 index1 = 0; index1 < whom.length; index1++) {
+            address who = whom[index1];
+            for (uint256 index = 0; index < pools.length; index++) {
+                IStakingChild pool = IStakingChild(pools[index]);
+                pool.updateReward(who);
+            }
+        }
+    }
+
+    function refundTokens (address token) external override onlyRole(DEFAULT_ADMIN_ROLE)  {
         IERC20(token).transfer(_msgSender(), IERC20(token).balanceOf(address(this)));
+    }
+
+    function setVotingEscrow (address _escrow) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+        votingEscrow = IVotingEscrow(_escrow);
     }
 }

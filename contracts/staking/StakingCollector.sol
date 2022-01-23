@@ -23,10 +23,7 @@ contract StakingCollector is Epoch {
     event TokenRegistered(address indexed token, address stakingPool, uint256 rate);
     event TokenUpdated(address indexed token, address stakingPool, uint256 rate);
 
-    constructor(
-        address _distributor,
-        uint256 _period
-    ) Epoch(_period, block.timestamp, 0) {
+    constructor(uint256 _period) Epoch(_period, block.timestamp, 0) {
         // nothing
     }
 

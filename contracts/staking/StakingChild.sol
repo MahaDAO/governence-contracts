@@ -8,6 +8,7 @@ import {IStakingCollector} from "../interfaces/IStakingCollector.sol";
 import {IStakingMaster} from "../interfaces/IStakingMaster.sol";
 import {Math} from "../utils/Math.sol";
 import {Ownable} from "../utils/Ownable.sol";
+import {Pausable} from "../utils/Pausable.sol";
 import {ReentrancyGuard} from "../utils/ReentrancyGuard.sol";
 import {SafeERC20} from "../utils/SafeERC20.sol";
 import {SafeMath} from "../utils/SafeMath.sol";
@@ -21,6 +22,7 @@ import {SafeMath} from "../utils/SafeMath.sol";
 contract StakingChild is
     Ownable,
     IStakingChild,
+    Pausable,
     ReentrancyGuard
 {
     using SafeMath for uint256;
@@ -41,13 +43,12 @@ contract StakingChild is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
-    function initialize(
+    constructor(
         address _rewardsToken,
         address _stakingMaster,
         address _stakingCollector,
         uint256 _rewardsDuration
-    ) external {
-        require(!initialized);
+    ) {
         stakingCollector = IStakingCollector(_stakingCollector);
         stakingMaster = IStakingMaster(_stakingMaster);
         rewardsToken = IERC20(_rewardsToken);
@@ -56,10 +57,22 @@ contract StakingChild is
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardsDuration);
 
+        _pause();
+    }
+
+    function initialize() external onlyOwner {
+        require(!initialized);
         rewardRate = rewardsToken.balanceOf(address(this)).div(rewardsDuration);
+        initialized = true;
+
+        _unpause();
 
         emit DefaultInitialization();
-        initialized = true;
+    }
+
+    function togglePause() external onlyOwner {
+        if (paused()) _unpause();
+        else _pause();
     }
 
     function changeStakingMaster(address account)
@@ -107,9 +120,7 @@ contract StakingChild is
     }
 
     function rewardPerToken() public view override returns (uint256) {
-        if (totalSupply() == 0) {
-            return rewardPerTokenStored;
-        }
+        if (totalSupply() == 0) return rewardPerTokenStored;
         return
             rewardPerTokenStored.add(
                 lastTimeRewardApplicable()
@@ -134,7 +145,7 @@ contract StakingChild is
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    function getRewardFor(address who) public override {
+    function getRewardFor(address who) public override whenNotPaused {
         require(_msgSender() == address(stakingMaster), "not master");
         _updateReward(who);
 
@@ -144,6 +155,22 @@ contract StakingChild is
             rewardsToken.safeTransfer(who, reward);
             emit RewardPaid(who, reward);
         }
+    }
+
+
+    function _updateReward(address who) internal {
+        rewardPerTokenStored = rewardPerToken();
+        lastUpdateTime = lastTimeRewardApplicable();
+        if (who != address(0)) {
+            rewards[who] = earned(who);
+            userRewardPerTokenPaid[who] = rewardPerTokenStored;
+        }
+    }
+
+    function updateReward(address who) external override {
+        // Dev: only staking master can call this update on change to lock state.
+        require(msg.sender == address(stakingMaster), "not staking master");
+        _updateReward(who);
     }
 
     /* ========== RESTRICTED FUNCTIONS ========== */
@@ -180,23 +207,6 @@ contract StakingChild is
 
     function refundTokens (address token) external override onlyOwner {
         IERC20(token).transfer(owner(), IERC20(token).balanceOf(address(this)));
-    }
-
-    /* ========== MODIFIERS ========== */
-
-    function _updateReward(address who) internal {
-        rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = lastTimeRewardApplicable();
-        if (who != address(0)) {
-            rewards[who] = earned(who);
-            userRewardPerTokenPaid[who] = rewardPerTokenStored;
-        }
-    }
-
-    function updateReward(address who) external override {
-        // Dev: only stakingToken(MAHAX) can call this update on change to lock state.
-        require(msg.sender == address(stakingMaster), "Not staking master");
-        _updateReward(who);
     }
 
 
