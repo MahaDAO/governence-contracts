@@ -34,9 +34,9 @@ def main():
 
     rewardTokens = [
         ["MAHA", MAHA_ADDRESS],
-        # SCLP_ADDRESS,
-        # ARTH_ADDRESS,
-        # USDC_ADDRESS,
+        ["SCLP", SCLP_ADDRESS],
+        ["ARTH", ARTH_ADDRESS],
+        ["USDC", USDC_ADDRESS],
     ]
 
     for rewardToken in rewardTokens:
@@ -49,6 +49,7 @@ def main():
             publish_source=True
         )
 
+        print(rewardToken[0], "staking child at", stakingChild.address)
         save_abi(stakingChild, "StakingChild")
 
         output_file[rewardToken[0] + "StakingChild"] = {
@@ -57,4 +58,3 @@ def main():
         }
 
     save_output(output_file, "staking_02")
-    print("stakingMaster at", stakingMaster.address)

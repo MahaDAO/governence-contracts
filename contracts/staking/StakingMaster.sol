@@ -56,7 +56,7 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
     }
 
     function _addPool(address pool) internal {
-        require(isPoolValid[pool], "pool already added");
+        require(!isPoolValid[pool], "pool already added");
         pools.push(pool);
         isPoolValid[pool] = true;
         emit PoolAdded(pool);

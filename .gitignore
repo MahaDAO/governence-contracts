@@ -110,3 +110,7 @@ venv
 typechain
 artifacts
 cache
+
+!.gitkeep
+!output/.gitkeep
+!output/abi/.gitkeep

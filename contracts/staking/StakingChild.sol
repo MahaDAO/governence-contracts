@@ -35,7 +35,6 @@ contract StakingChild is
 
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
-    bool public initialized;
     uint256 public rewardsDuration;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
@@ -56,18 +55,6 @@ contract StakingChild is
 
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardsDuration);
-
-        _pause();
-    }
-
-    function initialize() external onlyOwner {
-        require(!initialized);
-        rewardRate = rewardsToken.balanceOf(address(this)).div(rewardsDuration);
-        initialized = true;
-
-        _unpause();
-
-        emit DefaultInitialization();
     }
 
     function togglePause() external onlyOwner {
