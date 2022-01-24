@@ -16,6 +16,8 @@ ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 DEPLOYED_POOL_TOKEN = "0x48202b3f81e345c8F72aae88cC386dD1fbBeab97"
 DEPLOYED_VOTING_ESCROW = "0x8f2c37d2f8ae7bce07aa79c768cc03ab0e5ae9ae"
 
+STAKING_DURATION = 86400 * 7
+
 def repeat(f, *args, **kwargs):
     """
     Repeat when geth is not broadcasting (unaccounted error)

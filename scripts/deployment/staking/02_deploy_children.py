@@ -4,9 +4,7 @@
 # A sample file to help deployment of contracts
 
 from brownie import (
-    accounts,
-    StakingCollector,
-    StakingMaster,
+    StakingChild,
     accounts
 )
 
@@ -17,6 +15,7 @@ from .staking_config import (
     USDC_ADDRESS,
 
     GNOSIS_SAFE,
+    STAKING_DURATION,
     save_abi,
     save_output
 )
@@ -30,28 +29,32 @@ def main():
     output_file = {}
     deployer = accounts.at(DEPLOYER)
 
-    stakingMaster = "0xbFc4060006e9B142fec7dB13cA669BE1687Db274"
-    StakingCollector = "0x41Ef0505EBaa70eC10F7b8EE8965E269a50cE3eE"
+    stakingMaster = "0x62d0E4A9c675DC9B88f544aAff42F59964e8731C"
+    stakingCollector = "0x41Ef0505EBaa70eC10F7b8EE8965E269a50cE3eE"
 
     rewardTokens = [
-        MAHA_ADDRESS,
-        SCLP_ADDRESS,
-        ARTH_ADDRESS,
-        USDC_ADDRESS,
+        ["MAHA", MAHA_ADDRESS],
+        # SCLP_ADDRESS,
+        # ARTH_ADDRESS,
+        # USDC_ADDRESS,
     ]
 
     for rewardToken in rewardTokens:
-        stakingChild = stakingChild.deploy(
-            GNOSIS_SAFE,
+        stakingChild = StakingChild.deploy(
+            rewardToken[1],
+            stakingMaster,
+            stakingCollector,
+            STAKING_DURATION,
             {"from": deployer, "required_confs": CONFS},
             publish_source=True
         )
 
         save_abi(stakingChild, "StakingChild")
 
-        output_file["StakingChild"] = {
+        output_file[rewardToken[0] + "StakingChild"] = {
             "abi": "StakingChild",
             "address": stakingChild.address
         }
 
+    save_output(output_file, "staking_02")
     print("stakingMaster at", stakingMaster.address)

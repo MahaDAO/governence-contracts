@@ -26,10 +26,8 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
     address[] public pools;
     mapping(address => bool) public isPoolValid;
 
-    mapping(address => uint256) public userRewardPerTokenPaid;
-    mapping(address => uint256) public rewards;
-
     event PoolAdded(address indexed pool);
+    event VotingEscrowChanged(address indexed pool);
 
     constructor(address _owner, address _votingEscrow) {
         _setupRole(DEFAULT_ADMIN_ROLE, _owner);
@@ -97,5 +95,6 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
 
     function setVotingEscrow (address _escrow) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         votingEscrow = IVotingEscrow(_escrow);
+        emit VotingEscrowChanged(_escrow);
     }
 }
