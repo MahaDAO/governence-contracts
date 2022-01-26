@@ -48,7 +48,7 @@ interface ERC20:
 
 
 interface StakingContract:
-    def updateReward(account: address): nonpayable
+    def updateRewardFor(account: address): nonpayable
 
 
 # Interface for checking whether address belongs to a whitelisted
@@ -427,7 +427,7 @@ def _deposit_and_transfer_for(_addr: address, _value: uint256, unlock_time: uint
     @param locked_balance Previous locked amount / timestamp
     """
     balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(_addr)
-    StakingContract(self.staking_contract).updateReward(_addr)
+    StakingContract(self.staking_contract).updateRewardFor(_addr)
 
     _locked: LockedBalance = locked_balance
     supply_before: uint256 = self.supply
@@ -464,7 +464,7 @@ def _deposit_and_transfer_for(_addr: address, _value: uint256, unlock_time: uint
     # update total supply and staking rewards
     balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(_addr)
     self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-    StakingContract(self.staking_contract).updateReward(_addr)
+    StakingContract(self.staking_contract).updateRewardFor(_addr)
 
 @internal
 def _deposit_for(_addr: address, _value: uint256, unlock_time: uint256, locked_balance: LockedBalance, _type: int128):
@@ -530,7 +530,7 @@ def refresh_users(_addrs: address[100]):
     for i in range(100):
         if _addrs[i] == ZERO_ADDRESS:
             break
-        StakingContract(self.staking_contract).updateReward(_addrs[i])
+        StakingContract(self.staking_contract).updateRewardFor(_addrs[i])
 
 
 @external
@@ -620,7 +620,7 @@ def withdraw():
     """
 
     balanceWithoutDecayBefore: uint256 = self._balanceOfWithoutDecay(msg.sender)
-    StakingContract(self.staking_contract).updateReward(msg.sender)
+    StakingContract(self.staking_contract).updateRewardFor(msg.sender)
 
     _locked: LockedBalance = self.locked[msg.sender]
     assert block.timestamp >= _locked.end, "The lock didn't expire"
@@ -643,7 +643,7 @@ def withdraw():
 
     balanceWithoutDecayAfter: uint256 = self._balanceOfWithoutDecay(msg.sender)
     self._update_total_supply_without_decay(balanceWithoutDecayAfter, balanceWithoutDecayBefore)
-    StakingContract(self.staking_contract).updateReward(msg.sender)
+    StakingContract(self.staking_contract).updateRewardFor(msg.sender)
 
     log Withdraw(msg.sender, value, block.timestamp)
     log Transfer(msg.sender, ZERO_ADDRESS, value)

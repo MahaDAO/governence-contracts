@@ -2,7 +2,7 @@
 
 from brownie import (
     accounts,
-    PoolToken,
+    VotingEscrowWithdrawableV0,
 )
 
 DEPLOYER = accounts.load('0')
@@ -13,7 +13,7 @@ CONFS = 1
 def main():
     deployer = accounts.at(DEPLOYER)
 
-    instance = PoolToken.deploy(
+    instance = VotingEscrowWithdrawableV0.deploy(
         {"from": deployer, "required_confs": CONFS},
         publish_source=True
     )

