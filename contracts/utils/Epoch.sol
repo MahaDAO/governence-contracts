@@ -1,64 +1,97 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.0;
+pragma solidity ^0.8.0;
 
-import './Math.sol';
-import './SafeMath.sol';
-import './Ownable.sol';
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { Operator } from "./Operator.sol";
+import { IEpoch } from "../interfaces/IEpoch.sol";
 
-contract Epoch is Ownable {
-    using SafeMath for uint256;
+contract Epoch is IEpoch, Operator {
+  using SafeMath for uint256;
 
-    uint256 public period;
-    uint256 public startTime;
-    uint256 public lastExecutedAt;
+  uint256 private period;
+  uint256 private startTime;
+  uint256 private lastExecutedAt;
 
-    constructor(
-        uint256 _period,
-        uint256 _startTime,
-        uint256 _startEpoch
-    ) {
-        require(_startTime >= block.timestamp, 'Epoch: invalid start time');
-        period = _period;
-        startTime = _startTime;
-        lastExecutedAt = startTime.add(_startEpoch.mul(period));
+  /* ========== CONSTRUCTOR ========== */
+
+  constructor(
+    uint256 _period,
+    uint256 _startTime,
+    uint256 _startEpoch
+  ) {
+    require(_startTime >= block.timestamp, "Epoch: invalid start time");
+    period = _period;
+    startTime = _startTime;
+    lastExecutedAt = startTime.add(_startEpoch.mul(period));
+  }
+
+  /* ========== Modifier ========== */
+
+  modifier checkStartTime() {
+    require(block.timestamp >= startTime, "Epoch: not started yet");
+    _;
+  }
+
+  modifier checkEpoch() {
+    require(block.timestamp > startTime, "Epoch: not started yet");
+    require(_callable(), "Epoch: not allowed");
+    _;
+    lastExecutedAt = block.timestamp;
+  }
+
+  function _getLastEpoch() internal view returns (uint256) {
+    return lastExecutedAt.sub(startTime).div(period);
+  }
+
+  function _getCurrentEpoch() internal view returns (uint256) {
+    return Math.max(startTime, block.timestamp).sub(startTime).div(period);
+  }
+
+  function callable() external view override returns (bool) {
+    return _callable();
+  }
+
+  function _callable() internal view returns (bool) {
+    return _getCurrentEpoch() >= _getNextEpoch();
+  }
+
+  function _getNextEpoch() internal view returns (uint256) {
+    if (startTime == lastExecutedAt) {
+      return _getLastEpoch();
     }
+    return _getLastEpoch().add(1);
+  }
 
-    modifier checkStartTime {
-        require(block.timestamp >= startTime, 'Epoch: not started yet');
-        _;
-    }
+  // epoch
+  function getLastEpoch() external view override returns (uint256) {
+    return _getLastEpoch();
+  }
 
-    modifier checkEpoch {
-        require(block.timestamp > startTime, 'Epoch: not started yet');
-        require(callable(), 'Epoch: not allowed');
-        _;
-        lastExecutedAt = block.timestamp;
-    }
+  function getCurrentEpoch() external view override returns (uint256) {
+    return Math.max(startTime, block.timestamp).sub(startTime).div(period);
+  }
 
-    function callable() public view returns (bool) {
-        return getCurrentEpoch() >= getNextEpoch();
-    }
+  function getNextEpoch() external view override returns (uint256) {
+    return _getNextEpoch();
+  }
 
-    function getLastEpoch() public view returns (uint256) {
-        return lastExecutedAt.sub(startTime).div(period);
-    }
+  function nextEpochPoint() external view override returns (uint256) {
+    return startTime.add(_getNextEpoch().mul(period));
+  }
 
-    function getCurrentEpoch() public view returns (uint256) {
-        return Math.max(startTime, block.timestamp).sub(startTime).div(period);
-    }
+  // params
+  function getPeriod() external view override returns (uint256) {
+    return period;
+  }
 
-    function getNextEpoch() public view returns (uint256) {
-        if (startTime == lastExecutedAt) {
-            return getLastEpoch();
-        }
-        return getLastEpoch().add(1);
-    }
+  function getStartTime() external view override returns (uint256) {
+    return startTime;
+  }
 
-    function nextEpochPoint() public view returns (uint256) {
-        return startTime.add(getNextEpoch().mul(period));
-    }
+  /* ========== GOVERNANCE ========== */
 
-    function setPeriod(uint256 _period) external onlyOwner {
-        period = _period;
-    }
+  function setPeriod(uint256 _period) external onlyOperator {
+    period = _period;
+  }
 }
