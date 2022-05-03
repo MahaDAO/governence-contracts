@@ -234,7 +234,10 @@ contract BaseV1Voter is IVoter {
     return _gauge;
   }
 
-  function attachTokenToGauge(uint256 tokenId, address account) external {
+  function attachTokenToGauge(uint256 tokenId, address account)
+    external
+    override
+  {
     require(isGauge[msg.sender], "not gauge");
     if (tokenId > 0) IVotingEscrow(_ve).attach(tokenId);
     emit Attach(account, msg.sender, tokenId);
@@ -244,12 +247,15 @@ contract BaseV1Voter is IVoter {
     uint256 tokenId,
     address account,
     uint256 amount
-  ) external {
+  ) external override {
     require(isGauge[msg.sender], "not gauge");
     emit Deposit(account, msg.sender, tokenId, amount);
   }
 
-  function detachTokenFromGauge(uint256 tokenId, address account) external {
+  function detachTokenFromGauge(uint256 tokenId, address account)
+    external
+    override
+  {
     require(isGauge[msg.sender], "not gauge");
     if (tokenId > 0) IVotingEscrow(_ve).detach(tokenId);
     emit Detach(account, msg.sender, tokenId);
@@ -259,7 +265,7 @@ contract BaseV1Voter is IVoter {
     uint256 tokenId,
     address account,
     uint256 amount
-  ) external {
+  ) external override {
     require(isGauge[msg.sender], "not gauge");
     emit Withdraw(account, msg.sender, tokenId, amount);
   }
@@ -360,7 +366,7 @@ contract BaseV1Voter is IVoter {
     }
   }
 
-  function distribute(address _gauge) public lock {
+  function _distribute(address _gauge) internal lock {
     IMinter(minter).update_period();
     _updateFor(_gauge);
     uint256 _claimable = claimable[_gauge];
@@ -369,6 +375,10 @@ contract BaseV1Voter is IVoter {
       IGauge(_gauge).notifyRewardAmount(base, _claimable);
       emit DistributeReward(msg.sender, _gauge, _claimable);
     }
+  }
+
+  function distribute(address _gauge) external override {
+    _distribute(_gauge);
   }
 
   function distro() external {
@@ -381,13 +391,13 @@ contract BaseV1Voter is IVoter {
 
   function distribute(uint256 start, uint256 finish) public {
     for (uint256 x = start; x < finish; x++) {
-      distribute(gauges[pools[x]]);
+      _distribute(gauges[pools[x]]);
     }
   }
 
   function distribute(address[] memory _gauges) external {
     for (uint256 x = 0; x < _gauges.length; x++) {
-      distribute(_gauges[x]);
+      _distribute(_gauges[x]);
     }
   }
 

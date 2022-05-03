@@ -300,6 +300,7 @@ contract BaseV1Bribes is IBribe {
   // used by BaseV1Voter to allow batched reward claims
   function getRewardForOwner(uint256 tokenId, address[] memory tokens)
     external
+    override
     lock
   {
     require(msg.sender == factory, "not factory");
@@ -503,7 +504,7 @@ contract BaseV1Bribes is IBribe {
   }
 
   // This is an external function, but internal notation is used since it can only be called "internally" from BaseV1Gauges
-  function _deposit(uint256 amount, uint256 tokenId) external {
+  function _deposit(uint256 amount, uint256 tokenId) external override {
     require(msg.sender == factory, "not factory");
     totalSupply += amount;
     balanceOf[tokenId] += amount;
@@ -514,7 +515,7 @@ contract BaseV1Bribes is IBribe {
     emit Deposit(msg.sender, tokenId, amount);
   }
 
-  function _withdraw(uint256 amount, uint256 tokenId) external {
+  function _withdraw(uint256 amount, uint256 tokenId) external override {
     require(msg.sender == factory, "not factory");
     totalSupply -= amount;
     balanceOf[tokenId] -= amount;
@@ -525,14 +526,18 @@ contract BaseV1Bribes is IBribe {
     emit Withdraw(msg.sender, tokenId, amount);
   }
 
-  function left(address token) external view returns (uint256) {
+  function left(address token) external view override returns (uint256) {
     if (block.timestamp >= periodFinish[token]) return 0;
     uint256 _remaining = periodFinish[token] - block.timestamp;
     return _remaining * rewardRate[token];
   }
 
   // used to notify a gauge/bribe of a given reward, this can create griefing attacks by extending rewards
-  function notifyRewardAmount(address token, uint256 amount) external lock {
+  function notifyRewardAmount(address token, uint256 amount)
+    external
+    override
+    lock
+  {
     require(amount > 0, "amount = 0");
     if (rewardRate[token] == 0)
       _writeRewardPerTokenCheckpoint(token, 0, block.timestamp);

@@ -94,6 +94,7 @@ contract BaseGaugeV1 is IGauge {
 
   function claimFees()
     external
+    override
     lock
     returns (uint256 claimed0, uint256 claimed1)
   {
@@ -317,7 +318,11 @@ contract BaseGaugeV1 is IGauge {
     return Math.min(block.timestamp, periodFinish[token]);
   }
 
-  function getReward(address account, address[] memory tokens) external lock {
+  function getReward(address account, address[] memory tokens)
+    external
+    override
+    lock
+  {
     require(
       msg.sender == account || msg.sender == voter,
       "sender not account or voter"
@@ -620,13 +625,17 @@ contract BaseGaugeV1 is IGauge {
     emit Withdraw(msg.sender, tokenId, amount);
   }
 
-  function left(address token) external view returns (uint256) {
+  function left(address token) external view override returns (uint256) {
     if (block.timestamp >= periodFinish[token]) return 0;
     uint256 _remaining = periodFinish[token] - block.timestamp;
     return _remaining * rewardRate[token];
   }
 
-  function notifyRewardAmount(address token, uint256 amount) external lock {
+  function notifyRewardAmount(address token, uint256 amount)
+    external
+    override
+    lock
+  {
     require(token != stake, "token = stake");
     require(amount > 0, "amount = 0");
     if (rewardRate[token] == 0)

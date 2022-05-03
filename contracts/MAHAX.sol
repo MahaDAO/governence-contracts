@@ -121,12 +121,21 @@ contract MAHAX is IVotingEscrow {
 
   /// @dev Interface identification is specified in ERC-165.
   /// @param _interfaceID Id of the interface
-  function supportsInterface(bytes4 _interfaceID) external view returns (bool) {
+  function supportsInterface(bytes4 _interfaceID)
+    external
+    view
+    override
+    returns (bool)
+  {
     return supportedInterfaces[_interfaceID];
   }
 
   function token() external view override returns (address) {
     return _token;
+  }
+
+  function totalSupplyWithoutDecay() external view override returns (uint256) {
+    return supply;
   }
 
   /// @notice Get the most recently recorded rate of voting power decrease for `_tokenId`
@@ -166,7 +175,7 @@ contract MAHAX is IVotingEscrow {
   /// @dev Returns the number of NFTs owned by `_owner`.
   ///      Throws if `_owner` is the zero address. NFTs assigned to the zero address are considered invalid.
   /// @param _owner Address for whom to query the balance.
-  function balanceOf(address _owner) external view returns (uint256) {
+  function balanceOf(address _owner) external view override returns (uint256) {
     return _balance(_owner);
   }
 
@@ -184,7 +193,12 @@ contract MAHAX is IVotingEscrow {
 
   /// @dev Get the approved address for a single NFT.
   /// @param _tokenId ID of the NFT to query the approval of.
-  function getApproved(uint256 _tokenId) external view returns (address) {
+  function getApproved(uint256 _tokenId)
+    external
+    view
+    override
+    returns (address)
+  {
     return idToApprovals[_tokenId];
   }
 
@@ -194,6 +208,7 @@ contract MAHAX is IVotingEscrow {
   function isApprovedForAll(address _owner, address _operator)
     external
     view
+    override
     returns (bool)
   {
     return (ownerToOperators[_owner])[_operator];
@@ -382,7 +397,7 @@ contract MAHAX is IVotingEscrow {
     address _to,
     uint256 _tokenId,
     bytes memory _data
-  ) public {
+  ) public override {
     _transferFrom(_from, _to, _tokenId, msg.sender);
 
     if (_isContract(_to)) {
@@ -421,7 +436,7 @@ contract MAHAX is IVotingEscrow {
     address _from,
     address _to,
     uint256 _tokenId
-  ) external {
+  ) external override {
     safeTransferFrom(_from, _to, _tokenId, "");
   }
 
@@ -431,7 +446,7 @@ contract MAHAX is IVotingEscrow {
   ///      Throws if `_approved` is the current owner. (NOTE: This is not written the EIP)
   /// @param _approved Address to be approved for the given NFT ID.
   /// @param _tokenId ID of the token to be approved.
-  function approve(address _approved, uint256 _tokenId) public {
+  function _approve(address _approved, uint256 _tokenId) internal {
     address owner = idToOwner[_tokenId];
     // Throws if `_tokenId` is not a valid NFT
     require(owner != address(0), "owner is 0x0");
@@ -446,13 +461,26 @@ contract MAHAX is IVotingEscrow {
     emit Approval(owner, _approved, _tokenId);
   }
 
+  /// @dev Set or reaffirm the approved address for an NFT. The zero address indicates there is no approved address.
+  ///      Throws unless `msg.sender` is the current NFT owner, or an authorized operator of the current owner.
+  ///      Throws if `_tokenId` is not a valid NFT. (NOTE: This is not written the EIP)
+  ///      Throws if `_approved` is the current owner. (NOTE: This is not written the EIP)
+  /// @param _approved Address to be approved for the given NFT ID.
+  /// @param _tokenId ID of the token to be approved.
+  function approve(address _approved, uint256 _tokenId) external override {
+    _approve(_approved, _tokenId);
+  }
+
   /// @dev Enables or disables approval for a third party ("operator") to manage all of
   ///      `msg.sender`'s assets. It also emits the ApprovalForAll event.
   ///      Throws if `_operator` is the `msg.sender`. (NOTE: This is not written the EIP)
   /// @notice This works even if sender doesn't own any tokens at the time.
   /// @param _operator Address to add to the set of authorized operators.
   /// @param _approved True if the operators is approved, false to revoke approval.
-  function setApprovalForAll(address _operator, bool _approved) external {
+  function setApprovalForAll(address _operator, bool _approved)
+    external
+    override
+  {
     // Throws if `_operator` is the `msg.sender`
     assert(_operator != msg.sender);
     ownerToOperators[msg.sender][_operator] = _approved;
@@ -682,22 +710,22 @@ contract MAHAX is IVotingEscrow {
     voter = _voter;
   }
 
-  function voting(uint256 _tokenId) external {
+  function voting(uint256 _tokenId) external override {
     require(msg.sender == voter, "not voter");
     voted[_tokenId] = true;
   }
 
-  function abstain(uint256 _tokenId) external {
+  function abstain(uint256 _tokenId) external override {
     require(msg.sender == voter, "not voter");
     voted[_tokenId] = false;
   }
 
-  function attach(uint256 _tokenId) external {
+  function attach(uint256 _tokenId) external override {
     require(msg.sender == voter, "not voter");
     attachments[_tokenId] = attachments[_tokenId] + 1;
   }
 
-  function detach(uint256 _tokenId) external {
+  function detach(uint256 _tokenId) external override {
     require(msg.sender == voter, "not voter");
     attachments[_tokenId] = attachments[_tokenId] - 1;
   }
@@ -1180,7 +1208,7 @@ contract MAHAX is IVotingEscrow {
     address owner = _ownerOf(_tokenId);
 
     // Clear approval
-    approve(address(0), _tokenId);
+    _approve(address(0), _tokenId);
     // Remove token
     _removeTokenFrom(msg.sender, _tokenId);
     emit Transfer(owner, address(0), _tokenId);
