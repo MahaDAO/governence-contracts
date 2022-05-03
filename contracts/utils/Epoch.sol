@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { Operator } from "./Operator.sol";
-import { IEpoch } from "../interfaces/IEpoch.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {Operator} from "./Operator.sol";
+import {IEpoch} from "../interfaces/IEpoch.sol";
 
 contract Epoch is IEpoch, Operator {
   using SafeMath for uint256;

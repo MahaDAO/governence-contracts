@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { KeeperCompatibleInterface } from "../interfaces/KeeperCompatibleInterface.sol";
-import { IStakingCollector } from "../interfaces/IStakingCollector.sol";
+import {KeeperCompatibleInterface} from "../interfaces/KeeperCompatibleInterface.sol";
+import {IStakingCollector} from "../interfaces/IStakingCollector.sol";
 
 contract ChainlinkCollectorKeeper is KeeperCompatibleInterface {
   IStakingCollector public collector;

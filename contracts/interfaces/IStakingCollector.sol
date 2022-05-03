@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import { IEpoch } from "./IEpoch.sol";
+import {IEpoch} from "./IEpoch.sol";
 
 interface IStakingCollector is IEpoch {
   function step() external;

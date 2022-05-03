@@ -2,23 +2,22 @@
 
 pragma solidity ^0.8.0;
 
-
 interface IStakingMaster {
-    function totalSupply() external view  returns (uint256);
+  function totalSupply() external view returns (uint256);
 
-    function balanceOf(address who) external view returns (uint256);
+  function balanceOf(address who) external view returns (uint256);
 
-    function getReward() external ;
+  function getReward() external;
 
-    function addPool(address pool) external;
+  function addPool(address pool) external;
 
-    function addPools(address[] memory pools) external;
+  function addPools(address[] memory pools) external;
 
-    function updateRewardFor(address who) external ;
+  function updateRewardFor(address who) external;
 
-    function updateRewardForMultiple(address[] memory whom) external ;
+  function updateRewardForMultiple(address[] memory whom) external;
 
-    function refundTokens (address token) external ;
+  function refundTokens(address token) external;
 
-    function setVotingEscrow (address _escrow) external;
+  function setVotingEscrow(address _escrow) external;
 }

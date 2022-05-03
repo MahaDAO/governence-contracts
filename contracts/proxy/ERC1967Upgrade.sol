@@ -79,7 +79,7 @@ abstract contract ERC1967Upgrade is ERC1967Storage {
 
     // Perform rollback test if not already in progress
     StorageSlot.BooleanSlot storage rollbackTesting = StorageSlot
-      .getBooleanSlot(_ROLLBACK_SLOT);
+    .getBooleanSlot(_ROLLBACK_SLOT);
     if (!rollbackTesting.value) {
       // Trigger rollback using upgradeTo from the new implementation
       rollbackTesting.value = true;

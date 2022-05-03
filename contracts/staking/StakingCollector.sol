@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import { IStakingChild } from "../interfaces/IStakingChild.sol";
-import { IStakingCollector } from "../interfaces/IStakingCollector.sol";
-import { Epoch } from "../utils/Epoch.sol";
+import {IStakingChild} from "../interfaces/IStakingChild.sol";
+import {IStakingCollector} from "../interfaces/IStakingCollector.sol";
+import {Epoch} from "../utils/Epoch.sol";
 
 /**
  * The staking collector is an automated distribution contract, that distributes rewards in the contract's
