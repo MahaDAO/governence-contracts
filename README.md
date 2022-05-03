@@ -1,60 +1,46 @@
-MahaDAO Governance Contracts
-============================
+# Advanced Sample Hardhat Project
 
-This repo contains the code for the MahaDAO Governance. This includes
+This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
 
-- MAHAX Staking 
-- Voting Contracts
-- Any Proxies being used
-- Boosted Staking Contracts
+The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
 
-# Setup Downloads
-```
-1. pip3 install virtualenv
-2. source venv/bin/activate
-3. pip install eth-brownie
-4. brownie compile  # To download the required solidity/vyper compiler.
-```
-# Brownie Setup
-```
-1. brownie accounts new <id>
-   https://eth-brownie.readthedocs.io/en/stable/account-management.html
+Try running some of the following tasks:
 
-2. (Setting up network) 
-   - brownie networks
-   https://eth-brownie.readthedocs.io/en/stable/network-management.html
-```
-# Scripts Info
-```
-1. deploy_tesnet.py
-path :- scripts/deployment/deploy_testnet.py
-( This file is testnet deployment script )
-
-2. deploy_mainnet_matic.py
-path :- scripts/deployment/deploy_mainnet_matic.py
-( This file is mainnet deployment script )
-
-3. deploy_votingescrow.py
-path :- scripts/deployment/deploy_votingescrow.py
-( This file deploy an seperate instance of voting escrow )
-
-4. update_proxy.py
-path :- scripts/deployment/update_proxy.py
-( This file updates the proxy contracts )
-
-5. update_fallback.py
-path :- scripts/deployment/update_fallback.py
-( This file triggers the fallback boolean function )
+```shell
+npx hardhat accounts
+npx hardhat compile
+npx hardhat clean
+npx hardhat test
+npx hardhat node
+npx hardhat help
+REPORT_GAS=true npx hardhat test
+npx hardhat coverage
+npx hardhat run scripts/deploy.ts
+TS_NODE_FILES=true npx ts-node scripts/deploy.ts
+npx eslint '**/*.{js,ts}'
+npx eslint '**/*.{js,ts}' --fix
+npx prettier '**/*.{json,sol,md}' --check
+npx prettier '**/*.{json,sol,md}' --write
+npx solhint 'contracts/**/*.sol'
+npx solhint 'contracts/**/*.sol' --fix
 ```
 
-# Commands To Deploy/Run Script
-```
-1. brownie run ${path} --network ${network_id}
-Example :- brownie run scripts/deployment/deploy_testnet.py --network mumbaiMatic 
+# Etherscan verification
 
-Note :- the mainnet script needs an review and variables to be set 
-path - scripts/deployment/deploy_mainnet_matic.py
+To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
 
-DEPLOYER :- This address is admin of votingescrow contract
-PROXY_ADMIN :- This address is the admin of proxy implementation
+In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
+
+```shell
+hardhat run --network ropsten scripts/deploy.ts
 ```
+
+Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+
+```shell
+npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+```
+
+# Performance optimizations
+
+For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
