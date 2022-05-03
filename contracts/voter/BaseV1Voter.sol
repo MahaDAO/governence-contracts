@@ -8,6 +8,8 @@ import {IVoter} from "../interfaces/IVoter.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
 import {IBribe} from "../interfaces/IBribe.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
+import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
+import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
 
 interface IBaseV1Factory {
   function isPair(address) external view returns (bool);
@@ -17,18 +19,6 @@ interface IBaseV1Core {
   function claimFees() external returns (uint256, uint256);
 
   function tokens() external returns (address, address);
-}
-
-interface IBaseV1GaugeFactory {
-  function createGauge(
-    address,
-    address,
-    address
-  ) external returns (address);
-}
-
-interface IBaseV1BribeFactory {
-  function createBribe() external returns (address);
 }
 
 interface IMinter {
@@ -224,11 +214,11 @@ contract BaseV1Voter is IVoter {
 
   function createGauge(address _pool) external returns (address) {
     require(gauges[_pool] == address(0x0), "gauge exists");
-    require(IBaseV1Factory(factory).isPair(_pool), "!_pool");
+    require(IBaseV1Factory(factory).isPair(_pool), "!_pool"); // todo need to remove this?
     (address tokenA, address tokenB) = IBaseV1Core(_pool).tokens();
     require(isWhitelisted[tokenA] && isWhitelisted[tokenB], "!whitelisted");
-    address _bribe = IBaseV1BribeFactory(bribefactory).createBribe();
-    address _gauge = IBaseV1GaugeFactory(gaugefactory).createGauge(
+    address _bribe = IBribeFactory(bribefactory).createBribe();
+    address _gauge = IGaugeFactory(gaugefactory).createGauge(
       _pool,
       _bribe,
       _ve
