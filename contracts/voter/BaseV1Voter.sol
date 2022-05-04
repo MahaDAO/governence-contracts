@@ -12,10 +12,7 @@ import {IGauge} from "../interfaces/IGauge.sol";
 import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
 import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
 import { IUniswapV2Pair } from "../interfaces/IUniswapV2Pair.sol";
-
-interface IMinter {
-  function update_period() external returns (uint256);
-}
+import { IEmissionController } from "../interfaces/IEmissionController.sol";
 
 contract BaseV1Voter is IVoter {
   address public immutable _ve; // the IVotingEscrow token that governs these contracts
@@ -24,6 +21,7 @@ contract BaseV1Voter is IVoter {
   address public immutable bribefactory;
   uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
   address public minter;
+  address public emissionController;
 
   uint256 public totalWeight; // total voting weight
 
@@ -41,13 +39,15 @@ contract BaseV1Voter is IVoter {
   constructor(
     address __ve,
     address _gauges,
-    address _bribes
+    address _bribes,
+    address _emissionController
   ) {
     _ve = __ve;
     base = IVotingEscrow(__ve).token();
     gaugefactory = _gauges;
     bribefactory = _bribes;
     minter = msg.sender;
+    emissionController = emissionController;
   }
 
   function votingEscrow() external view override returns (address) {
@@ -268,7 +268,7 @@ contract BaseV1Voter is IVoter {
   mapping(address => uint256) internal supplyIndex;
   mapping(address => uint256) public claimable;
 
-  function notifyRewardAmount(uint256 amount) external {
+  function notifyRewardAmount(uint256 amount) external override {
     _safeTransferFrom(base, msg.sender, address(this), amount); // transfer the distro in
     uint256 _ratio = (amount * 1e18) / totalWeight; // 1e18 adjustment is removed during claim
     if (_ratio > 0) {
@@ -337,7 +337,7 @@ contract BaseV1Voter is IVoter {
   }
 
   function _distribute(address _gauge) internal lock {
-    IMinter(minter).update_period();
+    IEmissionController(emissionController).allocateEmission();
     _updateFor(_gauge);
     uint256 _claimable = claimable[_gauge];
     if (_claimable > IGauge(_gauge).left(base) && _claimable / DURATION > 0) {
