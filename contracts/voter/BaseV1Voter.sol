@@ -4,22 +4,14 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+
 import {IVoter} from "../interfaces/IVoter.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
 import {IBribe} from "../interfaces/IBribe.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
 import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
-
-interface IBaseV1Factory {
-  function isPair(address) external view returns (bool);
-}
-
-interface IBaseV1Core {
-  function claimFees() external returns (uint256, uint256);
-
-  function tokens() external returns (address, address);
-}
+import { IUniswapV2Pair } from "../interfaces/IUniswapV2Pair.sol";
 
 interface IMinter {
   function update_period() external returns (uint256);
@@ -214,8 +206,9 @@ contract BaseV1Voter is IVoter {
 
   function createGauge(address _pool) external returns (address) {
     require(gauges[_pool] == address(0x0), "gauge exists");
-    require(IBaseV1Factory(factory).isPair(_pool), "!_pool"); // todo need to remove this?
-    (address tokenA, address tokenB) = IBaseV1Core(_pool).tokens();
+    require(IUniswapV2Pair(_pool).factory() == factory, "is not pool factory");
+    address tokenA = IUniswapV2Pair(_pool).token0();
+    address tokenB = IUniswapV2Pair(_pool).token1();
     require(isWhitelisted[tokenA] && isWhitelisted[tokenB], "!whitelisted");
     address _bribe = IBribeFactory(bribefactory).createBribe();
     address _gauge = IGaugeFactory(gaugefactory).createGauge(
@@ -343,26 +336,6 @@ contract BaseV1Voter is IVoter {
     );
     for (uint256 i = 0; i < _bribes.length; i++) {
       IBribe(_bribes[i]).getRewardForOwner(_tokenId, _tokens[i]);
-    }
-  }
-
-  function claimFees(
-    address[] memory _fees,
-    address[][] memory _tokens,
-    uint256 _tokenId
-  ) external {
-    require(
-      IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, _tokenId),
-      "not approved owner"
-    );
-    for (uint256 i = 0; i < _fees.length; i++) {
-      IBribe(_fees[i]).getRewardForOwner(_tokenId, _tokens[i]);
-    }
-  }
-
-  function distributeFees(address[] memory _gauges) external {
-    for (uint256 i = 0; i < _gauges.length; i++) {
-      IGauge(_gauges[i]).claimFees();
     }
   }
 

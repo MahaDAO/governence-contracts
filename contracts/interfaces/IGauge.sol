@@ -7,8 +7,6 @@ interface IGauge {
 
   function getReward(address account, address[] memory tokens) external;
 
-  function claimFees() external returns (uint256 claimed0, uint256 claimed1);
-
   function left(address token) external view returns (uint256);
 
   /// @notice A checkpoint for marking balance
