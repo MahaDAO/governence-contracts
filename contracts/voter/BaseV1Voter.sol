@@ -206,7 +206,7 @@ contract BaseV1Voter is IVoter {
 
   function createGauge(address _pool) external returns (address) {
     require(gauges[_pool] == address(0x0), "gauge exists");
-    require(IUniswapV2Pair(_pool).factory() == factory, "is not pool factory");
+
     address tokenA = IUniswapV2Pair(_pool).token0();
     address tokenB = IUniswapV2Pair(_pool).token1();
     require(isWhitelisted[tokenA] && isWhitelisted[tokenB], "!whitelisted");
