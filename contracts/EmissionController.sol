@@ -23,7 +23,7 @@ contract EmissionController is IEmissionController, Epoch {
     voter = _voter;
   }
 
-  function allocateEmission() external override onlyOperator {
+  function allocateEmission() external override {
     require(_callable(), "emission is not callable atm");
 
     uint256 mahaBalance = maha.balanceOf(address(this));
