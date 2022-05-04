@@ -19,7 +19,6 @@ interface IMinter {
 
 contract BaseV1Voter is IVoter {
   address public immutable _ve; // the IVotingEscrow token that governs these contracts
-  address public immutable factory; // the BaseV1Factory
   address internal immutable base;
   address public immutable gaugefactory;
   address public immutable bribefactory;
@@ -41,12 +40,10 @@ contract BaseV1Voter is IVoter {
 
   constructor(
     address __ve,
-    address _factory,
     address _gauges,
     address _bribes
   ) {
     _ve = __ve;
-    factory = _factory;
     base = IVotingEscrow(__ve).token();
     gaugefactory = _gauges;
     bribefactory = _bribes;
