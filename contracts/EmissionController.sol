@@ -30,6 +30,7 @@ contract EmissionController is IEmissionController, Epoch {
       uint256 mahaBalance = maha.balanceOf(address(this));
       maha.approve(address(voter), mahaBalance);
       voter.notifyRewardAmount(mahaBalance);
+      _updateLastExecutedAt();
     }
   }
 }
