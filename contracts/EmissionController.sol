@@ -24,10 +24,10 @@ contract EmissionController is IEmissionController, Epoch {
   }
 
   function allocateEmission() external override {
-    require(_callable(), "emission is not callable atm");
-
-    uint256 mahaBalance = maha.balanceOf(address(this));
-    maha.approve(address(voter), mahaBalance);
-    voter.notifyRewardAmount(mahaBalance);
+    if (_callable()) {
+      uint256 mahaBalance = maha.balanceOf(address(this));
+      maha.approve(address(voter), mahaBalance);
+      voter.notifyRewardAmount(mahaBalance);
+    }
   }
 }
