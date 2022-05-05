@@ -14,12 +14,14 @@ contract EmissionController is IEmissionController, Epoch {
 
   constructor(
     IERC20 _maha,
-    IVoter _voter,
     uint256 _period,
     uint256 _startTime,
     uint256 _startEpoch
   ) Epoch(_period, _startTime, _startEpoch) {
     maha = _maha;
+  }
+
+  function setVoter(IVoter _voter) external override onlyOwner {
     voter = _voter;
   }
 
