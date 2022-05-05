@@ -34,11 +34,13 @@ async function main() {
   const emissionControllerCI = await emissionControllerCF.deploy(
     mahaCI.address,
     30 * 24 * 60 * 60,
+    Math.floor(Date.now() / 1000),
     0
   );
   await verifyContract(hre, emissionControllerCI.address, [
     mahaCI.address,
     30 * 24 * 60 * 60,
+    Math.floor(Date.now() / 1000),
     0,
   ]);
 
@@ -46,13 +48,13 @@ async function main() {
   await verifyContract(hre, mahaxCI.address, [mahaCI.address]);
 
   const voterCI = await voterCF.deploy(
-    mahaxCI.instance,
+    mahaxCI.address,
     gaugeFactoryCI.address,
     bribesFactoryCI.address,
     emissionControllerCI.address
   );
   await verifyContract(hre, voterCI.address, [
-    mahaxCI.instance,
+    mahaxCI.address,
     gaugeFactoryCI.address,
     bribesFactoryCI.address,
     emissionControllerCI.address,
