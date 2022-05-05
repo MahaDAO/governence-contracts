@@ -47,7 +47,7 @@ contract BaseV1Voter is IVoter {
     gaugefactory = _gauges;
     bribefactory = _bribes;
     minter = msg.sender;
-    emissionController = emissionController;
+    emissionController = _emissionController;
   }
 
   function votingEscrow() external view override returns (address) {
