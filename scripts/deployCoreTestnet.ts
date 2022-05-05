@@ -1,6 +1,7 @@
 import * as fs from "fs";
-
-import { ethers, network } from "hardhat";
+import hre, { ethers, network } from "hardhat";
+// eslint-disable-next-line node/no-missing-import
+import verifyContract from "./verifyContract";
 
 async function main() {
   console.log(`Deploying to ${network.name}...`);
@@ -22,20 +23,40 @@ async function main() {
 
   // Deploy all the smart contracts.
   const gaugeFactoryCI = await gaugeFactoryCF.deploy();
+  await verifyContract(hre, gaugeFactoryCI.address, []);
+
   const bribesFactoryCI = await bribesFactoryCF.deploy();
+  await verifyContract(hre, bribesFactoryCI.address, []);
+
   const mahaCI = await mockTokenCF.deploy("MahaDAO", "MAHA");
+  await verifyContract(hre, mahaCI.address, ["MahaDAO", "MAHA"]);
+
   const emissionControllerCI = await emissionControllerCF.deploy(
     mahaCI.address,
     30 * 24 * 60 * 60,
     0
   );
+  await verifyContract(hre, emissionControllerCI.address, [
+    mahaCI.address,
+    30 * 24 * 60 * 60,
+    0,
+  ]);
+
   const mahaxCI = await mahaxCF.deploy(mahaCI.address);
+  await verifyContract(hre, mahaxCI.address, [mahaCI.address]);
+
   const voterCI = await voterCF.deploy(
     mahaxCI.instance,
     gaugeFactoryCI.address,
     bribesFactoryCI.address,
     emissionControllerCI.address
   );
+  await verifyContract(hre, voterCI.address, [
+    mahaxCI.instance,
+    gaugeFactoryCI.address,
+    bribesFactoryCI.address,
+    emissionControllerCI.address,
+  ]);
 
   // Link the deployed smart contracts.
   await emissionControllerCI.setVoter(voterCI.address);
