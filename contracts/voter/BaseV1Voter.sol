@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {IVoter} from "../interfaces/IVoter.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
@@ -11,17 +12,16 @@ import {IBribe} from "../interfaces/IBribe.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
 import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
-import { IUniswapV2Pair } from "../interfaces/IUniswapV2Pair.sol";
-import { IEmissionController } from "../interfaces/IEmissionController.sol";
+import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
+import {IEmissionController} from "../interfaces/IEmissionController.sol";
 
-contract BaseV1Voter is IVoter {
+contract BaseV1Voter is Ownable, IVoter {
   address public immutable _ve; // the IVotingEscrow token that governs these contracts
   address internal immutable base;
   address public immutable gaugefactory;
   address public immutable bribefactory;
   uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
-  address public minter;
-  address public emissionController;
+  IEmissionController public emissionController;
 
   uint256 public totalWeight; // total voting weight
 
@@ -34,20 +34,21 @@ contract BaseV1Voter is IVoter {
   mapping(uint256 => address[]) public poolVote; // nft => pools
   mapping(uint256 => uint256) public usedWeights; // nft => total voting weight of user
   mapping(address => bool) public isGauge;
-  mapping(address => bool) public isWhitelisted;
 
   constructor(
     address __ve,
     address _gauges,
     address _bribes,
-    address _emissionController
+    address _emissionController,
+    address _governance
   ) {
     _ve = __ve;
     base = IVotingEscrow(__ve).token();
     gaugefactory = _gauges;
     bribefactory = _bribes;
-    minter = msg.sender;
-    emissionController = _emissionController;
+    emissionController = IEmissionController(_emissionController);
+
+    _transferOwnership(_governance);
   }
 
   function votingEscrow() external view override returns (address) {
@@ -61,18 +62,6 @@ contract BaseV1Voter is IVoter {
     _unlocked = 2;
     _;
     _unlocked = 1;
-  }
-
-  function initialize(address[] memory _tokens, address _minter) external {
-    require(msg.sender == minter, "not minter");
-    for (uint256 i = 0; i < _tokens.length; i++) {
-      _whitelist(_tokens[i]);
-    }
-    minter = _minter;
-  }
-
-  function listingFee() public view returns (uint256) {
-    return (IERC20(base).totalSupply() - IERC20(_ve).totalSupply()) / 200;
   }
 
   function reset(uint256 _tokenId) external {
@@ -181,38 +170,16 @@ contract BaseV1Voter is IVoter {
     _vote(tokenId, _poolVote, _weights);
   }
 
-  function whitelist(address _token, uint256 _tokenId) public {
-    if (_tokenId > 0) {
-      require(msg.sender == IVotingEscrow(_ve).ownerOf(_tokenId), "not owner");
-      require(
-        IVotingEscrow(_ve).balanceOfNFT(_tokenId) > listingFee(),
-        "not enough listing fee"
-      );
-    } else {
-      _safeTransferFrom(base, msg.sender, minter, listingFee());
-    }
-
-    _whitelist(_token);
-  }
-
-  function _whitelist(address _token) internal {
-    require(!isWhitelisted[_token], "already whitelisted");
-    isWhitelisted[_token] = true;
-    emit Whitelisted(msg.sender, _token);
-  }
-
-  function createGauge(address _pool) external returns (address) {
+  function createGauge(address _pool) external onlyOwner returns (address) {
     require(gauges[_pool] == address(0x0), "gauge exists");
 
-    address tokenA = IUniswapV2Pair(_pool).token0();
-    address tokenB = IUniswapV2Pair(_pool).token1();
-    require(isWhitelisted[tokenA] && isWhitelisted[tokenB], "!whitelisted");
     address _bribe = IBribeFactory(bribefactory).createBribe();
     address _gauge = IGaugeFactory(gaugefactory).createGauge(
       _pool,
       _bribe,
       _ve
     );
+
     IERC20(base).approve(_gauge, type(uint256).max);
     bribes[_gauge] = _bribe;
     gauges[_pool] = _gauge;
@@ -220,6 +187,7 @@ contract BaseV1Voter is IVoter {
     isGauge[_gauge] = true;
     _updateFor(_gauge);
     pools.push(_pool);
+
     emit GaugeCreated(_gauge, msg.sender, _bribe, _pool);
     return _gauge;
   }
