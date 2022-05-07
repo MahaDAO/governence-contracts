@@ -57,5 +57,9 @@ interface IVoter {
   );
   event Attach(address indexed owner, address indexed gauge, uint256 tokenId);
   event Detach(address indexed owner, address indexed gauge, uint256 tokenId);
-  event Whitelisted(address indexed whitelister, address indexed token);
+  event Whitelisted(
+    address indexed whitelister,
+    address indexed token,
+    bool value
+  );
 }

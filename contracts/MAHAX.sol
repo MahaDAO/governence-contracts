@@ -6,6 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+import {IRegistry} from "./interfaces/IRegistry.sol";
 import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
 
 /**
@@ -31,12 +32,13 @@ import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
 */
 
 contract MAHAX is ReentrancyGuard, IVotingEscrow {
+  IRegistry public immutable registry;
+
   uint256 internal constant WEEK = 1 weeks;
   uint256 internal constant MAXTIME = 4 * 365 * 86400;
   int128 internal constant iMAXTIME = 4 * 365 * 86400;
   uint256 internal constant MULTIPLIER = 1 ether;
 
-  address internal immutable _token;
   uint256 public supply;
   mapping(uint256 => LockedBalance) public locked;
 
@@ -51,7 +53,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
 
   mapping(uint256 => uint256) public attachments;
   mapping(uint256 => bool) public voted;
-  address public voter;
 
   string public constant name = "Locked MAHA NFT";
   string public constant symbol = "MAHAX";
@@ -92,10 +93,10 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
   bytes4 internal constant ERC721_METADATA_INTERFACE_ID = 0x5b5e139f;
 
   /// @notice Contract constructor
-  /// @param tokenAddr `ERC20CRV` token address
-  constructor(address tokenAddr) {
-    _token = tokenAddr;
-    voter = msg.sender;
+  /// @param _registry The registry which contains all the addresses
+  constructor(address _registry) {
+    registry = IRegistry(_registry);
+
     pointHistory[0].blk = block.number;
     pointHistory[0].ts = block.timestamp;
 
@@ -121,7 +122,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
   }
 
   function token() external view override returns (address) {
-    return _token;
+    return registry.maha();
   }
 
   function totalSupplyWithoutDecay() external view override returns (uint256) {
@@ -681,7 +682,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
 
     address from = msg.sender;
     if (_value != 0 && depositType != DepositType.MERGE_TYPE) {
-      assert(IERC20(_token).transferFrom(from, address(this), _value));
+      assert(IERC20(registry.maha()).transferFrom(from, address(this), _value));
     }
 
     emit Deposit(
@@ -695,28 +696,23 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     emit Supply(supplyBefore, supplyBefore + _value);
   }
 
-  function setVoter(address _voter) external {
-    require(msg.sender == voter, "not voter");
-    voter = _voter;
-  }
-
   function voting(uint256 _tokenId) external override {
-    require(msg.sender == voter, "not voter");
+    require(msg.sender == registry.gaugeVoter(), "not voter");
     voted[_tokenId] = true;
   }
 
   function abstain(uint256 _tokenId) external override {
-    require(msg.sender == voter, "not voter");
+    require(msg.sender == registry.gaugeVoter(), "not voter");
     voted[_tokenId] = false;
   }
 
   function attach(uint256 _tokenId) external override {
-    require(msg.sender == voter, "not voter");
+    require(msg.sender == registry.gaugeVoter(), "not voter");
     attachments[_tokenId] = attachments[_tokenId] + 1;
   }
 
   function detach(uint256 _tokenId) external override {
-    require(msg.sender == voter, "not voter");
+    require(msg.sender == registry.gaugeVoter(), "not voter");
     attachments[_tokenId] = attachments[_tokenId] - 1;
   }
 
@@ -879,7 +875,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     // Both can have >= 0 amount
     _checkpoint(_tokenId, _locked, LockedBalance(0, 0));
 
-    assert(IERC20(_token).transfer(msg.sender, value));
+    assert(IERC20(registry.maha()).transfer(msg.sender, value));
 
     // Burn the NFT
     _burn(_tokenId);

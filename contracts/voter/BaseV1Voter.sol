@@ -20,10 +20,6 @@ import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
 contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
   IRegistry public immutable registry;
 
-  // address public immutable registry.votingEscrow(); // the IVotingEscrow token that governs these contracts
-  // address internal immutable registry.maha();
-  // address public immutable gaugefactory;
-  // address public immutable bribefactory;
   uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
   IEmissionController public emissionController;
 
@@ -39,6 +35,15 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
   mapping(uint256 => uint256) public usedWeights; // nft => total voting weight of user
   mapping(address => bool) public isGauge;
   mapping(address => bool) public whitelist;
+
+  uint256 internal index;
+  mapping(address => uint256) internal supplyIndex;
+  mapping(address => uint256) public claimable;
+
+  modifier onlyGauge() {
+    require(isGauge[msg.sender], "not gauge");
+    _;
+  }
 
   constructor(
     address _registry,
@@ -170,9 +175,9 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
     _vote(tokenId, _poolVote, _weights);
   }
 
-  function whitelistAddress(address what) external onlyOwner {
-    whitelist[what] = true;
-    Whitelisted(msg.sender, what);
+  function toggleWhitelist(address what) external onlyOwner {
+    whitelist[what] = !whitelist[what];
+    emit Whitelisted(msg.sender, what, whitelist[what]);
   }
 
   function registerGauge(
@@ -212,8 +217,8 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
   function attachTokenToGauge(uint256 tokenId, address account)
     external
     override
+    onlyGauge
   {
-    require(isGauge[msg.sender], "not gauge");
     if (tokenId > 0) IVotingEscrow(registry.votingEscrow()).attach(tokenId);
     emit Attach(account, msg.sender, tokenId);
   }
@@ -222,16 +227,15 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
     uint256 tokenId,
     address account,
     uint256 amount
-  ) external override {
-    require(isGauge[msg.sender], "not gauge");
+  ) external override onlyGauge {
     emit Deposit(account, msg.sender, tokenId, amount);
   }
 
   function detachTokenFromGauge(uint256 tokenId, address account)
     external
     override
+    onlyGauge
   {
-    require(isGauge[msg.sender], "not gauge");
     if (tokenId > 0) IVotingEscrow(registry.votingEscrow()).detach(tokenId);
     emit Detach(account, msg.sender, tokenId);
   }
@@ -240,18 +244,13 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
     uint256 tokenId,
     address account,
     uint256 amount
-  ) external override {
-    require(isGauge[msg.sender], "not gauge");
+  ) external override onlyGauge {
     emit Withdraw(account, msg.sender, tokenId, amount);
   }
 
   function length() external view returns (uint256) {
     return pools.length;
   }
-
-  uint256 internal index;
-  mapping(address => uint256) internal supplyIndex;
-  mapping(address => uint256) public claimable;
 
   function notifyRewardAmount(uint256 amount) external override {
     _safeTransferFrom(registry.maha(), msg.sender, address(this), amount); // transfer the distro in

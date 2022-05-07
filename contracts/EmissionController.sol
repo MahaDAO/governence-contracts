@@ -6,28 +6,24 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 import {Epoch} from "./utils/Epoch.sol";
 import {IVoter} from "./interfaces/IVoter.sol";
+import {IRegistry} from "./interfaces/IRegistry.sol";
 import {IEmissionController} from "./interfaces/IEmissionController.sol";
 
 contract EmissionController is IEmissionController, Epoch {
-  IERC20 public maha;
-  IVoter public voter;
+  IRegistry public registry;
 
   constructor(
-    IERC20 _maha,
+    address _registry,
     uint256 _period,
     uint256 _startTime,
     uint256 _startEpoch
   ) Epoch(_period, _startTime, _startEpoch) {
-    maha = _maha;
-  }
-
-  function setVoter(IVoter _voter) external override onlyOwner {
-    voter = _voter;
+    registry = IRegistry(_registry);
   }
 
   function allocateEmission() external override checkEpoch {
-    uint256 mahaBalance = maha.balanceOf(address(this));
-    maha.approve(address(voter), mahaBalance);
-    voter.notifyRewardAmount(mahaBalance);
+    uint256 mahaBalance = IERC20(registry.maha()).balanceOf(address(this));
+    IERC20(registry.maha()).approve(registry.gaugeVoter(), mahaBalance);
+    IVoter(registry.gaugeVoter()).notifyRewardAmount(mahaBalance);
   }
 }
