@@ -312,7 +312,7 @@ contract BaseGaugeV1 is ReentrancyGuard, IGauge {
   function derivedBalance(address account) public view returns (uint256) {
     uint256 _tokenId = tokenIds[account];
     uint256 _balance = balanceOf[account];
-    uint256 _derived = (_balance * 40) / 100;
+    uint256 _derived = (_balance * 20) / 100;
     uint256 _adjusted = 0;
     uint256 _supply = IERC20(registry.votingEscrow()).totalSupply();
     if (
@@ -320,7 +320,7 @@ contract BaseGaugeV1 is ReentrancyGuard, IGauge {
       _supply > 0
     ) {
       _adjusted = IVotingEscrow(registry.votingEscrow()).balanceOfNFT(_tokenId);
-      _adjusted = (((totalSupply * _adjusted) / _supply) * 60) / 100;
+      _adjusted = (((totalSupply * _adjusted) / _supply) * 80) / 100;
     }
     return Math.min((_derived + _adjusted), _balance);
   }
