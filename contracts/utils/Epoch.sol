@@ -80,10 +80,6 @@ contract Epoch is IEpoch, Operator {
     return startTime.add(_getNextEpoch().mul(period));
   }
 
-  function _updateLastExecutedAt() internal {
-    lastExecutedAt = block.timestamp;
-  }
-
   // params
   function getPeriod() external view override returns (uint256) {
     return period;
