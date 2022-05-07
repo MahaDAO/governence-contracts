@@ -23,6 +23,8 @@ interface IVoter {
 
   function votingEscrow() external view returns (address);
 
+  function notifyRewardAmount(uint256 amount) external;
+
   event GaugeCreated(
     address indexed gauge,
     address creator,

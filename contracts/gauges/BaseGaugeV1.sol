@@ -3,20 +3,11 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+
 import {IVoter} from "../interfaces/IVoter.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
 import {IBribe} from "../interfaces/IBribe.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
-
-interface IBaseV1Factory {
-  function isPair(address) external view returns (bool);
-}
-
-interface IBaseV1Core {
-  function claimFees() external returns (uint256, uint256);
-
-  function tokens() external returns (address, address);
-}
 
 // Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
 contract BaseGaugeV1 is IGauge {
@@ -68,9 +59,6 @@ contract BaseGaugeV1 is IGauge {
   /// @notice The number of checkpoints for each token
   mapping(address => uint256) public rewardPerTokenNumCheckpoints;
 
-  uint256 public fees0;
-  uint256 public fees1;
-
   constructor(
     address _stake,
     address _bribe,
@@ -90,40 +78,6 @@ contract BaseGaugeV1 is IGauge {
     _unlocked = 2;
     _;
     _unlocked = 1;
-  }
-
-  function claimFees()
-    external
-    override
-    lock
-    returns (uint256 claimed0, uint256 claimed1)
-  {
-    return _claimFees();
-  }
-
-  function _claimFees() internal returns (uint256 claimed0, uint256 claimed1) {
-    (claimed0, claimed1) = IBaseV1Core(stake).claimFees();
-    if (claimed0 > 0 || claimed1 > 0) {
-      uint256 _fees0 = fees0 + claimed0;
-      uint256 _fees1 = fees1 + claimed1;
-      (address _token0, address _token1) = IBaseV1Core(stake).tokens();
-      if (_fees0 > IBribe(bribe).left(_token0) && _fees0 / DURATION > 0) {
-        fees0 = 0;
-        _safeApprove(_token0, bribe, _fees0);
-        IBribe(bribe).notifyRewardAmount(_token0, _fees0);
-      } else {
-        fees0 = _fees0;
-      }
-      if (_fees1 > IBribe(bribe).left(_token1) && _fees1 / DURATION > 0) {
-        fees1 = 0;
-        _safeApprove(_token1, bribe, _fees1);
-        IBribe(bribe).notifyRewardAmount(_token1, _fees1);
-      } else {
-        fees1 = _fees1;
-      }
-
-      emit ClaimFees(msg.sender, claimed0, claimed1);
-    }
   }
 
   /**
@@ -644,7 +598,6 @@ contract BaseGaugeV1 is IGauge {
       rewardPerTokenStored[token],
       lastUpdateTime[token]
     ) = _updateRewardPerToken(token);
-    _claimFees();
 
     if (block.timestamp >= periodFinish[token]) {
       _safeTransferFrom(token, msg.sender, address(this), amount);
