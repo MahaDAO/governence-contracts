@@ -15,7 +15,6 @@ import {IGauge} from "../interfaces/IGauge.sol";
 contract BaseGaugeV1 is ReentrancyGuard, IGauge {
   IRegistry public immutable override registry;
   address public immutable stake; // the LP token that needs to be staked for rewards
-  address public immutable bribe;
 
   uint256 public derivedSupply;
   mapping(address => uint256) public derivedBalances;
@@ -60,13 +59,8 @@ contract BaseGaugeV1 is ReentrancyGuard, IGauge {
   /// @notice The number of checkpoints for each token
   mapping(address => uint256) public rewardPerTokenNumCheckpoints;
 
-  constructor(
-    address _stake,
-    address _bribe,
-    address _registry
-  ) {
+  constructor(address _stake, address _registry) {
     stake = _stake;
-    bribe = _bribe;
     registry = IRegistry(_registry);
   }
 
