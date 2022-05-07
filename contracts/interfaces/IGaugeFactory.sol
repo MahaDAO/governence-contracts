@@ -8,4 +8,6 @@ interface IGaugeFactory {
     address _pool,
     address _bribe
   ) external returns (address);
+
+  event GaugeCreated(address _gauge, address _pool, address _bribe);
 }
