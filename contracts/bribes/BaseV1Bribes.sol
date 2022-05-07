@@ -3,14 +3,16 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 import {IVoter} from "../interfaces/IVoter.sol";
+import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
 import {IBribe} from "../interfaces/IBribe.sol";
 
 // Bribes pay out rewards for a given pool based on the votes that were received from the user (goes hand in hand with BaseV1Gauges.vote())
-contract BaseV1Bribes is IBribe {
-  address public immutable factory; // only factory can modify balances (since it only happens on vote())
-  address public immutable _ve;
+contract BaseV1Bribes is ReentrancyGuard, IBribe {
+  IRegistry public immutable registry;
 
   uint256 public constant DURATION = 7 days; // rewards are released over 7 days
   uint256 public constant PRECISION = 10**18;
@@ -68,18 +70,8 @@ contract BaseV1Bribes is IBribe {
   /// @notice The number of checkpoints for each token
   mapping(address => uint256) public rewardPerTokenNumCheckpoints;
 
-  constructor(address _factory) {
-    factory = _factory;
-    _ve = IVoter(_factory).votingEscrow();
-  }
-
-  // simple re-entrancy check
-  uint256 internal _unlocked = 1;
-  modifier lock() {
-    require(_unlocked == 1, "locked");
-    _unlocked = 2;
-    _;
-    _unlocked = 1;
+  constructor(address _registry) {
+    registry = IRegistry(_registry);
   }
 
   /**
@@ -234,7 +226,7 @@ contract BaseV1Bribes is IBribe {
       rewardPerTokenCheckpoints[token][_nCheckPoints - 1].timestamp == timestamp
     ) {
       rewardPerTokenCheckpoints[token][_nCheckPoints - 1]
-      .rewardPerToken = reward;
+        .rewardPerToken = reward;
     } else {
       rewardPerTokenCheckpoints[token][
         _nCheckPoints
@@ -275,9 +267,15 @@ contract BaseV1Bribes is IBribe {
   }
 
   // allows a user to claim rewards for a given token
-  function getReward(uint256 tokenId, address[] memory tokens) external lock {
+  function getReward(uint256 tokenId, address[] memory tokens)
+    external
+    nonReentrant
+  {
     require(
-      IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, tokenId),
+      IVotingEscrow(registry.votingEscrow()).isApprovedOrOwner(
+        msg.sender,
+        tokenId
+      ),
       "not ve approved owner"
     );
     for (uint256 i = 0; i < tokens.length; i++) {
@@ -301,10 +299,10 @@ contract BaseV1Bribes is IBribe {
   function getRewardForOwner(uint256 tokenId, address[] memory tokens)
     external
     override
-    lock
+    nonReentrant
   {
-    require(msg.sender == factory, "not factory");
-    address _owner = IVotingEscrow(_ve).ownerOf(tokenId);
+    require(msg.sender == registry.gaugeVoter(), "not voter");
+    address _owner = IVotingEscrow(registry.votingEscrow()).ownerOf(tokenId);
     for (uint256 i = 0; i < tokens.length; i++) {
       (
         rewardPerTokenStored[tokens[i]],
@@ -505,7 +503,7 @@ contract BaseV1Bribes is IBribe {
 
   // This is an external function, but internal notation is used since it can only be called "internally" from BaseV1Gauges
   function _deposit(uint256 amount, uint256 tokenId) external override {
-    require(msg.sender == factory, "not factory");
+    require(msg.sender == registry.gaugeVoter(), "not voter");
     totalSupply += amount;
     balanceOf[tokenId] += amount;
 
@@ -516,7 +514,7 @@ contract BaseV1Bribes is IBribe {
   }
 
   function _withdraw(uint256 amount, uint256 tokenId) external override {
-    require(msg.sender == factory, "not factory");
+    require(msg.sender == registry.gaugeVoter(), "not voter");
     totalSupply -= amount;
     balanceOf[tokenId] -= amount;
 
@@ -536,7 +534,7 @@ contract BaseV1Bribes is IBribe {
   function notifyRewardAmount(address token, uint256 amount)
     external
     override
-    lock
+    nonReentrant
   {
     require(amount > 0, "amount = 0");
     if (rewardRate[token] == 0)

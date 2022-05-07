@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
 
 /**
@@ -28,7 +30,7 @@ import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
   # maxtime (4 years?)
 */
 
-contract MAHAX is IVotingEscrow {
+contract MAHAX is ReentrancyGuard, IVotingEscrow {
   uint256 internal constant WEEK = 1 weeks;
   uint256 internal constant MAXTIME = 4 * 365 * 86400;
   int128 internal constant iMAXTIME = 4 * 365 * 86400;
@@ -88,17 +90,6 @@ contract MAHAX is IVotingEscrow {
 
   /// @dev ERC165 interface ID of ERC721Metadata
   bytes4 internal constant ERC721_METADATA_INTERFACE_ID = 0x5b5e139f;
-
-  /// @dev reentrancy guard
-  uint8 internal constant _notEntered = 1;
-  uint8 internal constant _entered = 2;
-  uint8 internal _enteredState = 1;
-  modifier nonreentrant() {
-    require(_enteredState == _notEntered);
-    _enteredState = _entered;
-    _;
-    _enteredState = _notEntered;
-  }
 
   /// @notice Contract constructor
   /// @param tokenAddr `ERC20CRV` token address
@@ -760,7 +751,7 @@ contract MAHAX is IVotingEscrow {
   ///      cannot extend their locktime and deposit for a brand new user
   /// @param _tokenId lock NFT
   /// @param _value Amount to add to user's lock
-  function depositFor(uint256 _tokenId, uint256 _value) external nonreentrant {
+  function depositFor(uint256 _tokenId, uint256 _value) external nonReentrant {
     LockedBalance memory _locked = locked[_tokenId];
 
     require(_value > 0, "value = 0"); // dev: need non-zero value
@@ -809,7 +800,7 @@ contract MAHAX is IVotingEscrow {
     uint256 _value,
     uint256 _lockDuration,
     address _to
-  ) external nonreentrant returns (uint256) {
+  ) external nonReentrant returns (uint256) {
     return _createLock(_value, _lockDuration, _to);
   }
 
@@ -818,7 +809,7 @@ contract MAHAX is IVotingEscrow {
   /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
   function createLock(uint256 _value, uint256 _lockDuration)
     external
-    nonreentrant
+    nonReentrant
     returns (uint256)
   {
     return _createLock(_value, _lockDuration, msg.sender);
@@ -828,7 +819,7 @@ contract MAHAX is IVotingEscrow {
   /// @param _value Amount of tokens to deposit and add to the lock
   function increaseAmount(uint256 _tokenId, uint256 _value)
     external
-    nonreentrant
+    nonReentrant
   {
     assert(_isApprovedOrOwner(msg.sender, _tokenId));
 
@@ -845,7 +836,7 @@ contract MAHAX is IVotingEscrow {
   /// @param _lockDuration New number of seconds until tokens unlock
   function increaseUnlockTime(uint256 _tokenId, uint256 _lockDuration)
     external
-    nonreentrant
+    nonReentrant
   {
     assert(_isApprovedOrOwner(msg.sender, _tokenId));
 
@@ -871,7 +862,7 @@ contract MAHAX is IVotingEscrow {
 
   /// @notice Withdraw all tokens for `_tokenId`
   /// @dev Only possible if the lock has expired
-  function withdraw(uint256 _tokenId) external nonreentrant {
+  function withdraw(uint256 _tokenId) external nonReentrant {
     assert(_isApprovedOrOwner(msg.sender, _tokenId));
     require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
 

@@ -3,18 +3,19 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IVoter} from "../interfaces/IVoter.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
 import {IBribe} from "../interfaces/IBribe.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 
 // Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
-contract BaseGaugeV1 is IGauge {
+contract BaseGaugeV1 is ReentrancyGuard, IGauge {
+  IRegistry public immutable registry; // the IVotingEscrow token used for gauges
   address public immutable stake; // the LP token that needs to be staked for rewards
-  address public immutable _ve; // the IVotingEscrow token used for gauges
   address public immutable bribe;
-  address public immutable voter;
 
   uint256 public derivedSupply;
   mapping(address => uint256) public derivedBalances;
@@ -62,22 +63,11 @@ contract BaseGaugeV1 is IGauge {
   constructor(
     address _stake,
     address _bribe,
-    address __ve,
-    address _voter
+    address _registry
   ) {
     stake = _stake;
     bribe = _bribe;
-    _ve = __ve;
-    voter = _voter;
-  }
-
-  // simple re-entrancy check
-  uint256 internal _unlocked = 1;
-  modifier lock() {
-    require(_unlocked == 1, "locked");
-    _unlocked = 2;
-    _;
-    _unlocked = 1;
+    registry = IRegistry(_registry);
   }
 
   /**
@@ -232,7 +222,7 @@ contract BaseGaugeV1 is IGauge {
       rewardPerTokenCheckpoints[token][_nCheckPoints - 1].timestamp == timestamp
     ) {
       rewardPerTokenCheckpoints[token][_nCheckPoints - 1]
-      .rewardPerToken = reward;
+        .rewardPerToken = reward;
     } else {
       rewardPerTokenCheckpoints[token][
         _nCheckPoints
@@ -275,15 +265,15 @@ contract BaseGaugeV1 is IGauge {
   function getReward(address account, address[] memory tokens)
     external
     override
-    lock
+    nonReentrant
   {
     require(
-      msg.sender == account || msg.sender == voter,
-      "sender not account or voter"
+      msg.sender == account || msg.sender == registry.gaugeVoter(),
+      "sender not account or registry.gaugeVoter()"
     );
-    _unlocked = 1;
-    IVoter(voter).distribute(address(this));
-    _unlocked = 2;
+    // _unlocked = 1; ??
+    IVoter(registry.gaugeVoter()).distribute(address(this));
+    // _unlocked = 2; ??
 
     for (uint256 i = 0; i < tokens.length; i++) {
       (
@@ -328,9 +318,12 @@ contract BaseGaugeV1 is IGauge {
     uint256 _balance = balanceOf[account];
     uint256 _derived = (_balance * 40) / 100;
     uint256 _adjusted = 0;
-    uint256 _supply = IERC20(_ve).totalSupply();
-    if (account == IVotingEscrow(_ve).ownerOf(_tokenId) && _supply > 0) {
-      _adjusted = IVotingEscrow(_ve).balanceOfNFT(_tokenId);
+    uint256 _supply = IERC20(registry.votingEscrow()).totalSupply();
+    if (
+      account == IVotingEscrow(registry.votingEscrow()).ownerOf(_tokenId) &&
+      _supply > 0
+    ) {
+      _adjusted = IVotingEscrow(registry.votingEscrow()).balanceOfNFT(_tokenId);
       _adjusted = (((totalSupply * _adjusted) / _supply) * 60) / 100;
     }
     return Math.min((_derived + _adjusted), _balance);
@@ -510,7 +503,7 @@ contract BaseGaugeV1 is IGauge {
     deposit(IERC20(stake).balanceOf(msg.sender), tokenId);
   }
 
-  function deposit(uint256 amount, uint256 tokenId) public lock {
+  function deposit(uint256 amount, uint256 tokenId) public nonReentrant {
     require(amount > 0, "amount = 0");
 
     _safeTransferFrom(stake, msg.sender, address(this), amount);
@@ -518,10 +511,13 @@ contract BaseGaugeV1 is IGauge {
     balanceOf[msg.sender] += amount;
 
     if (tokenId > 0) {
-      require(IVotingEscrow(_ve).ownerOf(tokenId) == msg.sender, "bad owner");
+      require(
+        IVotingEscrow(registry.votingEscrow()).ownerOf(tokenId) == msg.sender,
+        "bad owner"
+      );
       if (tokenIds[msg.sender] == 0) {
         tokenIds[msg.sender] = tokenId;
-        IVoter(voter).attachTokenToGauge(tokenId, msg.sender);
+        IVoter(registry.gaugeVoter()).attachTokenToGauge(tokenId, msg.sender);
       }
       require(tokenIds[msg.sender] == tokenId, "bad tokenId");
     } else {
@@ -537,7 +533,7 @@ contract BaseGaugeV1 is IGauge {
     _writeCheckpoint(msg.sender, _derivedBalance);
     _writeSupplyCheckpoint();
 
-    IVoter(voter).emitDeposit(tokenId, msg.sender, amount);
+    IVoter(registry.gaugeVoter()).emitDeposit(tokenId, msg.sender, amount);
     emit Deposit(msg.sender, tokenId, amount);
   }
 
@@ -553,7 +549,7 @@ contract BaseGaugeV1 is IGauge {
     withdrawToken(amount, tokenId);
   }
 
-  function withdrawToken(uint256 amount, uint256 tokenId) public lock {
+  function withdrawToken(uint256 amount, uint256 tokenId) public nonReentrant {
     totalSupply -= amount;
     balanceOf[msg.sender] -= amount;
     _safeTransfer(stake, msg.sender, amount);
@@ -561,7 +557,7 @@ contract BaseGaugeV1 is IGauge {
     if (tokenId > 0) {
       require(tokenId == tokenIds[msg.sender], "bad tokenId");
       tokenIds[msg.sender] = 0;
-      IVoter(voter).detachTokenFromGauge(tokenId, msg.sender);
+      IVoter(registry.gaugeVoter()).detachTokenFromGauge(tokenId, msg.sender);
     } else {
       tokenId = tokenIds[msg.sender];
     }
@@ -575,7 +571,7 @@ contract BaseGaugeV1 is IGauge {
     _writeCheckpoint(msg.sender, derivedBalances[msg.sender]);
     _writeSupplyCheckpoint();
 
-    IVoter(voter).emitWithdraw(tokenId, msg.sender, amount);
+    IVoter(registry.gaugeVoter()).emitWithdraw(tokenId, msg.sender, amount);
     emit Withdraw(msg.sender, tokenId, amount);
   }
 
@@ -588,7 +584,7 @@ contract BaseGaugeV1 is IGauge {
   function notifyRewardAmount(address token, uint256 amount)
     external
     override
-    lock
+    nonReentrant
   {
     require(token != stake, "token = stake");
     require(amount > 0, "amount = 0");

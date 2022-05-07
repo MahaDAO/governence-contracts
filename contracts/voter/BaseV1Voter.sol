@@ -5,19 +5,23 @@ pragma solidity ^0.8.0;
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+import {IBribe} from "../interfaces/IBribe.sol";
+import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
+import {IEmissionController} from "../interfaces/IEmissionController.sol";
+import {IGauge} from "../interfaces/IGauge.sol";
+import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
+import {IRegistry} from "../interfaces/IRegistry.sol";
+import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
 import {IVoter} from "../interfaces/IVoter.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
-import {IBribe} from "../interfaces/IBribe.sol";
-import {IGauge} from "../interfaces/IGauge.sol";
-import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
-import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
-import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
-import {IEmissionController} from "../interfaces/IEmissionController.sol";
 
-contract BaseV1Voter is Ownable, IVoter {
-  address public immutable _ve; // the IVotingEscrow token that governs these contracts
-  address internal immutable base;
+contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
+  IRegistry public immutable registry;
+
+  // address public immutable registry.votingEscrow(); // the IVotingEscrow token that governs these contracts
+  // address internal immutable registry.maha();
   address public immutable gaugefactory;
   address public immutable bribefactory;
   uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
@@ -36,14 +40,13 @@ contract BaseV1Voter is Ownable, IVoter {
   mapping(address => bool) public isGauge;
 
   constructor(
-    address __ve,
+    address _registry,
     address _gauges,
     address _bribes,
     address _emissionController,
     address _governance
   ) {
-    _ve = __ve;
-    base = IVotingEscrow(__ve).token();
+    registry = IRegistry(_registry);
     gaugefactory = _gauges;
     bribefactory = _bribes;
     emissionController = IEmissionController(_emissionController);
@@ -52,25 +55,19 @@ contract BaseV1Voter is Ownable, IVoter {
   }
 
   function votingEscrow() external view override returns (address) {
-    return _ve;
-  }
-
-  // simple re-entrancy check
-  uint256 internal _unlocked = 1;
-  modifier lock() {
-    require(_unlocked == 1, "locked");
-    _unlocked = 2;
-    _;
-    _unlocked = 1;
+    return registry.votingEscrow();
   }
 
   function reset(uint256 _tokenId) external {
     require(
-      IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, _tokenId),
+      IVotingEscrow(registry.votingEscrow()).isApprovedOrOwner(
+        msg.sender,
+        _tokenId
+      ),
       "not approved owner"
     );
     _reset(_tokenId);
-    IVotingEscrow(_ve).abstain(_tokenId);
+    IVotingEscrow(registry.votingEscrow()).abstain(_tokenId);
   }
 
   function _reset(uint256 _tokenId) internal {
@@ -119,7 +116,9 @@ contract BaseV1Voter is Ownable, IVoter {
   ) internal {
     _reset(_tokenId);
     uint256 _poolCnt = _poolVote.length;
-    int256 _weight = int256(IVotingEscrow(_ve).balanceOfNFT(_tokenId));
+    int256 _weight = int256(
+      IVotingEscrow(registry.votingEscrow()).balanceOfNFT(_tokenId)
+    );
     int256 _totalVoteWeight = 0;
     int256 _totalWeight = 0;
     int256 _usedWeight = 0;
@@ -152,7 +151,8 @@ contract BaseV1Voter is Ownable, IVoter {
         emit Voted(msg.sender, _tokenId, _poolWeight);
       }
     }
-    if (_usedWeight > 0) IVotingEscrow(_ve).voting(_tokenId);
+    if (_usedWeight > 0)
+      IVotingEscrow(registry.votingEscrow()).voting(_tokenId);
     totalWeight += uint256(_totalWeight);
     usedWeights[_tokenId] = uint256(_usedWeight);
   }
@@ -163,28 +163,35 @@ contract BaseV1Voter is Ownable, IVoter {
     int256[] calldata _weights
   ) external {
     require(
-      IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, tokenId),
+      IVotingEscrow(registry.votingEscrow()).isApprovedOrOwner(
+        msg.sender,
+        tokenId
+      ),
       "not token owner"
     );
     require(_poolVote.length == _weights.length, "invalid weights");
     _vote(tokenId, _poolVote, _weights);
   }
 
-  function createGauge(address _pool) external onlyOwner returns (address) {
+  function registerGauge(
+    address _pool,
+    address _gauge,
+    address _bribe
+  ) external onlyOwner returns (address) {
     require(gauges[_pool] == address(0x0), "gauge exists");
 
-    address _bribe = IBribeFactory(bribefactory).createBribe();
-    address _gauge = IGaugeFactory(gaugefactory).createGauge(
-      _pool,
-      _bribe,
-      _ve
-    );
+    // sanity checks
+    require(_gauge != address(0x0), "no gauge");
+    require(_bribe != address(0x0), "no bribe");
+    require(IGauge(_gauge).registry() == registry, "gauge has bad registry");
+    require(IGauge(_gauge).registry() == registry, "bribe has bad registry");
 
-    IERC20(base).approve(_gauge, type(uint256).max);
+    IERC20(registry.maha()).approve(_gauge, type(uint256).max);
     bribes[_gauge] = _bribe;
     gauges[_pool] = _gauge;
     poolForGauge[_gauge] = _pool;
     isGauge[_gauge] = true;
+
     _updateFor(_gauge);
     pools.push(_pool);
 
@@ -197,7 +204,7 @@ contract BaseV1Voter is Ownable, IVoter {
     override
   {
     require(isGauge[msg.sender], "not gauge");
-    if (tokenId > 0) IVotingEscrow(_ve).attach(tokenId);
+    if (tokenId > 0) IVotingEscrow(registry.votingEscrow()).attach(tokenId);
     emit Attach(account, msg.sender, tokenId);
   }
 
@@ -215,7 +222,7 @@ contract BaseV1Voter is Ownable, IVoter {
     override
   {
     require(isGauge[msg.sender], "not gauge");
-    if (tokenId > 0) IVotingEscrow(_ve).detach(tokenId);
+    if (tokenId > 0) IVotingEscrow(registry.votingEscrow()).detach(tokenId);
     emit Detach(account, msg.sender, tokenId);
   }
 
@@ -237,12 +244,12 @@ contract BaseV1Voter is Ownable, IVoter {
   mapping(address => uint256) public claimable;
 
   function notifyRewardAmount(uint256 amount) external override {
-    _safeTransferFrom(base, msg.sender, address(this), amount); // transfer the distro in
+    _safeTransferFrom(registry.maha(), msg.sender, address(this), amount); // transfer the distro in
     uint256 _ratio = (amount * 1e18) / totalWeight; // 1e18 adjustment is removed during claim
     if (_ratio > 0) {
       index += _ratio;
     }
-    emit NotifyReward(msg.sender, base, amount);
+    emit NotifyReward(msg.sender, registry.maha(), amount);
   }
 
   function updateFor(address[] memory _gauges) external {
@@ -296,7 +303,10 @@ contract BaseV1Voter is Ownable, IVoter {
     uint256 _tokenId
   ) external {
     require(
-      IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, _tokenId),
+      IVotingEscrow(registry.votingEscrow()).isApprovedOrOwner(
+        msg.sender,
+        _tokenId
+      ),
       "not approved owner"
     );
     for (uint256 i = 0; i < _bribes.length; i++) {
@@ -304,13 +314,16 @@ contract BaseV1Voter is Ownable, IVoter {
     }
   }
 
-  function _distribute(address _gauge) internal lock {
+  function _distribute(address _gauge) internal nonReentrant {
     IEmissionController(emissionController).allocateEmission();
     _updateFor(_gauge);
     uint256 _claimable = claimable[_gauge];
-    if (_claimable > IGauge(_gauge).left(base) && _claimable / DURATION > 0) {
+    if (
+      _claimable > IGauge(_gauge).left(registry.maha()) &&
+      _claimable / DURATION > 0
+    ) {
       claimable[_gauge] = 0;
-      IGauge(_gauge).notifyRewardAmount(base, _claimable);
+      IGauge(_gauge).notifyRewardAmount(registry.maha(), _claimable);
       emit DistributeReward(msg.sender, _gauge, _claimable);
     }
   }

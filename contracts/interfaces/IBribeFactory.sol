@@ -3,5 +3,5 @@
 pragma solidity ^0.8.0;
 
 interface IBribeFactory {
-  function createBribe() external returns (address);
+  function createBribe(address _registry) external returns (address);
 }
