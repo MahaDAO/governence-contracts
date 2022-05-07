@@ -12,7 +12,7 @@ import {IBribe} from "../interfaces/IBribe.sol";
 
 // Bribes pay out rewards for a given pool based on the votes that were received from the user (goes hand in hand with BaseV1Gauges.vote())
 contract BaseV1Bribes is ReentrancyGuard, IBribe {
-  IRegistry public immutable registry;
+  IRegistry public immutable override registry;
 
   uint256 public constant DURATION = 7 days; // rewards are released over 7 days
   uint256 public constant PRECISION = 10**18;
@@ -503,6 +503,8 @@ contract BaseV1Bribes is ReentrancyGuard, IBribe {
 
   // This is an external function, but internal notation is used since it can only be called "internally" from BaseV1Gauges
   function _deposit(uint256 amount, uint256 tokenId) external override {
+    registry.ensureNotPaused();
+
     require(msg.sender == registry.gaugeVoter(), "not voter");
     totalSupply += amount;
     balanceOf[tokenId] += amount;
@@ -514,6 +516,8 @@ contract BaseV1Bribes is ReentrancyGuard, IBribe {
   }
 
   function _withdraw(uint256 amount, uint256 tokenId) external override {
+    registry.ensureNotPaused();
+
     require(msg.sender == registry.gaugeVoter(), "not voter");
     totalSupply -= amount;
     balanceOf[tokenId] -= amount;

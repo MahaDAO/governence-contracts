@@ -8,4 +8,6 @@ interface IRegistry {
   function gaugeVoter() external view returns (address);
 
   function votingEscrow() external view returns (address);
+
+  function ensureNotPaused() external;
 }

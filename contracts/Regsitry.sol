@@ -2,13 +2,18 @@
 
 pragma solidity ^0.8.0;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {IRegistry} from "./interfaces/IRegistry.sol";
 
-contract Registry is Ownable, IRegistry {
+contract Registry is AccessControl, IRegistry {
   address private _maha;
   address private _votingEscrow;
   address private _gaugeVoter;
+
+  bool public paused;
+
+  bytes32 public constant EMERGENCY_STOP_ROLE =
+    keccak256("EMERGENCY_STOP_ROLE");
 
   constructor(
     address __maha,
@@ -20,7 +25,8 @@ contract Registry is Ownable, IRegistry {
     _gaugeVoter = __gaugeVoter;
     _votingEscrow = __votingEscrow;
 
-    _transferOwnership(_governance);
+    _setupRole(DEFAULT_ADMIN_ROLE, _governance);
+    _setupRole(EMERGENCY_STOP_ROLE, msg.sender);
   }
 
   function maha() external view override returns (address) {
@@ -33,6 +39,19 @@ contract Registry is Ownable, IRegistry {
 
   function gaugeVoter() external view override returns (address) {
     return _gaugeVoter;
+  }
+
+  function toggleProtocol() external {
+    require(
+      hasRole(EMERGENCY_STOP_ROLE, msg.sender) ||
+        hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
+      "not governance or emergency"
+    );
+    paused = !paused;
+  }
+
+  function ensureNotPaused() external view override {
+    require(!paused, "protocol is paused");
   }
 
   // todo: add setters

@@ -185,6 +185,8 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
     address _bribefactory,
     address _gaugefactory
   ) external returns (address) {
+    registry.ensureNotPaused(); // ensure protocol is active
+
     require(gauges[_pool] == address(0x0), "gauge exists");
 
     // sanity checks

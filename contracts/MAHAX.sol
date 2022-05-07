@@ -661,6 +661,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     LockedBalance memory lockedBalance,
     DepositType depositType
   ) internal {
+    registry.ensureNotPaused();
+
     LockedBalance memory _locked = lockedBalance;
     uint256 supplyBefore = supply;
 
@@ -765,6 +767,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     uint256 _lockDuration,
     address _to
   ) internal returns (uint256) {
+    registry.ensureNotPaused();
+
     uint256 unlockTime = ((block.timestamp + _lockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
 
     require(_value > 0, "value = 0"); // dev: need non-zero value
@@ -859,6 +863,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
   /// @notice Withdraw all tokens for `_tokenId`
   /// @dev Only possible if the lock has expired
   function withdraw(uint256 _tokenId) external nonReentrant {
+    registry.ensureNotPaused();
+
     assert(_isApprovedOrOwner(msg.sender, _tokenId));
     require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
 

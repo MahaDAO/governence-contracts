@@ -13,7 +13,7 @@ import {IGauge} from "../interfaces/IGauge.sol";
 
 // Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
 contract BaseGaugeV1 is ReentrancyGuard, IGauge {
-  IRegistry public immutable registry; // the IVotingEscrow token used for gauges
+  IRegistry public immutable override registry;
   address public immutable stake; // the LP token that needs to be staked for rewards
   address public immutable bribe;
 
@@ -267,10 +267,12 @@ contract BaseGaugeV1 is ReentrancyGuard, IGauge {
     override
     nonReentrant
   {
+    registry.ensureNotPaused();
     require(
       msg.sender == account || msg.sender == registry.gaugeVoter(),
-      "sender not account or registry.gaugeVoter()"
+      "sender not account or voter"
     );
+
     // _unlocked = 1; ??
     IVoter(registry.gaugeVoter()).distribute(address(this));
     // _unlocked = 2; ??
@@ -504,6 +506,7 @@ contract BaseGaugeV1 is ReentrancyGuard, IGauge {
   }
 
   function deposit(uint256 amount, uint256 tokenId) public nonReentrant {
+    registry.ensureNotPaused();
     require(amount > 0, "amount = 0");
 
     _safeTransferFrom(stake, msg.sender, address(this), amount);
