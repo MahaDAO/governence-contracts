@@ -22,8 +22,8 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
 
   // address public immutable registry.votingEscrow(); // the IVotingEscrow token that governs these contracts
   // address internal immutable registry.maha();
-  address public immutable gaugefactory;
-  address public immutable bribefactory;
+  // address public immutable gaugefactory;
+  // address public immutable bribefactory;
   uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
   IEmissionController public emissionController;
 
@@ -38,17 +38,14 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
   mapping(uint256 => address[]) public poolVote; // nft => pools
   mapping(uint256 => uint256) public usedWeights; // nft => total voting weight of user
   mapping(address => bool) public isGauge;
+  mapping(address => bool) public whitelist;
 
   constructor(
     address _registry,
-    address _gauges,
-    address _bribes,
     address _emissionController,
     address _governance
   ) {
     registry = IRegistry(_registry);
-    gaugefactory = _gauges;
-    bribefactory = _bribes;
     emissionController = IEmissionController(_emissionController);
 
     _transferOwnership(_governance);
@@ -173,18 +170,31 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
     _vote(tokenId, _poolVote, _weights);
   }
 
+  function whitelistAddress(address what) external onlyOwner {
+    whitelist[what] = true;
+    Whitelisted(msg.sender, what);
+  }
+
   function registerGauge(
     address _pool,
-    address _gauge,
-    address _bribe
-  ) external onlyOwner returns (address) {
+    address _bribefactory,
+    address _gaugefactory
+  ) external returns (address) {
     require(gauges[_pool] == address(0x0), "gauge exists");
 
     // sanity checks
-    require(_gauge != address(0x0), "no gauge");
-    require(_bribe != address(0x0), "no bribe");
-    require(IGauge(_gauge).registry() == registry, "gauge has bad registry");
-    require(IGauge(_gauge).registry() == registry, "bribe has bad registry");
+    require(whitelist[_pool], "pool not whitelisted");
+    require(whitelist[_bribefactory], "bribe factory not whitelisted");
+    require(whitelist[_gaugefactory], "gauge factory not whitelisted");
+
+    address _bribe = IBribeFactory(_bribefactory).createBribe(
+      address(registry)
+    );
+    address _gauge = IGaugeFactory(_gaugefactory).createGauge(
+      _pool,
+      _bribe,
+      address(registry)
+    );
 
     IERC20(registry.maha()).approve(_gauge, type(uint256).max);
     bribes[_gauge] = _bribe;
