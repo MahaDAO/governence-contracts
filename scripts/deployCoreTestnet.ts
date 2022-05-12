@@ -60,6 +60,7 @@ async function main() {
     gaugeFactoryCI.address,
     bribesFactoryCI.address,
     emissionControllerCI.address,
+    deployer.address,
     { gasPrice }
   );
   await verifyContract(hre, voterCI.address, [
