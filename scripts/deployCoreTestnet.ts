@@ -42,12 +42,7 @@ async function main() {
     mahaCI.address,
     { gasPrice }
   );
-  await verifyContract(hre, emissionControllerCI.address, [
-    mahaCI.address,
-    30 * 24 * 60 * 60,
-    Math.floor((Date.now() + 5 * 60 * 1000) / 1000),
-    0,
-  ]);
+  await verifyContract(hre, emissionControllerCI.address, [mahaCI.address]);
 
   const mahaxCI = await mahaxCF.deploy(mahaCI.address, { gasPrice });
   await verifyContract(hre, mahaxCI.address, [mahaCI.address]);
