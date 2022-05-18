@@ -42,6 +42,7 @@ interface IVotingEscrow is IERC721 {
    * What we can do is to extrapolate ***At functions */
 
   struct LockedBalance {
+    uint256 start;
     int128 amount;
     uint256 end;
   }

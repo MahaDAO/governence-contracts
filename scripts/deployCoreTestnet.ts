@@ -12,7 +12,7 @@ async function main() {
   const { provider } = ethers;
   const estimateGasPrice = await provider.getGasPrice();
   const gasPrice = estimateGasPrice.mul(3).div(2);
-  console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, 'gwei')} gwei`);
+  console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
   const outputFile: any = {};
 
   // Get all smart contract factories.
@@ -40,9 +40,6 @@ async function main() {
 
   const emissionControllerCI = await emissionControllerCF.deploy(
     mahaCI.address,
-    30 * 24 * 60 * 60,
-    Math.floor((Date.now() + 5 * 60 * 1000) / 1000),
-    0,
     { gasPrice }
   );
   await verifyContract(hre, emissionControllerCI.address, [
@@ -72,6 +69,7 @@ async function main() {
 
   // Link the deployed smart contracts.
   await emissionControllerCI.setVoter(voterCI.address, { gasPrice });
+  await mahaxCI.setVoter(voterCI.address, { gasPrice });
 
   // Mint the default faucet.
   await mahaCI.mint(

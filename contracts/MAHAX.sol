@@ -680,6 +680,10 @@ contract MAHAX is IVotingEscrow {
     if (unlockTime != 0) {
       _locked.end = unlockTime;
     }
+    if (depositType == DepositType.CREATE_LOCK_TYPE) {
+      _locked.start = block.timestamp;
+    }
+
     locked[_tokenId] = _locked;
 
     // Possibilities:
@@ -740,8 +744,8 @@ contract MAHAX is IVotingEscrow {
     uint256 value0 = uint256(int256(_locked0.amount));
     uint256 end = _locked0.end >= _locked1.end ? _locked0.end : _locked1.end;
 
-    locked[_from] = LockedBalance(0, 0);
-    _checkpoint(_from, _locked0, LockedBalance(0, 0));
+    locked[_from] = LockedBalance(0, 0, 0);
+    _checkpoint(_from, _locked0, LockedBalance(0, 0, 0));
     _burn(_from);
     _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE);
   }
@@ -752,7 +756,7 @@ contract MAHAX is IVotingEscrow {
 
   /// @notice Record global data to checkpoint
   function checkpoint() external {
-    _checkpoint(0, LockedBalance(0, 0), LockedBalance(0, 0));
+    _checkpoint(0, LockedBalance(0, 0, 0), LockedBalance(0, 0, 0));
   }
 
   /// @notice Deposit `_value` tokens for `_tokenId` and add to the lock
@@ -859,6 +863,10 @@ contract MAHAX is IVotingEscrow {
       unlockTime <= block.timestamp + MAXTIME,
       "Voting lock can be 4 years max"
     );
+    require(
+      unlockTime <= _locked.start + MAXTIME,
+      "Voting lock can be 4 years max"
+    );
 
     _depositFor(
       _tokenId,
@@ -879,14 +887,14 @@ contract MAHAX is IVotingEscrow {
     require(block.timestamp >= _locked.end, "The lock didn't expire");
     uint256 value = uint256(int256(_locked.amount));
 
-    locked[_tokenId] = LockedBalance(0, 0);
+    locked[_tokenId] = LockedBalance(0, 0, 0);
     uint256 supplyBefore = supply;
     supply = supplyBefore - value;
 
     // oldLocked can have either expired <= timestamp or zero end
     // _locked has only 0 end
     // Both can have >= 0 amount
-    _checkpoint(_tokenId, _locked, LockedBalance(0, 0));
+    _checkpoint(_tokenId, _locked, LockedBalance(0, 0, 0));
 
     assert(IERC20(_token).transfer(msg.sender, value));
 
@@ -963,6 +971,7 @@ contract MAHAX is IVotingEscrow {
         _tokenId,
         _balanceOfNFT(_tokenId, block.timestamp),
         _locked.end,
+        _locked.start,
         uint256(int256(_locked.amount))
       );
   }
@@ -1129,6 +1138,7 @@ contract MAHAX is IVotingEscrow {
     uint256 _tokenId,
     uint256 _balanceOf,
     uint256 _lockedEnd,
+    uint256 _lockedStart,
     uint256 _value
   ) internal pure returns (string memory output) {
     output = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
@@ -1146,6 +1156,14 @@ contract MAHAX is IVotingEscrow {
         "balanceOf ",
         toString(_balanceOf),
         '</text><text x="10" y="60" class="base">'
+      )
+    );
+    output = string(
+      abi.encodePacked(
+        output,
+        "locked_start ",
+        toString(_lockedStart),
+        '</text><text x="10" y="80" class="base">'
       )
     );
     output = string(
