@@ -32,11 +32,21 @@ async function main() {
   const bribesFactoryCI = await bribesFactoryCF.deploy({ gasPrice });
   await verifyContract(hre, bribesFactoryCI.address, []);
 
-  const mahaCI = await mockTokenCF.deploy("MahaDAO", "MAHA", { gasPrice });
-  await verifyContract(hre, mahaCI.address, ["MahaDAO", "MAHA"]);
-
-  const daiCI = await mockTokenCF.deploy("DAI Stablecoin", "DAI", { gasPrice });
-  await verifyContract(hre, daiCI.address, ["DAI Stablecoin", "DAI"]);
+  const mahaCI = await ethers.getContractAt(
+    "MockERC20",
+    "0x7aF163582b3ebAAbB7bce03aaDa8C1d76d655a5c"
+  );
+  // await verifyContract(hre, mahaCI.address, ["MahaDAO", "MAHA"]);
+  const solidCI = await ethers.getContractAt(
+    "MockERC20",
+    "0x62C33009b62B1e972c01820Ac608D9F8992190F5"
+  );
+  // await verifyContract(hre, solidCI.address, ["Solidly", "SOLID"]);
+  const daiCI = await ethers.getContractAt(
+    "MockERC20",
+    "0x544380B5EE3d1a8485671537a553F61f3c7190f1"
+  );
+  // await verifyContract(hre, daiCI.address, ["DAI Stablecoin", "DAI"]);
 
   const emissionControllerCI = await emissionControllerCF.deploy(
     mahaCI.address,
@@ -87,6 +97,10 @@ async function main() {
   outputFile.DAI = {
     abi: "MockERC20",
     address: daiCI.address,
+  };
+  outputFile.SOLID = {
+    abi: "MockERC20",
+    address: solidCI.address,
   };
   outputFile.MahaToken = {
     abi: "MockERC20",
