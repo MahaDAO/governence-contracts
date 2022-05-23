@@ -305,7 +305,7 @@ contract BaseV1Voter is Ownable, IVoter {
   }
 
   function _distribute(address _gauge) internal lock {
-    IEmissionController(emissionController).allocateEmission();
+    if (IEmissionController(emissionController).callable()) IEmissionController(emissionController).allocateEmission();
     _updateFor(_gauge);
     uint256 _claimable = claimable[_gauge];
     if (_claimable > IGauge(_gauge).left(base) && _claimable / DURATION > 0) {

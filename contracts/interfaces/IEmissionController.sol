@@ -3,8 +3,9 @@
 pragma solidity ^0.8.0;
 
 import { IVoter } from "./IVoter.sol";
+import { IEpoch } from "./IEpoch.sol";
 
-interface IEmissionController {
+interface IEmissionController is IEpoch {
   function allocateEmission() external;
 
   function setVoter(IVoter _voter) external;

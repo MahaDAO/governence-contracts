@@ -4,17 +4,20 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
+import {Epoch} from "./utils/Epoch.sol";
 import {IVoter} from "./interfaces/IVoter.sol";
 import {IEmissionController} from "./interfaces/IEmissionController.sol";
-import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract EmissionController is IEmissionController, Context, Ownable {
+contract EmissionController is IEmissionController, Epoch {
   IERC20 public maha;
   IVoter public voter;
 
   constructor(
-    IERC20 _maha
-  ) {
+    IERC20 _maha,
+    uint256 _period,
+    uint256 _startTime,
+    uint256 _startEpoch
+  ) Epoch(_period, _startTime, _startEpoch) {
     maha = _maha;
   }
 
@@ -22,12 +25,9 @@ contract EmissionController is IEmissionController, Context, Ownable {
     voter = _voter;
   }
 
-  function allocateEmission() external override {
+  function allocateEmission() external override checkEpoch {
     uint256 mahaBalance = maha.balanceOf(address(this));
-
-    if (mahaBalance > 0) {
-      maha.approve(address(voter), mahaBalance);
-      voter.notifyRewardAmount(mahaBalance);
-    }
+    maha.approve(address(voter), mahaBalance);
+    voter.notifyRewardAmount(mahaBalance);
   }
 }
