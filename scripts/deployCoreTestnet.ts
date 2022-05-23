@@ -51,7 +51,7 @@ async function main() {
   const emissionControllerCI = await emissionControllerCF.deploy(
     mahaCI.address,
     12 * 60 * 60, // 12 hr period.
-    Math.floor(Date.now() / 1000),
+    Math.floor((Date.now() + 20 * 60 * 1000) / 1000),
     0,
     { gasPrice }
   );
