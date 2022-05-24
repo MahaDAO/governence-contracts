@@ -29,6 +29,11 @@ import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
 */
 
 contract MAHAX is IVotingEscrow {
+  struct Attributes {
+    string color;
+    string gender;
+  }
+
   uint256 internal constant WEEK = 1 weeks;
   uint256 internal constant MAXTIME = 4 * 365 * 86400;
   int128 internal constant iMAXTIME = 4 * 365 * 86400;
@@ -36,6 +41,7 @@ contract MAHAX is IVotingEscrow {
 
   address internal immutable _token;
   uint256 public supply;
+  mapping(uint256 => Attributes) public lockAttributes; // tokenId => attributes.
   mapping(uint256 => LockedBalance) public locked;
 
   mapping(uint256 => uint256) public ownershipChange;
@@ -733,7 +739,7 @@ contract MAHAX is IVotingEscrow {
     attachments[_tokenId] = attachments[_tokenId] - 1;
   }
 
-  function merge(uint256 _from, uint256 _to) external {
+  function merge(uint256 _from, uint256 _to, Attributes calldata data) external {
     require(attachments[_from] == 0 && !voted[_from], "attached");
     require(_from != _to, "same addr");
     require(_isApprovedOrOwner(msg.sender, _from), "from not approved");
@@ -748,6 +754,9 @@ contract MAHAX is IVotingEscrow {
     _checkpoint(_from, _locked0, LockedBalance(0, 0, 0));
     _burn(_from);
     _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE);
+
+    delete lockAttributes[_from];  // delete the from nft attributes.
+    lockAttributes[_to] = data;  // store the new to nft attributes.
   }
 
   function blockNumber() external view returns (uint256) {
@@ -780,7 +789,8 @@ contract MAHAX is IVotingEscrow {
   function _createLock(
     uint256 _value,
     uint256 _lockDuration,
-    address _to
+    address _to,
+    Attributes calldata data
   ) internal returns (uint256) {
     uint256 unlockTime = ((block.timestamp + _lockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
 
@@ -802,6 +812,9 @@ contract MAHAX is IVotingEscrow {
       locked[_tokenId],
       DepositType.CREATE_LOCK_TYPE
     );
+
+    lockAttributes[_tokenId] = data; // Store the lock attributes.
+
     return _tokenId;
   }
 
@@ -812,25 +825,26 @@ contract MAHAX is IVotingEscrow {
   function createLockFor(
     uint256 _value,
     uint256 _lockDuration,
-    address _to
+    address _to,
+    Attributes calldata data
   ) external nonreentrant returns (uint256) {
-    return _createLock(_value, _lockDuration, _to);
+    return _createLock(_value, _lockDuration, _to, data);
   }
 
   /// @notice Deposit `_value` tokens for `msg.sender` and lock for `_lockDuration`
   /// @param _value Amount to deposit
   /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
-  function createLock(uint256 _value, uint256 _lockDuration)
+  function createLock(uint256 _value, uint256 _lockDuration, Attributes calldata data)
     external
     nonreentrant
     returns (uint256)
   {
-    return _createLock(_value, _lockDuration, msg.sender);
+    return _createLock(_value, _lockDuration, msg.sender, data);
   }
 
   /// @notice Deposit `_value` additional tokens for `_tokenId` without modifying the unlock time
   /// @param _value Amount of tokens to deposit and add to the lock
-  function increaseAmount(uint256 _tokenId, uint256 _value)
+  function increaseAmount(uint256 _tokenId, uint256 _value, Attributes calldata data)
     external
     nonreentrant
   {
@@ -843,11 +857,12 @@ contract MAHAX is IVotingEscrow {
     require(_locked.end > block.timestamp, "Cannot add to expired lock.");
 
     _depositFor(_tokenId, _value, 0, _locked, DepositType.INCREASE_LOCK_AMOUNT);
+    lockAttributes[_tokenId] = data; // modify the attributes.
   }
 
   /// @notice Extend the unlock time for `_tokenId`
   /// @param _lockDuration New number of seconds until tokens unlock
-  function increaseUnlockTime(uint256 _tokenId, uint256 _lockDuration)
+  function increaseUnlockTime(uint256 _tokenId, uint256 _lockDuration, Attributes calldata data)
     external
     nonreentrant
   {
@@ -875,6 +890,8 @@ contract MAHAX is IVotingEscrow {
       _locked,
       DepositType.INCREASE_UNLOCK_TIME
     );
+
+    lockAttributes[_tokenId] = data; // modify the attributes.
   }
 
   /// @notice Withdraw all tokens for `_tokenId`
@@ -903,6 +920,8 @@ contract MAHAX is IVotingEscrow {
 
     emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
     emit Supply(supplyBefore, supplyBefore - value);
+
+    delete lockAttributes[_tokenId]; // delte the attributes.
   }
 
   // The following ERC20/minime-compatible methods are not real balanceOf and supply!
