@@ -741,7 +741,7 @@ contract MAHAX is IVotingEscrow, Context, Ownable {
     attachments[_tokenId] = attachments[_tokenId] - 1;
   }
 
-  function merge(uint256 _from, uint256 _to, bytes calldata data) external {
+  function merge(uint256 _from, uint256 _to) external {
     require(attachments[_from] == 0 && !voted[_from], "attached");
     require(_from != _to, "same addr");
     require(_isApprovedOrOwner(msg.sender, _from), "from not approved");
@@ -791,8 +791,7 @@ contract MAHAX is IVotingEscrow, Context, Ownable {
   function _createLock(
     uint256 _value,
     uint256 _lockDuration,
-    address _to,
-    bytes calldata data
+    address _to
   ) internal returns (uint256) {
     uint256 unlockTime = ((block.timestamp + _lockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
 
@@ -827,26 +826,25 @@ contract MAHAX is IVotingEscrow, Context, Ownable {
   function createLockFor(
     uint256 _value,
     uint256 _lockDuration,
-    address _to,
-    bytes calldata data
+    address _to
   ) external nonreentrant returns (uint256) {
-    return _createLock(_value, _lockDuration, _to, data);
+    return _createLock(_value, _lockDuration, _to);
   }
 
   /// @notice Deposit `_value` tokens for `msg.sender` and lock for `_lockDuration`
   /// @param _value Amount to deposit
   /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
-  function createLock(uint256 _value, uint256 _lockDuration, bytes calldata data)
+  function createLock(uint256 _value, uint256 _lockDuration)
     external
     nonreentrant
     returns (uint256)
   {
-    return _createLock(_value, _lockDuration, msg.sender, data);
+    return _createLock(_value, _lockDuration, msg.sender);
   }
 
   /// @notice Deposit `_value` additional tokens for `_tokenId` without modifying the unlock time
   /// @param _value Amount of tokens to deposit and add to the lock
-  function increaseAmount(uint256 _tokenId, uint256 _value, bytes calldata data)
+  function increaseAmount(uint256 _tokenId, uint256 _value)
     external
     nonreentrant
   {
@@ -864,7 +862,7 @@ contract MAHAX is IVotingEscrow, Context, Ownable {
 
   /// @notice Extend the unlock time for `_tokenId`
   /// @param _lockDuration New number of seconds until tokens unlock
-  function increaseUnlockTime(uint256 _tokenId, uint256 _lockDuration, bytes calldata data)
+  function increaseUnlockTime(uint256 _tokenId, uint256 _lockDuration)
     external
     nonreentrant
   {
