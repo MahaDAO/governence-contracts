@@ -329,6 +329,7 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
     IEmissionController(emissionController).allocateEmission();
     _updateFor(_gauge);
     uint256 _claimable = claimable[_gauge];
+
     if (
       _claimable > IGauge(_gauge).left(registry.maha()) &&
       _claimable / DURATION > 0
