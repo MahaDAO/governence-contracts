@@ -22,6 +22,8 @@ interface IVotingEscrow is IERC721 {
 
   function abstain(uint256 tokenId) external;
 
+  function totalSupply() external view returns (uint256);
+
   enum DepositType {
     DEPOSIT_FOR_TYPE,
     CREATE_LOCK_TYPE,
@@ -44,6 +46,7 @@ interface IVotingEscrow is IERC721 {
   struct LockedBalance {
     int128 amount;
     uint256 end;
+    uint256 start;
   }
 
   event Deposit(

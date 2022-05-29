@@ -8,6 +8,8 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 
 import {IRegistry} from "./interfaces/IRegistry.sol";
 import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
+import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IMetadataRegistry} from "./interfaces/IMetadataRegistry.sol";
 
 /**
   @title Voting Escrow
@@ -31,7 +33,7 @@ import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
   # maxtime (4 years?)
 */
 
-contract MAHAX is ReentrancyGuard, IVotingEscrow {
+contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
   IRegistry public immutable registry;
 
   uint256 internal constant WEEK = 1 weeks;
@@ -53,6 +55,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
 
   mapping(uint256 => uint256) public attachments;
   mapping(uint256 => bool) public voted;
+  address public voter;
+  address public metadataRegistry;
 
   string public constant name = "Locked MAHA NFT";
   string public constant symbol = "MAHAX";
@@ -674,6 +678,10 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     if (unlockTime != 0) {
       _locked.end = unlockTime;
     }
+    if (depositType == DepositType.CREATE_LOCK_TYPE) {
+      _locked.start = block.timestamp;
+    }
+
     locked[_tokenId] = _locked;
 
     // Possibilities:
@@ -696,6 +704,15 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
       block.timestamp
     );
     emit Supply(supplyBefore, supplyBefore + _value);
+  }
+
+  function setVoter(address _voter) external {
+    require(msg.sender == voter, "not voter");
+    voter = _voter;
+  }
+
+  function setMetadataRegistry(address _registry) external onlyOwner {
+    metadataRegistry = _registry;
   }
 
   function voting(uint256 _tokenId) external override {
@@ -729,10 +746,13 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     uint256 value0 = uint256(int256(_locked0.amount));
     uint256 end = _locked0.end >= _locked1.end ? _locked0.end : _locked1.end;
 
-    locked[_from] = LockedBalance(0, 0);
-    _checkpoint(_from, _locked0, LockedBalance(0, 0));
+    locked[_from] = LockedBalance(0, 0, 0);
+    _checkpoint(_from, _locked0, LockedBalance(0, 0, 0));
     _burn(_from);
     _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE);
+
+    IMetadataRegistry(metadataRegistry).deleteMetadata(_from); // delete the from nft attributes.
+    IMetadataRegistry(metadataRegistry).setMetadata(_to); // store the new to nft attributes.
   }
 
   function blockNumber() external view returns (uint256) {
@@ -741,7 +761,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
 
   /// @notice Record global data to checkpoint
   function checkpoint() external {
-    _checkpoint(0, LockedBalance(0, 0), LockedBalance(0, 0));
+    _checkpoint(0, LockedBalance(0, 0, 0), LockedBalance(0, 0, 0));
   }
 
   /// @notice Deposit `_value` tokens for `_tokenId` and add to the lock
@@ -789,6 +809,9 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
       locked[_tokenId],
       DepositType.CREATE_LOCK_TYPE
     );
+
+    IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // Store the lock attributes.
+
     return _tokenId;
   }
 
@@ -830,6 +853,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     require(_locked.end > block.timestamp, "Cannot add to expired lock.");
 
     _depositFor(_tokenId, _value, 0, _locked, DepositType.INCREASE_LOCK_AMOUNT);
+    IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // modify the attributes.
   }
 
   /// @notice Extend the unlock time for `_tokenId`
@@ -850,6 +874,10 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
       unlockTime <= block.timestamp + MAXTIME,
       "Voting lock can be 4 years max"
     );
+    require(
+      unlockTime <= _locked.start + MAXTIME,
+      "Voting lock can be 4 years max"
+    );
 
     _depositFor(
       _tokenId,
@@ -858,6 +886,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
       _locked,
       DepositType.INCREASE_UNLOCK_TIME
     );
+
+    IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // modify the attributes.
   }
 
   /// @notice Withdraw all tokens for `_tokenId`
@@ -872,14 +902,14 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     require(block.timestamp >= _locked.end, "The lock didn't expire");
     uint256 value = uint256(int256(_locked.amount));
 
-    locked[_tokenId] = LockedBalance(0, 0);
+    locked[_tokenId] = LockedBalance(0, 0, 0);
     uint256 supplyBefore = supply;
     supply = supplyBefore - value;
 
     // oldLocked can have either expired <= timestamp or zero end
     // _locked has only 0 end
     // Both can have >= 0 amount
-    _checkpoint(_tokenId, _locked, LockedBalance(0, 0));
+    _checkpoint(_tokenId, _locked, LockedBalance(0, 0, 0));
 
     assert(IERC20(registry.maha()).transfer(msg.sender, value));
 
@@ -888,6 +918,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
 
     emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
     emit Supply(supplyBefore, supplyBefore - value);
+
+    IMetadataRegistry(metadataRegistry).deleteMetadata(_tokenId); // delte the attributes.
   }
 
   // The following ERC20/minime-compatible methods are not real balanceOf and supply!
@@ -956,6 +988,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
         _tokenId,
         _balanceOfNFT(_tokenId, block.timestamp),
         _locked.end,
+        _locked.start,
         uint256(int256(_locked.amount))
       );
   }
@@ -1086,7 +1119,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     return _supplyAt(lastPoint, t);
   }
 
-  function totalSupply() external view returns (uint256) {
+  function totalSupply() external view override returns (uint256) {
     return totalSupplyAtT(block.timestamp);
   }
 
@@ -1122,6 +1155,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
     uint256 _tokenId,
     uint256 _balanceOf,
     uint256 _lockedEnd,
+    uint256 _lockedStart,
     uint256 _value
   ) internal pure returns (string memory output) {
     output = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
@@ -1139,6 +1173,14 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow {
         "balanceOf ",
         toString(_balanceOf),
         '</text><text x="10" y="60" class="base">'
+      )
+    );
+    output = string(
+      abi.encodePacked(
+        output,
+        "locked_start ",
+        toString(_lockedStart),
+        '</text><text x="10" y="80" class="base">'
       )
     );
     output = string(

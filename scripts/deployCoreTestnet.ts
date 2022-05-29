@@ -12,7 +12,7 @@ async function main() {
   const { provider } = ethers;
   const estimateGasPrice = await provider.getGasPrice();
   const gasPrice = estimateGasPrice.mul(3).div(2);
-  console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, 'gwei')} gwei`);
+  console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
   const outputFile: any = {};
 
   // Get all smart contract factories.
@@ -32,23 +32,33 @@ async function main() {
   const bribesFactoryCI = await bribesFactoryCF.deploy({ gasPrice });
   await verifyContract(hre, bribesFactoryCI.address, []);
 
-  const mahaCI = await mockTokenCF.deploy("MahaDAO", "MAHA", { gasPrice });
-  await verifyContract(hre, mahaCI.address, ["MahaDAO", "MAHA"]);
-
-  const daiCI = await mockTokenCF.deploy("DAI Stablecoin", "DAI", { gasPrice });
-  await verifyContract(hre, daiCI.address, ["DAI Stablecoin", "DAI"]);
+  const mahaCI = await ethers.getContractAt(
+    "MockERC20",
+    "0x7aF163582b3ebAAbB7bce03aaDa8C1d76d655a5c"
+  );
+  // await verifyContract(hre, mahaCI.address, ["MahaDAO", "MAHA"]);
+  const solidCI = await ethers.getContractAt(
+    "MockERC20",
+    "0x62C33009b62B1e972c01820Ac608D9F8992190F5"
+  );
+  // await verifyContract(hre, solidCI.address, ["Solidly", "SOLID"]);
+  const daiCI = await ethers.getContractAt(
+    "MockERC20",
+    "0x544380B5EE3d1a8485671537a553F61f3c7190f1"
+  );
+  // await verifyContract(hre, daiCI.address, ["DAI Stablecoin", "DAI"]);
 
   const emissionControllerCI = await emissionControllerCF.deploy(
     mahaCI.address,
-    30 * 24 * 60 * 60,
-    Math.floor((Date.now() + 5 * 60 * 1000) / 1000),
+    12 * 60 * 60, // 12 hr period.
+    Math.floor((Date.now() + 20 * 60 * 1000) / 1000),
     0,
     { gasPrice }
   );
   await verifyContract(hre, emissionControllerCI.address, [
     mahaCI.address,
-    30 * 24 * 60 * 60,
-    Math.floor((Date.now() + 5 * 60 * 1000) / 1000),
+    12 * 60 * 60, // 12 hr period.
+    Math.floor((Date.now() + 20 * 60 * 1000) / 1000),
     0,
   ]);
 
@@ -60,6 +70,7 @@ async function main() {
     gaugeFactoryCI.address,
     bribesFactoryCI.address,
     emissionControllerCI.address,
+    deployer.address,
     { gasPrice }
   );
   await verifyContract(hre, voterCI.address, [
@@ -71,6 +82,7 @@ async function main() {
 
   // Link the deployed smart contracts.
   await emissionControllerCI.setVoter(voterCI.address, { gasPrice });
+  await mahaxCI.setVoter(voterCI.address, { gasPrice });
 
   // Mint the default faucet.
   await mahaCI.mint(
@@ -93,6 +105,10 @@ async function main() {
   outputFile.DAI = {
     abi: "MockERC20",
     address: daiCI.address,
+  };
+  outputFile.SOLID = {
+    abi: "MockERC20",
+    address: solidCI.address,
   };
   outputFile.MahaToken = {
     abi: "MockERC20",

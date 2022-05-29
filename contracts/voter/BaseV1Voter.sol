@@ -326,7 +326,8 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
   }
 
   function _distribute(address _gauge) internal nonReentrant {
-    IEmissionController(emissionController).allocateEmission();
+    if (IEmissionController(emissionController).callable())
+      IEmissionController(emissionController).allocateEmission();
     _updateFor(_gauge);
     uint256 _claimable = claimable[_gauge];
 
