@@ -29,6 +29,11 @@ contract Registry is AccessControl, IRegistry {
     _setupRole(EMERGENCY_STOP_ROLE, msg.sender);
   }
 
+  modifier onlyGovernance() {
+    require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "not governance");
+    _;
+  }
+
   function maha() external view override returns (address) {
     return _maha;
   }
@@ -54,5 +59,18 @@ contract Registry is AccessControl, IRegistry {
     require(!paused, "protocol is paused");
   }
 
-  // todo: add setters
+  function setMAHA(address _new) external override onlyGovernance {
+    emit MahaChanged(msg.sender, _maha, _new);
+    _maha = _new;
+  }
+
+  function setVoter(address _new) external override onlyGovernance {
+    emit VoterChanged(msg.sender, _maha, _new);
+    _gaugeVoter = _new;
+  }
+
+  function setLocker(address _new) external override onlyGovernance {
+    emit LockerChanged(msg.sender, _maha, _new);
+    _votingEscrow = _new;
+  }
 }
