@@ -16,7 +16,7 @@ async function main() {
     "0x53c2e584DA772493A96e43BE0761a3Fda6f19F6E" // Currently matic mumbai address.
   );
 
-  const uniqueUsersSnapshotData = require("../output/userLockSnapshot.json");
+  const uniqueUsersSnapshotData = require("../../output/userLockSnapshot.json");
   const uniqueUsers: string[] = Object.keys(uniqueUsersSnapshotData);
 
   const users: string[] = [];
