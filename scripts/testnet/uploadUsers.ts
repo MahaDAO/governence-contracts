@@ -1,8 +1,6 @@
-import { ethers, network } from "hardhat";
+import { ethers } from "hardhat";
 
 async function main() {
-  console.log(`Deploying to ${network.name}...`);
-
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}.`);
 
