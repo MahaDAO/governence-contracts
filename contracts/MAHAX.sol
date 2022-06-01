@@ -34,7 +34,7 @@ import {IMetadataRegistry} from "./interfaces/IMetadataRegistry.sol";
 */
 
 contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
-  IRegistry public immutable registry;
+  IRegistry public registry;
 
   uint256 internal constant WEEK = 1 weeks;
   uint256 internal constant MAXTIME = 4 * 365 * 86400;
@@ -96,9 +96,13 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
   /// @dev ERC165 interface ID of ERC721Metadata
   bytes4 internal constant ERC721_METADATA_INTERFACE_ID = 0x5b5e139f;
 
-  /// @notice Contract constructor
+  bool public initialized = false;
+
+  /// @notice Proxy initializer
   /// @param _registry The registry which contains all the addresses
-  constructor(address _registry) {
+  function initialize(address _registry) external {
+    require(!initialized, "already initialized");
+
     registry = IRegistry(_registry);
 
     pointHistory[0].blk = block.number;
@@ -112,6 +116,9 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     emit Transfer(address(0), address(this), tokenId);
     // burn-ish
     emit Transfer(address(this), address(0), tokenId);
+
+    _transferOwnership(msg.sender);
+    initialized = true;
   }
 
   /// @dev Interface identification is specified in ERC-165.
