@@ -21,29 +21,32 @@ async function main() {
   const values: string[] = [];
   const durations: string[] = [];
   for (const user of uniqueUsers) {
+    const amount = uniqueUsersSnapshotData[user].amount;
+    if (!Number(amount)) continue;
+
     users.push(user);
-    values.push(uniqueUsersSnapshotData[user].amount);
+    values.push(amount);
 
     // For adding a week or so to user whose lock is expired or about to expire because of rounding
     // while uploading snapshot.
-    const bufferForWeekRoundingInSec = 14 * 24 * 60 * 60 * 1000;
+    const bufferForWeekRoundingInSec = 20 * 24 * 60 * 60 * 1000;
 
     // Fetch the current unlockTimestamp of user.
     const unlockTime = Number(uniqueUsersSnapshotData[user].endTime);
     // Figure out the duration from the unlock timestamp.
     if (
-      Math.floor((Date.now() + bufferForWeekRoundingInSec) / 1000) > unlockTime
+      Math.floor((Date.now() + bufferForWeekRoundingInSec) / 1000) >= unlockTime
     ) {
       durations.push(Math.floor(bufferForWeekRoundingInSec / 1000).toString());
     } else {
-      durations.push(Math.floor(bufferForWeekRoundingInSec / 1000).toString());
+      durations.push((unlockTime - Math.floor(Date.now() / 1000)).toString());
     }
   }
 
-  const batch = 10;
+  const batchSize = 1;
   for (let i = 0; i < users.length; ) {
     const start = i;
-    const end = i + batch;
+    const end = i + batchSize;
 
     console.log(`Uploading from index ${start} to ${end}`);
 
@@ -51,11 +54,15 @@ async function main() {
     const batchValues = values.slice(start, end);
     const batchDurations = durations.slice(start, end);
 
+    console.log(`Batch users`, batchUsers);
+    console.log(`Batch values`, batchValues);
+    console.log(`Batch durations`, batchDurations);
+
     await mahax.uploadUsers(batchUsers, batchValues, batchDurations, {
       gasPrice,
     });
 
-    i = i + batch;
+    i = i + batchSize;
   }
 }
 
