@@ -28,5 +28,13 @@ module.exports = {
         tryExtensions: [".js", ".json", ".node", ".ts"],
       },
     ],
+    "node/no-missing-require": [
+      "error",
+      {
+        allowModules: [],
+        resolvePaths: [__dirname],
+        tryExtensions: [".js", ".json", ".node", ".ts"],
+      },
+    ],
   },
 };
