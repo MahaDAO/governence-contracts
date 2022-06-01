@@ -1,8 +1,8 @@
 import * as fs from "fs";
 import hre, { ethers, network } from "hardhat";
 
-import { ZERO_ADDRESS } from "./config";
-import verifyContract from "./verifyContract";
+import { ZERO_ADDRESS } from "../config";
+import verifyContract from "../verifyContract";
 
 async function main() {
   console.log(`Deploying to ${network.name}...`);
