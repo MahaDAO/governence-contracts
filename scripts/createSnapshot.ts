@@ -28,8 +28,8 @@ async function main() {
     console.log(`Fetching snapshot for ${user}`);
     const lockedState = await oldMAHAX.locked(user);
     snapshotData[user] = {
-      endTime: lockedState.end,
-      amount: lockedState.amount,
+      endTime: lockedState.end.toString(),
+      amount: lockedState.amount.toString(),
     };
   }
 
