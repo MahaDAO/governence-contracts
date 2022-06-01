@@ -15,5 +15,7 @@ export default async function verifyContract(
       address,
       constructorArguments,
     });
-  } catch (error: any) {}
+  } catch (error: any) {
+    console.log(`Error occured while verifying contract at ${address}`);
+  }
 }

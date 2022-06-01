@@ -2,6 +2,8 @@ import * as fs from "fs";
 
 import { ethers } from "hardhat";
 
+import { DEPLOYED_VOTING_ESCROW } from "./config";
+
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}.`);
@@ -11,6 +13,7 @@ async function main() {
   const gasPrice = estimateGasPrice.mul(3).div(2);
   console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
 
+  // Need to get a list of unique addresses from block explorer.
   const uniqueUsersData = require("../output/uniqueExistingUsers.json");
   const uniqueUsers: string[] = Object.values(uniqueUsersData);
 
@@ -18,7 +21,7 @@ async function main() {
     JSON.stringify(OLD_MAHAX_ABI)
   );
   const oldMAHAX = new ethers.Contract(
-    "0x8f2c37d2f8ae7bce07aa79c768cc03ab0e5ae9ae",
+    DEPLOYED_VOTING_ESCROW,
     oldMAHAXInterface,
     deployer
   );
