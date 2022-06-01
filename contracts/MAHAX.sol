@@ -670,7 +670,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     uint256 _value,
     uint256 unlockTime,
     LockedBalance memory lockedBalance,
-    DepositType depositType
+    DepositType depositType,
+    bool shouldPullUserMaha
   ) internal {
     registry.ensureNotPaused();
 
@@ -698,7 +699,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     _checkpoint(_tokenId, oldLocked, _locked);
 
     address from = msg.sender;
-    if (_value != 0 && depositType != DepositType.MERGE_TYPE) {
+    if (_value != 0 && depositType != DepositType.MERGE_TYPE && shouldPullUserMaha) {
       assert(IERC20(registry.maha()).transferFrom(from, address(this), _value));
     }
 
@@ -756,7 +757,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     locked[_from] = LockedBalance(0, 0, 0);
     _checkpoint(_from, _locked0, LockedBalance(0, 0, 0));
     _burn(_from);
-    _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE);
+    _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE, false);
 
     IMetadataRegistry(metadataRegistry).deleteMetadata(_from); // delete the from nft attributes.
     IMetadataRegistry(metadataRegistry).setMetadata(_to); // store the new to nft attributes.
@@ -782,7 +783,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     require(_value > 0, "value = 0"); // dev: need non-zero value
     require(_locked.amount > 0, "No existing lock found");
     require(_locked.end > block.timestamp, "Cannot add to expired lock.");
-    _depositFor(_tokenId, _value, 0, _locked, DepositType.DEPOSIT_FOR_TYPE);
+    _depositFor(_tokenId, _value, 0, _locked, DepositType.DEPOSIT_FOR_TYPE, true);
   }
 
   /// @notice Deposit `_value` tokens for `_to` and lock for `_lockDuration`
@@ -792,7 +793,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
   function _createLock(
     uint256 _value,
     uint256 _lockDuration,
-    address _to
+    address _to,
+    bool shouldPullUserMaha
   ) internal returns (uint256) {
     registry.ensureNotPaused();
 
@@ -814,7 +816,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
       _value,
       unlockTime,
       locked[_tokenId],
-      DepositType.CREATE_LOCK_TYPE
+      DepositType.CREATE_LOCK_TYPE,
+      shouldPullUserMaha
     );
 
     IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // Store the lock attributes.
@@ -831,7 +834,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     uint256 _lockDuration,
     address _to
   ) external nonReentrant returns (uint256) {
-    return _createLock(_value, _lockDuration, _to);
+    return _createLock(_value, _lockDuration, _to, true);
   }
 
   /// @notice Deposit `_value` tokens for `msg.sender` and lock for `_lockDuration`
@@ -842,7 +845,35 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     nonReentrant
     returns (uint256)
   {
-    return _createLock(_value, _lockDuration, msg.sender);
+    return _createLock(_value, _lockDuration, msg.sender, true);
+  }
+
+  /// @notice Upload users.
+  /// @param _users The users for whose lock is to be added.
+  /// @param _value The values for users.
+  /// @param _lockDuration The lock duration for users.
+  function uploadUsers(address[] memory _users, uint256[] memory _value, uint256[] memory _lockDuration)
+    external
+    nonReentrant
+    onlyOwner
+    returns (uint256[] memory)
+  {
+    require(
+      _value.length == _lockDuration.length,
+      "invalid data"
+    );
+    require(
+      _users.length == _value.length,
+      "invalid data"
+    );
+
+    uint256[] memory _returnValues;
+    for (uint256 i = 0; i < _users.length; i++) {
+      uint256 _returnVal = _createLock(_value[i], _lockDuration[i], _users[i], false);
+      _returnValues[i] = _returnVal;
+    }
+
+    return _returnValues;
   }
 
   /// @notice Deposit `_value` additional tokens for `_tokenId` without modifying the unlock time
@@ -859,7 +890,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     require(_locked.amount > 0, "No existing lock found");
     require(_locked.end > block.timestamp, "Cannot add to expired lock.");
 
-    _depositFor(_tokenId, _value, 0, _locked, DepositType.INCREASE_LOCK_AMOUNT);
+    _depositFor(_tokenId, _value, 0, _locked, DepositType.INCREASE_LOCK_AMOUNT, true);
     IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // modify the attributes.
   }
 
@@ -891,7 +922,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
       0,
       unlockTime,
       _locked,
-      DepositType.INCREASE_UNLOCK_TIME
+      DepositType.INCREASE_UNLOCK_TIME,
+      false
     );
 
     IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // modify the attributes.
