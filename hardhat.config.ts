@@ -45,7 +45,7 @@ const config: HardhatUserConfig & any = {
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     matic: {
-      url: "https://matic-mainnet.chainstacklabs.com",
+      url: "https://polygon-rpc.com/",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
