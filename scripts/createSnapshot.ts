@@ -14,8 +14,10 @@ async function main() {
   console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
 
   // Need to get a list of unique addresses from block explorer.
-  const uniqueUsersData = require("../output/uniqueExistingUsers.json");
-  const uniqueUsers: string[] = Object.values(uniqueUsersData);
+  const uniqueUsersData: {
+    [name: number | string]: string;
+  } = require("../output/uniqueExistingUsers.json");
+  const uniqueUsers: string[] = [...new Set(Object.values(uniqueUsersData))];
 
   const oldMAHAXInterface = new ethers.utils.Interface(
     JSON.stringify(OLD_MAHAX_ABI)
