@@ -856,7 +856,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     external
     nonReentrant
     onlyOwner
-    returns (uint256[] memory)
   {
     require(
       _value.length == _lockDuration.length,
@@ -867,13 +866,9 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
       "invalid data"
     );
 
-    uint256[] memory _returnValues;
     for (uint256 i = 0; i < _users.length; i++) {
-      uint256 _returnVal = _createLock(_value[i], _lockDuration[i], _users[i], false);
-      _returnValues[i] = _returnVal;
+      _createLock(_value[i], _lockDuration[i], _users[i], false);
     }
-
-    return _returnValues;
   }
 
   /// @notice Deposit `_value` additional tokens for `_tokenId` without modifying the unlock time
