@@ -16,6 +16,9 @@ export default async function verifyContract(
       constructorArguments,
     });
   } catch (error: any) {
-    console.log(`Error occured while verifying contract at ${address}`);
+    if (error.name !== "NomicLabsHardhatPluginError") {
+      console.error(`- Error verifying: ${error.name}`);
+      console.error(error);
+    }
   }
 }
