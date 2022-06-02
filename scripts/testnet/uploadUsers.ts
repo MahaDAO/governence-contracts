@@ -43,7 +43,7 @@ async function main() {
     }
   }
 
-  const batchSize = 1;
+  const batchSize = 10;
   for (let i = 0; i < users.length; ) {
     const start = i;
     const end = i + batchSize;
