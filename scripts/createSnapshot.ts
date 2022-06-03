@@ -2,7 +2,7 @@ import * as fs from "fs";
 
 import { ethers } from "hardhat";
 
-import { DEPLOYED_VOTING_ESCROW } from "./config";
+import { DEPLOYED_NON_NFT_VOTING_ESCROW } from "./config";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -10,7 +10,7 @@ async function main() {
 
   const { provider } = ethers;
   const estimateGasPrice = await provider.getGasPrice();
-  const gasPrice = estimateGasPrice.mul(3).div(2);
+  const gasPrice = estimateGasPrice.mul(5).div(2);
   console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
 
   // Need to get a list of unique addresses from block explorer.
@@ -23,7 +23,7 @@ async function main() {
     JSON.stringify(OLD_MAHAX_ABI)
   );
   const oldMAHAX = new ethers.Contract(
-    DEPLOYED_VOTING_ESCROW,
+    DEPLOYED_NON_NFT_VOTING_ESCROW,
     oldMAHAXInterface,
     deployer
   );
