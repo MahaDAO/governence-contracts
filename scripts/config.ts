@@ -1,4 +1,4 @@
-export const PROXY_ADMIN = "0x112ae96ce47f9506cdc4668655ae1ad880109d5c";
+export const PROXY_ADMIN = "0x08FBA75aE48507f4306DaF29ca3b15d6d2Ae5400"; // TODO: change this.
 
 export const ARTH_ADDRESS = "0xe52509181feb30eb4979e29ec70d50fd5c44d590";
 export const USDC_ADDRESS = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
