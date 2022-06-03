@@ -1201,7 +1201,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
           abi.encodePacked(
             '{"name": "lock #',
             toString(_tokenId),
-            '", "description": "Solidly locks, can be used to boost gauge yields, vote on token emission, and receive bribes", "image": "data:image/svg+xml;base64,',
+            '", "description": "MAHA locks, can be used to boost yields, vote on token emission, and receive bribes", "image": "data:image/svg+xml;base64,',
             Base64.encode(bytes(output)),
             '"}'
           )
