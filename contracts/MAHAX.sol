@@ -823,6 +823,11 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
 
     IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // Store the lock attributes.
 
+    require(
+      _balanceOfNFT(_tokenId, block.timestamp) >= 100e18,
+      "lock should have atleast 100 MAHAX"
+    );
+
     return _tokenId;
   }
 
