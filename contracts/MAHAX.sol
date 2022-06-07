@@ -801,6 +801,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     uint256 unlockTime = ((block.timestamp + _lockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
 
     require(_value > 0, "value = 0"); // dev: need non-zero value
+    require(_value >= 100e18, "value should be > 100 MAHA");
     require(unlockTime > block.timestamp, "Can only lock in the future");
     require(
       unlockTime <= block.timestamp + MAXTIME,
