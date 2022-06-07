@@ -12,7 +12,7 @@
     "clean": "hardhat clean",
     "clean:cache": "rm -rf cache",
     "clean:typechain": "rm -rf typechain",
-    "clean:all": "npm run clean && npm run clean:typechain && npm run clean:cache"
+    "clean:all": "yarn clean && yarn clean:typechain && yarn clean:cache"
   },
   "repository": {
     "type": "git",
