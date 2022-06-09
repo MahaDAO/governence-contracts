@@ -1046,14 +1046,9 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
   /// @param _tokenId Token ID to fetch URI for.
   function tokenURI(uint256 _tokenId) external view returns (string memory) {
     require(idToOwner[_tokenId] != address(0), "Query for nonexistent token");
-    LockedBalance memory _locked = locked[_tokenId];
     return
-      _tokenURI(
-        _tokenId,
-        _balanceOfNFT(_tokenId, block.timestamp),
-        _locked.end,
-        _locked.start,
-        uint256(int256(_locked.amount))
+      string(
+        abi.encodePacked("https://images.mahapeople.com/", _tokenId, ".json")
       );
   }
 
@@ -1213,88 +1208,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     }
     // Now dt contains info on how far are we beyond point
     return _supplyAt(point, point.ts + dt);
-  }
-
-  function _tokenURI(
-    uint256 _tokenId,
-    uint256 _balanceOf,
-    uint256 _lockedEnd,
-    uint256 _lockedStart,
-    uint256 _value
-  ) internal pure returns (string memory output) {
-    output = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
-    output = string(
-      abi.encodePacked(
-        output,
-        "token ",
-        toString(_tokenId),
-        '</text><text x="10" y="40" class="base">'
-      )
-    );
-    output = string(
-      abi.encodePacked(
-        output,
-        "balanceOf ",
-        toString(_balanceOf),
-        '</text><text x="10" y="60" class="base">'
-      )
-    );
-    output = string(
-      abi.encodePacked(
-        output,
-        "locked_start ",
-        toString(_lockedStart),
-        '</text><text x="10" y="80" class="base">'
-      )
-    );
-    output = string(
-      abi.encodePacked(
-        output,
-        "locked_end ",
-        toString(_lockedEnd),
-        '</text><text x="10" y="80" class="base">'
-      )
-    );
-    output = string(
-      abi.encodePacked(output, "value ", toString(_value), "</text></svg>")
-    );
-
-    string memory json = Base64.encode(
-      bytes(
-        string(
-          abi.encodePacked(
-            '{"name": "lock #',
-            toString(_tokenId),
-            '", "description": "MAHA locks, can be used to boost gauge yields, vote on token emission, and receive bribes", "image": "data:image/svg+xml;base64,',
-            Base64.encode(bytes(output)),
-            '"}'
-          )
-        )
-      )
-    );
-    output = string(abi.encodePacked("data:application/json;base64,", json));
-  }
-
-  function toString(uint256 value) internal pure returns (string memory) {
-    // Inspired by OraclizeAPI's implementation - MIT license
-    // https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
-
-    if (value == 0) {
-      return "0";
-    }
-    uint256 temp = value;
-    uint256 digits;
-    while (temp != 0) {
-      digits++;
-      temp /= 10;
-    }
-    bytes memory buffer = new bytes(digits);
-    while (value != 0) {
-      digits -= 1;
-      buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
-      value /= 10;
-    }
-    return string(buffer);
   }
 
   function _burn(uint256 _tokenId) internal {
