@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import hre, { ethers, network } from "hardhat";
-// eslint-disable-next-line node/no-missing-import
-import verifyContract from "./verifyContract";
+
+import verifyContract from "../verifyContract";
 
 async function main() {
   console.log(`Deploying to ${network.name}...`);

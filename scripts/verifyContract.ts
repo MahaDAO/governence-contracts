@@ -15,5 +15,10 @@ export default async function verifyContract(
       address,
       constructorArguments,
     });
-  } catch (error: any) {}
+  } catch (error: any) {
+    if (error.name !== "NomicLabsHardhatPluginError") {
+      console.error(`- Error verifying: ${error.name}`);
+      console.error(error);
+    }
+  }
 }
