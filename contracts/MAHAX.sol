@@ -193,6 +193,20 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     return _ownerOf(_tokenId);
   }
 
+  /// @dev Returns the voting power of the `_owner`.
+  ///      Throws if `_owner` is the zero address. NFTs assigned to the zero address are considered invalid.
+  /// @param _owner Address for whom to query the voting power of.
+  function votingPowerOf(address _owner)
+    external
+    view
+    returns (uint256 _power)
+  {
+    for (uint256 index = 0; index < ownerToNFTokenCount[_owner]; index++) {
+      uint256 _tokenId = ownerToNFTokenIdList[_owner][index];
+      _power += _balanceOfNFT(_tokenId, block.timestamp);
+    }
+  }
+
   /// @dev Get the approved address for a single NFT.
   /// @param _tokenId ID of the NFT to query the approval of.
   function getApproved(uint256 _tokenId)
@@ -833,7 +847,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // Store the lock attributes.
 
     require(
-      _balanceOfNFT(_tokenId, block.timestamp) >= 100e18,
+      _balanceOfNFT(_tokenId, block.timestamp) >= 99e18,
       "lock should have atleast 100 MAHAX"
     );
 
