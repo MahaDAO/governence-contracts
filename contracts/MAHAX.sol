@@ -355,6 +355,9 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     uint256 _tokenId,
     address _sender
   ) internal {
+    // If a nft is staked, it can't be transferred.
+    require(!staked[_tokenId], "is staked");
+
     require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
     // Check requirements
     require(_isApprovedOrOwner(_sender, _tokenId), "not approved sender");
