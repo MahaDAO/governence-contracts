@@ -9,6 +9,10 @@ interface IStakingMaster {
 
   function getReward(uint256 tokenId) external;
 
+  function stake(uint256 tokenId) external;
+
+  function withdraw(uint256 tokenId) external;
+
   function addPool(address pool) external;
 
   function addPools(address[] memory pools) external;

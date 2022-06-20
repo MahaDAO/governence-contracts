@@ -12,6 +12,8 @@ interface IVotingEscrow is IERC721 {
 
   function totalSupplyWithoutDecay() external view returns (uint256);
 
+  function isStaked(uint256 tokenId) external view returns (bool);
+
   function isApprovedOrOwner(address, uint256) external view returns (bool);
 
   function attach(uint256 tokenId) external;
@@ -19,6 +21,10 @@ interface IVotingEscrow is IERC721 {
   function detach(uint256 tokenId) external;
 
   function voting(uint256 tokenId) external;
+
+  function stake(uint256 tokenId) external;
+
+  function withdrawStake(uint256 tokenId) external;
 
   function abstain(uint256 tokenId) external;
 

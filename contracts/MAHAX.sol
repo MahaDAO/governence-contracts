@@ -54,6 +54,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
 
   mapping(uint256 => uint256) public attachments;
   mapping(uint256 => bool) public voted;
+  mapping(uint256 => bool) public staked;
   address public voter;
 
   string public constant name = "Locked MAHA NFT";
@@ -136,6 +137,10 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
 
   function totalSupplyWithoutDecay() external view override returns (uint256) {
     return supply;
+  }
+
+  function isStaked(uint256 _tokenId) external view override returns (bool) {
+    return staked[_tokenId];
   }
 
   /// @notice Get the most recently recorded rate of voting power decrease for `_tokenId`
@@ -736,6 +741,18 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
   function voting(uint256 _tokenId) external override {
     require(msg.sender == registry.gaugeVoter(), "not voter");
     voted[_tokenId] = true;
+  }
+
+  function stake(uint256 _tokenId) external override {
+    require(msg.sender == registry.stakingMaster(), "not staking master");
+    require(!staked[_tokenId], "already staked");
+    staked[_tokenId] = true;
+  }
+
+  function withdrawStake(uint256 _tokenId) external override {
+    require(msg.sender == registry.stakingMaster(), "not staking master");
+    require(staked[_tokenId], "not staked");
+    staked[_tokenId] = false;
   }
 
   function abstain(uint256 _tokenId) external override {

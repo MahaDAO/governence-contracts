@@ -55,6 +55,51 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
       tokenOwner == txSender,
       "not token owner"
     );
+    require(
+      votingEscrow.isStaked(tokenId),
+      "not staked"
+    );
+
+    for (uint256 index = 0; index < pools.length; index++) {
+      IStakingChild pool = IStakingChild(pools[index]);
+      pool.updateReward(tokenId);
+      pool.getRewardFor(tokenId, tokenOwner);
+    }
+  }
+
+  function stake(uint256 tokenId) external override nonReentrant {
+    address txSender = _msgSender();
+    address tokenOwner = votingEscrow.ownerOf(tokenId);
+    require(
+      tokenOwner == txSender,
+      "not token owner"
+    );
+      require(
+      !votingEscrow.isStaked(tokenId),
+      "already staked"
+    );
+
+    votingEscrow.stake(tokenId);
+
+    for (uint256 index = 0; index < pools.length; index++) {
+      IStakingChild pool = IStakingChild(pools[index]);
+      pool.updateReward(tokenId);
+    }
+  }
+
+  function withdraw(uint256 tokenId) external override nonReentrant {
+    address txSender = _msgSender();
+    address tokenOwner = votingEscrow.ownerOf(tokenId);
+    require(
+      tokenOwner == txSender,
+      "not token owner"
+    );
+    require(
+      votingEscrow.isStaked(tokenId),
+      "not staked"
+    );
+
+    votingEscrow.withdrawStake(tokenId);
 
     for (uint256 index = 0; index < pools.length; index++) {
       IStakingChild pool = IStakingChild(pools[index]);
