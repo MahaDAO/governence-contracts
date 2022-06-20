@@ -20,9 +20,6 @@ async function main() {
   const mahaxCF = await ethers.getContractFactory(`MAHAX`);
   const registryCF = await ethers.getContractFactory(`Registry`);
   const proxyCF = await ethers.getContractFactory(`AdminUpgradeabilityProxy`);
-  const metadataRegistryCF = await ethers.getContractFactory(
-    `EmptyMetadataRegistry`
-  );
 
   // ----- Fetch pre-existing contracts.
 
@@ -71,14 +68,8 @@ async function main() {
   );
   await mahaxCI.initialize(registryCI.address, { gasPrice });
 
-  const metaDataRegistryCI = await metadataRegistryCF.deploy(mahaxCI.address, {
-    gasPrice,
-  });
-  await verifyContract(hre, metaDataRegistryCI.address, [mahaxCI.address]);
-
   // ----- Link the smart contracts -----
 
-  await mahaxCI.setMetadataRegistry(metaDataRegistryCI.address, { gasPrice });
   await registryCI.setMAHA(mahaCI.address, { gasPrice });
   await registryCI.setLocker(mahaxCI.address, { gasPrice });
 

@@ -20,9 +20,6 @@ async function main() {
   const mahaxCF = await ethers.getContractFactory(`MAHAX`);
   const registryCF = await ethers.getContractFactory(`Registry`);
   const proxyCF = await ethers.getContractFactory(`AdminUpgradeabilityProxy`);
-  const metadataRegistryCF = await ethers.getContractFactory(
-    `EmptyMetadataRegistry`
-  );
 
   // ----- Deploy smart contracts -----
 
@@ -75,28 +72,15 @@ async function main() {
   console.log(`Initializing MAHAX proxy...\n`);
   const tx = await mahaxCI.initialize(registryCI.address, { gasPrice });
   await tx.wait();
-  console.log(`Deploying MetadataRegistry...`);
-  const metaDataRegistryCI = await metadataRegistryCF.deploy(mahaxCI.address, {
-    gasPrice,
-  });
-  console.log(
-    `Deployed MetadataRegistry at ${metaDataRegistryCI.address}, ${metaDataRegistryCI.deployTransaction.hash}.\n`
-  );
-  await verifyContract(hre, metaDataRegistryCI.address, [mahaxCI.address]);
 
   // ----- Link the smart contracts -----
 
-  console.log(`Setting MetadataRegistry in MAHAX...`);
-  const tx1 = await mahaxCI.setMetadataRegistry(metaDataRegistryCI.address, {
-    gasPrice,
-  });
-  await tx1.wait();
   console.log(`Setting MAHA in Registry...`);
-  const tx2 = await registryCI.setMAHA(MAHA_ADDRESS, { gasPrice });
-  await tx2.wait();
+  const tx1 = await registryCI.setMAHA(MAHA_ADDRESS, { gasPrice });
+  await tx1.wait();
   console.log(`Setting Locker in Registry...`);
-  const tx3 = await registryCI.setLocker(mahaxCI.address, { gasPrice });
-  await tx3.wait();
+  const tx2 = await registryCI.setLocker(mahaxCI.address, { gasPrice });
+  await tx2.wait();
 
   // ----- Map the deployment abis and addresses -----
 
