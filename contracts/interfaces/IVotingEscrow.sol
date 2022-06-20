@@ -10,6 +10,11 @@ interface IVotingEscrow is IERC721 {
 
   function balanceOfNFT(uint256) external view returns (uint256);
 
+  function balanceOfNFTWithoutDecay(uint256 _tokenId)
+    external
+    view
+    returns (uint256);
+
   function totalSupplyWithoutDecay() external view returns (uint256);
 
   function isStaked(uint256 tokenId) external view returns (bool);

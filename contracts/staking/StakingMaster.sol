@@ -45,7 +45,7 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
   }
 
   function balanceOf(uint256 tokenId) external view override returns (uint256) {
-    return votingEscrow.balanceOfNFT(tokenId);
+    return votingEscrow.balanceOfNFTWithoutDecay(tokenId);
   }
 
   function getReward(uint256 tokenId) external override nonReentrant {

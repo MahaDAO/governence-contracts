@@ -1063,6 +1063,20 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     return _balanceOfNFT(_tokenId, block.timestamp);
   }
 
+  function balanceOfNFTWithoutDecay(uint256 _tokenId)
+    external
+    view
+    override
+    returns (uint256)
+  {
+    if (ownershipChange[_tokenId] == block.number) return 0;
+    LockedBalance memory _locked = locked[_tokenId];
+    if (_locked.start == 0 || _locked.end == 0) return 0;
+
+    uint256 timeDelta = _locked.end - _locked.start;
+    return uint256(int256(_locked.amount)) * timeDelta / MAXTIME;
+  }
+
   function balanceOfNFTAt(uint256 _tokenId, uint256 _t)
     external
     view
