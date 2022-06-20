@@ -44,15 +44,22 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
     return votingEscrow.totalSupplyWithoutDecay();
   }
 
-  function balanceOf(address who) external view override returns (uint256) {
-    return votingEscrow.balanceOf(who);
+  function balanceOf(uint256 tokenId) external view override returns (uint256) {
+    return votingEscrow.balanceOfNFT(tokenId);
   }
 
-  function getReward() external override nonReentrant {
+  function getReward(uint256 tokenId) external override nonReentrant {
+    address txSender = _msgSender();
+    address tokenOwner = votingEscrow.ownerOf(tokenId);
+    require(
+      tokenOwner == txSender,
+      "not token owner"
+    );
+
     for (uint256 index = 0; index < pools.length; index++) {
       IStakingChild pool = IStakingChild(pools[index]);
-      pool.updateReward(_msgSender());
-      pool.getRewardFor(_msgSender());
+      pool.updateReward(tokenId);
+      pool.getRewardFor(tokenId, tokenOwner);
     }
   }
 
@@ -81,27 +88,27 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
     }
   }
 
-  function updateRewardFor(address who)
+  function updateRewardFor(uint256 tokenId)
     external
     override
     onlyRole(UPDATER_ROLE)
   {
     for (uint256 index = 0; index < pools.length; index++) {
       IStakingChild pool = IStakingChild(pools[index]);
-      pool.updateReward(who);
+      pool.updateReward(tokenId);
     }
   }
 
-  function updateRewardForMultiple(address[] memory whom)
+  function updateRewardForMultiple(uint256[] memory tokenIds)
     external
     override
     onlyRole(UPDATER_ROLE)
   {
-    for (uint256 index1 = 0; index1 < whom.length; index1++) {
-      address who = whom[index1];
+    for (uint256 index1 = 0; index1 < tokenIds.length; index1++) {
+      uint256 tokenId = tokenIds[index1];
       for (uint256 index = 0; index < pools.length; index++) {
         IStakingChild pool = IStakingChild(pools[index]);
-        pool.updateReward(who);
+        pool.updateReward(tokenId);
       }
     }
   }

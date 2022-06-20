@@ -34,9 +34,9 @@ contract StakingChild is Ownable, IStakingChild, Pausable, ReentrancyGuard {
   uint256 public rewardsDuration;
   uint256 public lastUpdateTime;
   uint256 public rewardPerTokenStored;
-
-  mapping(address => uint256) public userRewardPerTokenPaid;
-  mapping(address => uint256) public rewards;
+  // Here user is NFT tokenId.
+  mapping(uint256 => uint256) public userRewardPerTokenPaid;
+  mapping(uint256 => uint256) public rewards;
 
   constructor(
     address _rewardsToken,
@@ -82,8 +82,8 @@ contract StakingChild is Ownable, IStakingChild, Pausable, ReentrancyGuard {
     return stakingMaster.totalSupply();
   }
 
-  function balanceOf(address account) public view override returns (uint256) {
-    return stakingMaster.balanceOf(account);
+  function balanceOf(uint256 tokenId) public view override returns (uint256) {
+    return stakingMaster.balanceOf(tokenId);
   }
 
   function lastTimeRewardApplicable() public view override returns (uint256) {
@@ -102,12 +102,12 @@ contract StakingChild is Ownable, IStakingChild, Pausable, ReentrancyGuard {
       );
   }
 
-  function earned(address who) public view override returns (uint256) {
+  function earned(uint256 tokenId) public view override returns (uint256) {
     return
-      balanceOf(who)
-        .mul(rewardPerToken().sub(userRewardPerTokenPaid[who]))
+      balanceOf(tokenId)
+        .mul(rewardPerToken().sub(userRewardPerTokenPaid[tokenId]))
         .div(1e18)
-        .add(rewards[who]);
+        .add(rewards[tokenId]);
   }
 
   function getRewardForDuration() external view override returns (uint256) {
@@ -116,38 +116,38 @@ contract StakingChild is Ownable, IStakingChild, Pausable, ReentrancyGuard {
 
   /* ========== MUTATIVE FUNCTIONS ========== */
 
-  function getRewardFor(address who) public override whenNotPaused {
+  function getRewardFor(uint256 tokenId, address owner) public override whenNotPaused {
     require(_msgSender() == address(stakingMaster), "not master");
-    _updateReward(who);
+    _updateReward(tokenId);
 
-    uint256 reward = rewards[who];
+    uint256 reward = rewards[tokenId];
     if (reward > 0) {
-      rewards[who] = 0;
-      rewardsToken.safeTransfer(who, reward);
-      emit RewardPaid(who, reward);
+      rewards[tokenId] = 0;
+      rewardsToken.safeTransfer(owner, reward);
+      emit RewardPaid(tokenId, reward);
     }
   }
 
-  function _updateReward(address who) internal {
+  function _updateReward(uint256 tokenId) internal {
     rewardPerTokenStored = rewardPerToken();
     lastUpdateTime = lastTimeRewardApplicable();
-    if (who != address(0)) {
-      rewards[who] = earned(who);
-      userRewardPerTokenPaid[who] = rewardPerTokenStored;
+    if (tokenId != 0) {
+      rewards[tokenId] = earned(tokenId);
+      userRewardPerTokenPaid[tokenId] = rewardPerTokenStored;
     }
   }
 
-  function updateReward(address who) external override {
+  function updateReward(uint256 tokenId) external override {
     // Dev: only staking master can call this update on change to lock state.
     require(msg.sender == address(stakingMaster), "not staking master");
-    _updateReward(who);
+    _updateReward(tokenId);
   }
 
   /* ========== RESTRICTED FUNCTIONS ========== */
 
   function notifyRewardAmount(uint256 reward) external override {
     require(_msgSender() == address(stakingCollector), "not collector");
-    _updateReward(address(0));
+    _updateReward(0);
 
     if (block.timestamp >= periodFinish) {
       rewardRate = reward.div(rewardsDuration);
@@ -179,7 +179,7 @@ contract StakingChild is Ownable, IStakingChild, Pausable, ReentrancyGuard {
   /* ========== EVENTS ========== */
   event DefaultInitialization();
   event RewardAdded(uint256 reward);
-  event RewardPaid(address indexed user, uint256 reward);
+  event RewardPaid(uint256 indexed tokenId, uint256 reward);
   event Recovered(
     address indexed tokenAddress,
     address indexed to,
