@@ -9,6 +9,7 @@ contract Registry is AccessControl, IRegistry {
   address private _maha;
   address private _votingEscrow;
   address private _gaugeVoter;
+  address private _stakingMaster;
 
   bool public paused;
 
@@ -19,11 +20,13 @@ contract Registry is AccessControl, IRegistry {
     address __maha,
     address __gaugeVoter,
     address __votingEscrow,
-    address _governance
+    address _governance,
+    address __stakingMaster
   ) {
     _maha = __maha;
     _gaugeVoter = __gaugeVoter;
     _votingEscrow = __votingEscrow;
+    _stakingMaster = __stakingMaster;
 
     _setupRole(DEFAULT_ADMIN_ROLE, _governance);
     _setupRole(EMERGENCY_STOP_ROLE, msg.sender);
@@ -44,6 +47,10 @@ contract Registry is AccessControl, IRegistry {
 
   function gaugeVoter() external view override returns (address) {
     return _gaugeVoter;
+  }
+
+  function stakingMaster() external view override returns (address) {
+    return _stakingMaster;
   }
 
   function toggleProtocol() external {
@@ -72,5 +79,10 @@ contract Registry is AccessControl, IRegistry {
   function setLocker(address _new) external override onlyGovernance {
     emit LockerChanged(msg.sender, _maha, _new);
     _votingEscrow = _new;
+  }
+
+  function setStakingMaster(address _new) external override onlyGovernance {
+    emit StakingMasterChanged(msg.sender, _stakingMaster, _new);
+    _stakingMaster = _new;
   }
 }

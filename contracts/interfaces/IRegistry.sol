@@ -6,12 +6,15 @@ interface IRegistry {
   event MahaChanged(address indexed whom, address _old, address _new);
   event VoterChanged(address indexed whom, address _old, address _new);
   event LockerChanged(address indexed whom, address _old, address _new);
+  event StakingMasterChanged(address indexed whom, address _old, address _new);
 
   function maha() external view returns (address);
 
   function gaugeVoter() external view returns (address);
 
   function votingEscrow() external view returns (address);
+
+  function stakingMaster() external view returns (address);
 
   function ensureNotPaused() external;
 
@@ -20,4 +23,6 @@ interface IRegistry {
   function setVoter(address _new) external;
 
   function setLocker(address _new) external;
+
+  function setStakingMaster(address _new) external;
 }
