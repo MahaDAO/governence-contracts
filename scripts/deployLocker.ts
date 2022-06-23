@@ -29,6 +29,7 @@ async function main() {
     ZERO_ADDRESS,
     ZERO_ADDRESS,
     deployer.address,
+    ZERO_ADDRESS,
     { gasPrice }
   );
   console.log(
@@ -39,6 +40,7 @@ async function main() {
     ZERO_ADDRESS,
     ZERO_ADDRESS,
     deployer.address,
+    ZERO_ADDRESS,
   ]);
 
   console.log(`Deploying MAHAX implementation...`);

@@ -35,6 +35,7 @@ async function main() {
     ZERO_ADDRESS,
     ZERO_ADDRESS,
     deployer.address,
+    ZERO_ADDRESS,
     { gasPrice }
   );
   console.log(`Registry deployed at: ${registryCI.address}`);
@@ -43,6 +44,7 @@ async function main() {
     ZERO_ADDRESS,
     ZERO_ADDRESS,
     deployer.address,
+    ZERO_ADDRESS,
   ]);
 
   const mahaxImplementation = await mahaxCF.deploy({ gasPrice });
