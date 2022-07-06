@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/MahaDAO/governance-contracts#readme",
   "dependencies": {
+    "@nomiclabs/hardhat-vyper": "^3.0.0",
     "hardhat": "^2.9.3",
     "hardhat-abi-exporter": "^2.9.0"
   },
