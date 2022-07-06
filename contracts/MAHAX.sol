@@ -9,7 +9,6 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {IRegistry} from "./interfaces/IRegistry.sol";
 import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
 import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IMetadataRegistry} from "./interfaces/IMetadataRegistry.sol";
 
 /**
   @title Voting Escrow
@@ -56,7 +55,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
   mapping(uint256 => uint256) public attachments;
   mapping(uint256 => bool) public voted;
   address public voter;
-  address public metadataRegistry;
 
   string public constant name = "Locked MAHA NFT";
   string public constant symbol = "MAHAX";
@@ -735,10 +733,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     voter = _voter;
   }
 
-  function setMetadataRegistry(address _registry) external onlyOwner {
-    metadataRegistry = _registry;
-  }
-
   function voting(uint256 _tokenId) external override {
     require(msg.sender == registry.gaugeVoter(), "not voter");
     voted[_tokenId] = true;
@@ -774,9 +768,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     _checkpoint(_from, _locked0, LockedBalance(0, 0, 0));
     _burn(_from);
     _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE, false);
-
-    IMetadataRegistry(metadataRegistry).deleteMetadata(_from); // delete the from nft attributes.
-    IMetadataRegistry(metadataRegistry).setMetadata(_to); // store the new to nft attributes.
   }
 
   function blockNumber() external view returns (uint256) {
@@ -843,8 +834,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
       DepositType.CREATE_LOCK_TYPE,
       shouldPullUserMaha
     );
-
-    IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // Store the lock attributes.
 
     require(
       _balanceOfNFT(_tokenId, block.timestamp) >= 99e18,
@@ -916,7 +905,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
       DepositType.INCREASE_LOCK_AMOUNT,
       true
     );
-    IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // modify the attributes.
   }
 
   /// @notice Extend the unlock time for `_tokenId`
@@ -950,8 +938,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
       DepositType.INCREASE_UNLOCK_TIME,
       false
     );
-
-    IMetadataRegistry(metadataRegistry).setMetadata(_tokenId); // modify the attributes.
   }
 
   /// @notice Withdraw all tokens for `_tokenId`
@@ -982,8 +968,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
 
     emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
     emit Supply(supplyBefore, supplyBefore - value);
-
-    IMetadataRegistry(metadataRegistry).deleteMetadata(_tokenId); // delte the attributes.
   }
 
   // The following ERC20/minime-compatible methods are not real balanceOf and supply!
