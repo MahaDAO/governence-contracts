@@ -205,6 +205,38 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     }
   }
 
+  /// @dev Returns the voting power of the `_owner` at time `timestamp`
+  ///      Throws if `_owner` is the zero address. NFTs assigned to the zero address are considered invalid.
+  /// @param _owner Address for whom to query the voting power of.
+  /// @param timestamp The epoch time to calcualte voting power at.
+  function votingPowerOfAtTs(address _owner, uint256 timestamp)
+    external
+    view
+    override
+    returns (uint256 _power)
+  {
+    for (uint256 index = 0; index < ownerToNFTokenCount[_owner]; index++) {
+      uint256 _tokenId = ownerToNFTokenIdList[_owner][index];
+      _power += _balanceOfNFT(_tokenId, timestamp);
+    }
+  }
+
+  /// @dev Returns the voting power of the `_owner` at block height `blk`
+  ///      Throws if `_owner` is the zero address. NFTs assigned to the zero address are considered invalid.
+  /// @param _owner Address for whom to query the voting power of.
+  /// @param blk The block height to calcualte voting power at.
+  function votingPowerOfAtBlk(address _owner, uint256 blk)
+    external
+    view
+    override
+    returns (uint256 _power)
+  {
+    for (uint256 index = 0; index < ownerToNFTokenCount[_owner]; index++) {
+      uint256 _tokenId = ownerToNFTokenIdList[_owner][index];
+      _power += _balanceOfAtNFT(_tokenId, blk);
+    }
+  }
+
   /// @dev Get the approved address for a single NFT.
   /// @param _tokenId ID of the NFT to query the approval of.
   function getApproved(uint256 _tokenId)

@@ -24,6 +24,16 @@ interface IVotingEscrow is IERC721 {
 
   function totalSupply() external view returns (uint256);
 
+  function votingPowerOfAtTs(address _owner, uint256 timestamp)
+    external
+    view
+    returns (uint256 _power);
+
+  function votingPowerOfAtBlk(address _owner, uint256 blk)
+    external
+    view
+    returns (uint256 _power);
+
   enum DepositType {
     DEPOSIT_FOR_TYPE,
     CREATE_LOCK_TYPE,
