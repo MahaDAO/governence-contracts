@@ -25,6 +25,8 @@ interface IVotingEscrow is IERC721 {
 
     function totalSupply() external view returns (uint256);
 
+    function totalSupplyAt(uint256 _block) external view returns (uint256);
+
     enum DepositType {
         DEPOSIT_FOR_TYPE,
         CREATE_LOCK_TYPE,

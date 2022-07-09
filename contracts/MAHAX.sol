@@ -1192,7 +1192,12 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
     /// @notice Calculate total voting power at some point in the past
     /// @param _block Block to calculate the total voting power at
     /// @return Total voting power at `_block`
-    function totalSupplyAt(uint256 _block) external view returns (uint256) {
+    function totalSupplyAt(uint256 _block)
+        external
+        view
+        override
+        returns (uint256)
+    {
         assert(_block <= block.number);
         uint256 _epoch = epoch;
         uint256 targetEpoch = _findBlockEpoch(_block, _epoch);

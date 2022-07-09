@@ -22,11 +22,7 @@ contract MAHAXGovernor is
 
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
 
-    constructor(
-        IRegistry _registry,
-        TimelockController _timelock,
-        uint256 __quorum
-    )
+    constructor(IRegistry _registry, TimelockController _timelock)
         Governor("MAHAXGovernor")
         GovernorSettings(
             6545, /* 1 day */
@@ -36,7 +32,7 @@ contract MAHAXGovernor is
         GovernorTimelockControl(_timelock)
     {
         registry = _registry;
-        _updateQuorum(__quorum);
+        _updateQuorum(60);
     }
 
     // The following functions are overrides required by Solidity.
@@ -135,6 +131,20 @@ contract MAHAXGovernor is
     }
 
     /**
+     * @dev Returns the current quorum numerator. See {quorumDenominator}.
+     */
+    function quorumNumerator() public view virtual returns (uint256) {
+        return _quorumNumerator;
+    }
+
+    /**
+     * @dev Returns the quorum denominator. Defaults to 100, but may be overridden.
+     */
+    function quorumDenominator() public view virtual returns (uint256) {
+        return 100;
+    }
+
+    /**
      * @dev Returns the quorum for a block number, in terms of number of votes: `supply * numerator / denominator`.
      */
     function quorum(uint256 blockNumber)
@@ -144,7 +154,10 @@ contract MAHAXGovernor is
         override
         returns (uint256)
     {
-        return _quorum;
+        return
+            IVotingEscrow(registry.votingEscrow()).totalSupplyAt(
+                token.getPastTotalSupply(blockNumber) * quorumNumerator()
+            ) / quorumDenominator();
     }
 
     /**
@@ -171,6 +184,11 @@ contract MAHAXGovernor is
      * - New numerator must be smaller or equal to the denominator.
      */
     function _updateQuorum(uint256 newQuorum) internal virtual {
+        require(
+            newQuorum <= quorumDenominator(),
+            "GovernorVotesQuorumFraction: quorumNumerator over quorumDenominator"
+        );
+
         uint256 oldQuorum = _quorum;
         _quorum = newQuorum;
 
