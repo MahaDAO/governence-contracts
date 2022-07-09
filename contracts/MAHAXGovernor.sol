@@ -18,14 +18,15 @@ contract MAHAXGovernor is
     GovernorTimelockControl
 {
     IRegistry public immutable registry;
-    uint256 private _quorumNumerator;
+    uint256 private _quorum;
 
-    event QuorumNumeratorUpdated(
-        uint256 oldQuorumNumerator,
-        uint256 newQuorumNumerator
-    );
+    event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
 
-    constructor(IRegistry _registry, TimelockController _timelock)
+    constructor(
+        IRegistry _registry,
+        TimelockController _timelock,
+        uint256 __quorum
+    )
         Governor("MAHAXGovernor")
         GovernorSettings(
             6545, /* 1 day */
@@ -35,7 +36,7 @@ contract MAHAXGovernor is
         GovernorTimelockControl(_timelock)
     {
         registry = _registry;
-        _updateQuorumNumerator(60);
+        _updateQuorum(__quorum);
     }
 
     // The following functions are overrides required by Solidity.
@@ -134,20 +135,6 @@ contract MAHAXGovernor is
     }
 
     /**
-     * @dev Returns the current quorum numerator. See {quorumDenominator}.
-     */
-    function quorumNumerator() public view virtual returns (uint256) {
-        return _quorumNumerator;
-    }
-
-    /**
-     * @dev Returns the quorum denominator. Defaults to 100, but may be overridden.
-     */
-    function quorumDenominator() public view virtual returns (uint256) {
-        return 100;
-    }
-
-    /**
      * @dev Returns the quorum for a block number, in terms of number of votes: `supply * numerator / denominator`.
      */
     function quorum(uint256 blockNumber)
@@ -157,51 +144,36 @@ contract MAHAXGovernor is
         override
         returns (uint256)
     {
-        return
-            IVotes(registry.gaugeVoter())(
-                token.getPastTotalSupply(blockNumber) * quorumNumerator()
-            ) / quorumDenominator();
+        return _quorum;
     }
 
     /**
      * @dev Changes the quorum numerator.
      *
-     * Emits a {QuorumNumeratorUpdated} event.
+     * Emits a {QuorumUpdated} event.
      *
      * Requirements:
      *
      * - Must be called through a governance proposal.
      * - New numerator must be smaller or equal to the denominator.
      */
-    function updateQuorumNumerator(uint256 newQuorumNumerator)
-        external
-        virtual
-        onlyGovernance
-    {
-        _updateQuorumNumerator(newQuorumNumerator);
+    function updateQuorum(uint256 newQuorum) external virtual onlyGovernance {
+        _updateQuorum(newQuorum);
     }
 
     /**
      * @dev Changes the quorum numerator.
      *
-     * Emits a {QuorumNumeratorUpdated} event.
+     * Emits a {QuorumUpdated} event.
      *
      * Requirements:
      *
      * - New numerator must be smaller or equal to the denominator.
      */
-    function _updateQuorumNumerator(uint256 newQuorumNumerator)
-        internal
-        virtual
-    {
-        require(
-            newQuorumNumerator <= quorumDenominator(),
-            "GovernorVotesQuorumFraction: quorumNumerator over quorumDenominator"
-        );
+    function _updateQuorum(uint256 newQuorum) internal virtual {
+        uint256 oldQuorum = _quorum;
+        _quorum = newQuorum;
 
-        uint256 oldQuorumNumerator = _quorumNumerator;
-        _quorumNumerator = newQuorumNumerator;
-
-        emit QuorumNumeratorUpdated(oldQuorumNumerator, newQuorumNumerator);
+        emit QuorumUpdated(oldQuorum, newQuorum);
     }
 }
