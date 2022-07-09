@@ -6,19 +6,20 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
 import {IBribe} from "../interfaces/IBribe.sol";
 import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
 import {IEmissionController} from "../interfaces/IEmissionController.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
+import {IGaugeVoter} from "../interfaces/IGaugeVoter.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
-import {IVoter} from "../interfaces/IVoter.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
 
-contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
-    IRegistry public immutable registry;
+abstract contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
+    IRegistry public immutable override registry;
 
     uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
     IEmissionController public emissionController;
@@ -54,10 +55,6 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IVoter {
         emissionController = IEmissionController(_emissionController);
 
         _transferOwnership(_governance);
-    }
-
-    function votingEscrow() external view override returns (address) {
-        return registry.votingEscrow();
     }
 
     function reset(uint256 _tokenId) external {

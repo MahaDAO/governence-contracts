@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 import {Epoch} from "./utils/Epoch.sol";
-import {IVoter} from "./interfaces/IVoter.sol";
+import {IGaugeVoter} from "./interfaces/IGaugeVoter.sol";
 import {IRegistry} from "./interfaces/IRegistry.sol";
 import {IEmissionController} from "./interfaces/IEmissionController.sol";
 
@@ -24,6 +24,6 @@ contract EmissionController is IEmissionController, Epoch {
     function allocateEmission() external override checkEpoch {
         uint256 mahaBalance = IERC20(registry.maha()).balanceOf(address(this));
         IERC20(registry.maha()).approve(registry.gaugeVoter(), mahaBalance);
-        IVoter(registry.gaugeVoter()).notifyRewardAmount(mahaBalance);
+        IGaugeVoter(registry.gaugeVoter()).notifyRewardAmount(mahaBalance);
     }
 }

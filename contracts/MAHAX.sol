@@ -5,7 +5,6 @@ import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {EIP712, Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 
 import {IRegistry} from "./interfaces/IRegistry.sol";
 import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
@@ -34,8 +33,8 @@ import {IMetadataRegistry} from "./interfaces/IMetadataRegistry.sol";
   # maxtime (4 years?)
 */
 
-contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
-    IRegistry public registry;
+contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
+    IRegistry public override registry;
 
     uint256 internal constant WEEK = 1 weeks;
     uint256 internal constant MAXTIME = 4 * 365 * 86400;
@@ -97,7 +96,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
     /// @dev ERC165 interface ID of ERC721Metadata
     bytes4 internal constant ERC721_METADATA_INTERFACE_ID = 0x5b5e139f;
 
-    constructor(address _registry) EIP712("MAHAX", "1") {
+    constructor(address _registry) {
         registry = IRegistry(_registry);
 
         pointHistory[0].blk = block.number;
@@ -117,10 +116,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
         returns (bool)
     {
         return supportedInterfaces[_interfaceID];
-    }
-
-    function token() external view override returns (address) {
-        return registry.maha();
     }
 
     function totalSupplyWithoutDecay()
@@ -745,7 +740,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
             block.timestamp
         );
         emit Supply(supplyBefore, supplyBefore + _value);
-        _transferVotingUnits(address(0), _ownerOf(_tokenId), _value);
     }
 
     function voting(uint256 _tokenId) external override {
@@ -1258,15 +1252,5 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
         // Remove token
         _removeTokenFrom(msg.sender, _tokenId);
         emit Transfer(owner, address(0), _tokenId);
-    }
-
-    function _getVotingUnits(address)
-        internal
-        view
-        virtual
-        override
-        returns (uint256)
-    {
-        return 1e18;
     }
 }
