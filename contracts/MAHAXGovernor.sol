@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Governor} from "@openzeppelin/contracts/governance/Governor.sol";
+import {IGovernor, Governor} from "@openzeppelin/contracts/governance/Governor.sol";
 import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
-import {GovernorVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import {GovernorVotesQuorumFraction} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
-import {GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+import {IVotes, GovernorVotesQuorumFraction} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import {TimelockController, GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 
 /// @custom:security-contact security@mahadao.com
 contract MAHAXGovernor is
     Governor,
     GovernorSettings,
     GovernorCountingSimple,
-    GovernorVotes,
     GovernorVotesQuorumFraction,
     GovernorTimelockControl
 {
+    IVotes public immutable mahax;
+
     constructor(IVotes _mahax, TimelockController _timelock)
         Governor("MAHAXGovernor")
         GovernorSettings(
@@ -24,14 +24,24 @@ contract MAHAXGovernor is
             45818, /* 1 week */
             2500
         )
-        GovernorVotes(_mahax)
         GovernorVotesQuorumFraction(60) /* 60% quorom */
         GovernorTimelockControl(_timelock)
     {
-        // nothing
+        mahax = _mahax;
     }
 
     // The following functions are overrides required by Solidity.
+
+    /**
+     * Read the voting weight from the token's built in snapshot mechanism (see {Governor-_getVotes}).
+     */
+    function _getVotes(
+        address account,
+        uint256 blockNumber,
+        bytes memory /*params*/
+    ) internal view virtual override returns (uint256) {
+        return mahax.getPastVotes(account, blockNumber);
+    }
 
     function votingDelay()
         public

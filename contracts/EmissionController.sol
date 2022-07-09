@@ -10,20 +10,20 @@ import {IRegistry} from "./interfaces/IRegistry.sol";
 import {IEmissionController} from "./interfaces/IEmissionController.sol";
 
 contract EmissionController is IEmissionController, Epoch {
-  IRegistry public registry;
+    IRegistry public registry;
 
-  constructor(
-    address _registry,
-    uint256 _period,
-    uint256 _startTime,
-    uint256 _startEpoch
-  ) Epoch(_period, _startTime, _startEpoch) {
-    registry = IRegistry(_registry);
-  }
+    constructor(
+        address _registry,
+        uint256 _period,
+        uint256 _startTime,
+        uint256 _startEpoch
+    ) Epoch(_period, _startTime, _startEpoch) {
+        registry = IRegistry(_registry);
+    }
 
-  function allocateEmission() external override checkEpoch {
-    uint256 mahaBalance = IERC20(registry.maha()).balanceOf(address(this));
-    IERC20(registry.maha()).approve(registry.gaugeVoter(), mahaBalance);
-    IVoter(registry.gaugeVoter()).notifyRewardAmount(mahaBalance);
-  }
+    function allocateEmission() external override checkEpoch {
+        uint256 mahaBalance = IERC20(registry.maha()).balanceOf(address(this));
+        IERC20(registry.maha()).approve(registry.gaugeVoter(), mahaBalance);
+        IVoter(registry.gaugeVoter()).notifyRewardAmount(mahaBalance);
+    }
 }

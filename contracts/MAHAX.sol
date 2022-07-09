@@ -5,7 +5,7 @@ import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
+import {EIP712, Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 
 import {IRegistry} from "./interfaces/IRegistry.sol";
 import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
@@ -56,12 +56,12 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
 
     mapping(uint256 => uint256) public attachments;
     mapping(uint256 => bool) public voted;
-    address public voter;
 
     string public constant name = "Locked MAHA NFT";
     string public constant symbol = "MAHAX";
     string public constant version = "1.0.0";
     uint8 public constant decimals = 18;
+    uint256 public minLockAmount = 100 * 1e18;
 
     /// @dev Current count of token
     uint256 internal tokenId;
@@ -97,13 +97,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
     /// @dev ERC165 interface ID of ERC721Metadata
     bytes4 internal constant ERC721_METADATA_INTERFACE_ID = 0x5b5e139f;
 
-    bool public initialized = false;
-
-    /// @notice Proxy initializer
-    /// @param _registry The registry which contains all the addresses
-    function initialize(address _registry) external {
-        require(!initialized, "already initialized");
-
+    constructor(address _registry) EIP712("MAHAX", "1") {
         registry = IRegistry(_registry);
 
         pointHistory[0].blk = block.number;
@@ -112,14 +106,6 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
         supportedInterfaces[ERC165_INTERFACE_ID] = true;
         supportedInterfaces[ERC721_INTERFACE_ID] = true;
         supportedInterfaces[ERC721_METADATA_INTERFACE_ID] = true;
-
-        // mint-ish
-        emit Transfer(address(0), address(this), tokenId);
-        // burn-ish
-        emit Transfer(address(this), address(0), tokenId);
-
-        _transferOwnership(msg.sender);
-        initialized = true;
     }
 
     /// @dev Interface identification is specified in ERC-165.
@@ -717,6 +703,7 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
         supply = supplyBefore + _value;
         LockedBalance memory oldLocked;
         (oldLocked.amount, oldLocked.end) = (_locked.amount, _locked.end);
+
         // Adding to existing lock, or if a lock is expired - creating a new one
         _locked.amount += int128(int256(_value));
         if (unlockTime != 0) {
@@ -758,30 +745,26 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
             block.timestamp
         );
         emit Supply(supplyBefore, supplyBefore + _value);
-    }
-
-    function setVoter(address _voter) external {
-        require(msg.sender == voter, "not voter");
-        voter = _voter;
+        _transferVotingUnits(address(0), _ownerOf(_tokenId), _value);
     }
 
     function voting(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not voter");
+        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
         voted[_tokenId] = true;
     }
 
     function abstain(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not voter");
+        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
         voted[_tokenId] = false;
     }
 
     function attach(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not voter");
+        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
         attachments[_tokenId] = attachments[_tokenId] + 1;
     }
 
     function detach(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not voter");
+        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
         attachments[_tokenId] = attachments[_tokenId] - 1;
     }
 
@@ -873,8 +856,8 @@ contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable, Votes {
         );
 
         require(
-            _balanceOfNFT(_tokenId, block.timestamp) >= 99e18,
-            "lock should have atleast 100 MAHAX"
+            _balanceOfNFT(_tokenId, block.timestamp) >= minLockAmount,
+            "min amount for nft not met"
         );
 
         return _tokenId;
