@@ -320,14 +320,12 @@ contract BaseGaugeV1 is ReentrancyGuard, IGauge {
         uint256 _balance = balanceOf[account];
         uint256 _derived = (_balance * 20) / 100;
         uint256 _adjusted = 0;
-        uint256 _supply = IERC20(registry.votingEscrow()).totalSupply();
+        uint256 _supply = IERC20(registry.locker()).totalSupply();
         if (
-            account == INFTLocker(registry.votingEscrow()).ownerOf(_tokenId) &&
+            account == INFTLocker(registry.locker()).ownerOf(_tokenId) &&
             _supply > 0
         ) {
-            _adjusted = INFTLocker(registry.votingEscrow()).balanceOfNFT(
-                _tokenId
-            );
+            _adjusted = INFTLocker(registry.locker()).balanceOfNFT(_tokenId);
             _adjusted = (((totalSupply * _adjusted) / _supply) * 80) / 100;
         }
         return Math.min((_derived + _adjusted), _balance);
@@ -521,8 +519,7 @@ contract BaseGaugeV1 is ReentrancyGuard, IGauge {
 
         if (tokenId > 0) {
             require(
-                INFTLocker(registry.votingEscrow()).ownerOf(tokenId) ==
-                    msg.sender,
+                INFTLocker(registry.locker()).ownerOf(tokenId) == msg.sender,
                 "bad owner"
             );
             if (tokenIds[msg.sender] == 0) {

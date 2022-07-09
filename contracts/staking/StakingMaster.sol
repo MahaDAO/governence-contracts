@@ -23,29 +23,29 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
     bytes32 public constant POOL_MAINTAINER_ROLE =
         keccak256("POOL_MAINTAINER_ROLE");
 
-    INFTLocker public votingEscrow;
+    INFTLocker public locker;
     address[] public pools;
     mapping(address => bool) public isPoolValid;
 
     event PoolAdded(address indexed pool);
     event VotingEscrowChanged(address indexed pool);
 
-    constructor(address _owner, address _votingEscrow) {
+    constructor(address _owner, address _locker) {
         _setupRole(DEFAULT_ADMIN_ROLE, _owner);
         _setupRole(UPDATER_ROLE, _owner);
 
         _setupRole(UPDATER_ROLE, _msgSender());
         _setupRole(POOL_MAINTAINER_ROLE, _msgSender());
 
-        votingEscrow = INFTLocker(_votingEscrow);
+        locker = INFTLocker(_locker);
     }
 
     function totalSupply() external view override returns (uint256) {
-        return votingEscrow.totalSupplyWithoutDecay();
+        return locker.totalSupplyWithoutDecay();
     }
 
     function balanceOf(address who) external view override returns (uint256) {
-        return votingEscrow.balanceOf(who);
+        return locker.balanceOf(who);
     }
 
     function getReward() external override nonReentrant {
@@ -122,7 +122,7 @@ contract StakingMaster is AccessControl, ReentrancyGuard, IStakingMaster {
         override
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        votingEscrow = INFTLocker(_escrow);
+        locker = INFTLocker(_escrow);
         emit VotingEscrowChanged(_escrow);
     }
 }

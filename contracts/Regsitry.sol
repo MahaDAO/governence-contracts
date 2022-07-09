@@ -7,7 +7,7 @@ import {IRegistry} from "./interfaces/IRegistry.sol";
 
 contract Registry is AccessControl, IRegistry {
     address private _maha;
-    address private _votingEscrow;
+    address private _locker;
     address private _gaugeVoter;
     bool public paused;
 
@@ -17,12 +17,12 @@ contract Registry is AccessControl, IRegistry {
     constructor(
         address __maha,
         address __gaugeVoter,
-        address __votingEscrow,
+        address __locker,
         address _governance
     ) {
         _maha = __maha;
         _gaugeVoter = __gaugeVoter;
-        _votingEscrow = __votingEscrow;
+        _locker = __locker;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _governance);
         _setupRole(EMERGENCY_STOP_ROLE, _governance);
@@ -37,8 +37,8 @@ contract Registry is AccessControl, IRegistry {
         return _maha;
     }
 
-    function votingEscrow() external view override returns (address) {
-        return _votingEscrow;
+    function locker() external view override returns (address) {
+        return _locker;
     }
 
     function gaugeVoter() external view override returns (address) {
@@ -69,7 +69,7 @@ contract Registry is AccessControl, IRegistry {
     }
 
     function setLocker(address _new) external override onlyGovernance {
-        emit LockerChanged(msg.sender, _votingEscrow, _new);
-        _votingEscrow = _new;
+        emit LockerChanged(msg.sender, _locker, _new);
+        _locker = _new;
     }
 }

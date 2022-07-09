@@ -278,7 +278,7 @@ contract BaseV1Bribes is ReentrancyGuard, IBribe {
         nonReentrant
     {
         require(
-            INFTLocker(registry.votingEscrow()).isApprovedOrOwner(
+            INFTLocker(registry.locker()).isApprovedOrOwner(
                 msg.sender,
                 tokenId
             ),
@@ -308,7 +308,7 @@ contract BaseV1Bribes is ReentrancyGuard, IBribe {
         nonReentrant
     {
         require(msg.sender == registry.gaugeVoter(), "not voter");
-        address _owner = INFTLocker(registry.votingEscrow()).ownerOf(tokenId);
+        address _owner = INFTLocker(registry.locker()).ownerOf(tokenId);
         for (uint256 i = 0; i < tokens.length; i++) {
             (
                 rewardPerTokenStored[tokens[i]],

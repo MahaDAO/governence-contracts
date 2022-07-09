@@ -18,7 +18,7 @@ contract MAHAXGovernor is
     GovernorTimelockControl
 {
     IRegistry public immutable registry;
-    uint256 private _quorum;
+    uint256 private _quorumNumerator;;
 
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
 
@@ -155,9 +155,8 @@ contract MAHAXGovernor is
         returns (uint256)
     {
         return
-            INFTLocker(registry.votingEscrow()).totalSupplyAt(
-                token.getPastTotalSupply(blockNumber) * quorumNumerator()
-            ) / quorumDenominator();
+            (INFTLocker(registry.locker()).totalSupplyAt(blockNumber) *
+                quorumNumerator()) / quorumDenominator();
     }
 
     /**
@@ -189,8 +188,8 @@ contract MAHAXGovernor is
             "GovernorVotesQuorumFraction: quorumNumerator over quorumDenominator"
         );
 
-        uint256 oldQuorum = _quorum;
-        _quorum = newQuorum;
+        uint256 oldQuorum = _quorumNumerator;
+        _quorumNumerator = newQuorum;
 
         emit QuorumUpdated(oldQuorum, newQuorum);
     }
