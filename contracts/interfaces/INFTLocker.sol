@@ -6,7 +6,7 @@ import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {IRegistry} from "./IRegistry.sol";
 
-interface IVotingEscrow is IERC721 {
+interface INFTLocker is IERC721 {
     function registry() external view returns (IRegistry);
 
     function balanceOfNFT(uint256) external view returns (uint256);

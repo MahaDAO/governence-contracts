@@ -9,7 +9,6 @@ contract Registry is AccessControl, IRegistry {
     address private _maha;
     address private _votingEscrow;
     address private _gaugeVoter;
-
     bool public paused;
 
     bytes32 public constant EMERGENCY_STOP_ROLE =
@@ -26,7 +25,7 @@ contract Registry is AccessControl, IRegistry {
         _votingEscrow = __votingEscrow;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _governance);
-        _setupRole(EMERGENCY_STOP_ROLE, msg.sender);
+        _setupRole(EMERGENCY_STOP_ROLE, _governance);
     }
 
     modifier onlyGovernance() {
@@ -65,12 +64,12 @@ contract Registry is AccessControl, IRegistry {
     }
 
     function setVoter(address _new) external override onlyGovernance {
-        emit VoterChanged(msg.sender, _maha, _new);
+        emit VoterChanged(msg.sender, _gaugeVoter, _new);
         _gaugeVoter = _new;
     }
 
     function setLocker(address _new) external override onlyGovernance {
-        emit LockerChanged(msg.sender, _maha, _new);
+        emit LockerChanged(msg.sender, _votingEscrow, _new);
         _votingEscrow = _new;
     }
 }

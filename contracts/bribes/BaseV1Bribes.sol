@@ -7,7 +7,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 
 import {IGaugeVoter} from "../interfaces/IGaugeVoter.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
-import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
+import {INFTLocker} from "../interfaces/INFTLocker.sol";
 import {IBribe} from "../interfaces/IBribe.sol";
 
 // Bribes pay out rewards for a given pool based on the votes that were received from the user (goes hand in hand with BaseV1Gauges.vote())
@@ -278,7 +278,7 @@ contract BaseV1Bribes is ReentrancyGuard, IBribe {
         nonReentrant
     {
         require(
-            IVotingEscrow(registry.votingEscrow()).isApprovedOrOwner(
+            INFTLocker(registry.votingEscrow()).isApprovedOrOwner(
                 msg.sender,
                 tokenId
             ),
@@ -308,9 +308,7 @@ contract BaseV1Bribes is ReentrancyGuard, IBribe {
         nonReentrant
     {
         require(msg.sender == registry.gaugeVoter(), "not voter");
-        address _owner = IVotingEscrow(registry.votingEscrow()).ownerOf(
-            tokenId
-        );
+        address _owner = INFTLocker(registry.votingEscrow()).ownerOf(tokenId);
         for (uint256 i = 0; i < tokens.length; i++) {
             (
                 rewardPerTokenStored[tokens[i]],

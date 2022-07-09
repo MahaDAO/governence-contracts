@@ -8,7 +8,7 @@ import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {TimelockController, GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 
 import {IRegistry} from "./interfaces/IRegistry.sol";
-import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
+import {INFTLocker} from "./interfaces/INFTLocker.sol";
 
 /// @custom:security-contact security@mahadao.com
 contract MAHAXGovernor is
@@ -155,7 +155,7 @@ contract MAHAXGovernor is
         returns (uint256)
     {
         return
-            IVotingEscrow(registry.votingEscrow()).totalSupplyAt(
+            INFTLocker(registry.votingEscrow()).totalSupplyAt(
                 token.getPastTotalSupply(blockNumber) * quorumNumerator()
             ) / quorumDenominator();
     }

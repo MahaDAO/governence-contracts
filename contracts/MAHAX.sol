@@ -7,7 +7,7 @@ import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receive
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {IRegistry} from "./interfaces/IRegistry.sol";
-import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
+import {INFTLocker} from "./interfaces/INFTLocker.sol";
 import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IMetadataRegistry} from "./interfaces/IMetadataRegistry.sol";
 
@@ -33,7 +33,7 @@ import {IMetadataRegistry} from "./interfaces/IMetadataRegistry.sol";
   # maxtime (4 years?)
 */
 
-contract MAHAX is ReentrancyGuard, IVotingEscrow, Ownable {
+contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
     IRegistry public override registry;
 
     uint256 internal constant WEEK = 1 weeks;

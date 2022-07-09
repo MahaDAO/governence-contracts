@@ -7,7 +7,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IGaugeVoter} from "../interfaces/IGaugeVoter.sol";
-import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
+import {INFTLocker} from "../interfaces/INFTLocker.sol";
 import {IBribe} from "../interfaces/IBribe.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 
@@ -322,11 +322,10 @@ contract BaseGaugeV1 is ReentrancyGuard, IGauge {
         uint256 _adjusted = 0;
         uint256 _supply = IERC20(registry.votingEscrow()).totalSupply();
         if (
-            account ==
-            IVotingEscrow(registry.votingEscrow()).ownerOf(_tokenId) &&
+            account == INFTLocker(registry.votingEscrow()).ownerOf(_tokenId) &&
             _supply > 0
         ) {
-            _adjusted = IVotingEscrow(registry.votingEscrow()).balanceOfNFT(
+            _adjusted = INFTLocker(registry.votingEscrow()).balanceOfNFT(
                 _tokenId
             );
             _adjusted = (((totalSupply * _adjusted) / _supply) * 80) / 100;
@@ -522,7 +521,7 @@ contract BaseGaugeV1 is ReentrancyGuard, IGauge {
 
         if (tokenId > 0) {
             require(
-                IVotingEscrow(registry.votingEscrow()).ownerOf(tokenId) ==
+                INFTLocker(registry.votingEscrow()).ownerOf(tokenId) ==
                     msg.sender,
                 "bad owner"
             );
