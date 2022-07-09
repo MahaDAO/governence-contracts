@@ -18,7 +18,7 @@ contract MAHAXGovernor is
     GovernorTimelockControl
 {
     IRegistry public immutable registry;
-    uint256 private _quorumNumerator;;
+    uint256 private _quorumNumerator;
 
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
 
