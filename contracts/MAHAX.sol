@@ -9,7 +9,6 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {IRegistry} from "./interfaces/IRegistry.sol";
 import {INFTLocker} from "./interfaces/INFTLocker.sol";
 import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IMetadataRegistry} from "./interfaces/IMetadataRegistry.sol";
 
 /**
   @title Voting Escrow
