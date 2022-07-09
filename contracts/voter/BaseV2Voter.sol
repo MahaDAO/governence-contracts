@@ -6,6 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
 import {IBribe} from "../interfaces/IBribe.sol";
 import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
@@ -17,7 +18,12 @@ import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
 import {IVotingEscrow} from "../interfaces/IVotingEscrow.sol";
 
-contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
+/**
+ * This contract is an extension of the BaseV1Voter that was originally written by Andre.
+ * This contract allows delegation and captures voting power of a user overtime. This contract
+ * is also compatible with openzepplin's Governor contract.
+ */
+abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
     IRegistry public immutable override registry;
 
     uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
@@ -187,7 +193,7 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
         address _pool,
         address _bribefactory,
         address _gaugefactory
-    ) external returns (address) {
+    ) external onlyOwner returns (address) {
         registry.ensureNotPaused(); // ensure protocol is active
 
         require(gauges[_pool] == address(0x0), "gauge exists");
