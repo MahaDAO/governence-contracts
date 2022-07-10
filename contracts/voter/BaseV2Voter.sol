@@ -6,7 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
+import {EIP712, Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 
 import {IBribe} from "../interfaces/IBribe.sol";
 import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
@@ -23,7 +23,7 @@ import {INFTLocker} from "../interfaces/INFTLocker.sol";
  * This contract allows delegation and captures voting power of a user overtime. This contract
  * is also compatible with openzepplin's Governor contract.
  */
-abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
+contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, Votes {
     IRegistry public immutable override registry;
 
     uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
@@ -45,6 +45,7 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
     uint256 internal index;
     mapping(address => uint256) internal supplyIndex;
     mapping(address => uint256) public claimable;
+    mapping(address => uint256) public stakedBalances;
 
     modifier onlyGauge() {
         require(isGauge[msg.sender], "not gauge");
@@ -55,7 +56,7 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
         address _registry,
         address _emissionController,
         address _governance
-    ) {
+    ) EIP712("BaseV2Voter", "1") {
         registry = IRegistry(_registry);
         emissionController = IEmissionController(_emissionController);
 
@@ -71,7 +72,6 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
             "not approved owner"
         );
         _reset(_tokenId);
-        INFTLocker(registry.locker()).abstain(_tokenId);
     }
 
     function _reset(uint256 _tokenId) internal {
@@ -124,7 +124,7 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
         _reset(_tokenId);
         uint256 _poolCnt = _poolVote.length;
         int256 _weight = int256(
-            INFTLocker(registry.locker()).balanceOfNFT(_tokenId)
+            getVotes(INFTLocker(registry.locker()).ownerOf(_tokenId))
         );
         int256 _totalVoteWeight = 0;
         int256 _totalWeight = 0;
@@ -162,9 +162,40 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
             }
         }
 
-        if (_usedWeight > 0) INFTLocker(registry.locker()).voting(_tokenId);
         totalWeight += uint256(_totalWeight);
         usedWeights[_tokenId] = uint256(_usedWeight);
+    }
+
+    function stake(uint256 _tokenId) external {
+        INFTLocker locker = INFTLocker(registry.locker());
+        address _who = locker.ownerOf(_tokenId);
+        require(
+            locker.isApprovedOrOwner(msg.sender, _tokenId),
+            "not token owner"
+        );
+
+        _reset(_tokenId);
+
+        uint256 _weight = locker.balanceOfNFT(_tokenId);
+        _transferVotingUnits(address(0), locker.ownerOf(_tokenId), _weight);
+
+        stakedBalances[_who] += _weight;
+        locker.voting(_tokenId);
+    }
+
+    function unstake(uint256 _tokenId) external {
+        INFTLocker locker = INFTLocker(registry.locker());
+        address _who = locker.ownerOf(_tokenId);
+        require(
+            locker.isApprovedOrOwner(msg.sender, _tokenId),
+            "not token owner"
+        );
+
+        uint256 _weight = stakedBalances[_who];
+        _transferVotingUnits(_who, address(0), _weight);
+
+        stakedBalances[_who] -= _weight;
+        locker.abstain(_tokenId);
     }
 
     function vote(
@@ -353,10 +384,6 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
         _distribute(_gauge);
     }
 
-    function distro() external {
-        distribute(0, pools.length);
-    }
-
     function distribute() external {
         distribute(0, pools.length);
     }
@@ -392,5 +419,15 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
             success && (data.length == 0 || abi.decode(data, (bool))),
             "transferFrom failed"
         );
+    }
+
+    function _getVotingUnits(address who)
+        internal
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        return stakedBalances[who];
     }
 }
