@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {ERC2981, IERC165} from "@openzeppelin/contracts/token/common/ERC2981.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -32,7 +34,7 @@ import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
   # maxtime (4 years?)
 */
 
-contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
+contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
     IRegistry public override registry;
 
     uint256 internal constant WEEK = 1 weeks;
@@ -95,7 +97,11 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
     /// @dev ERC165 interface ID of ERC721Metadata
     bytes4 internal constant ERC721_METADATA_INTERFACE_ID = 0x5b5e139f;
 
-    constructor(address _registry) {
+    constructor(
+        address _registry,
+        address _royaltyRcv,
+        uint96 _royaltyFeeNumerator
+    ) {
         registry = IRegistry(_registry);
 
         pointHistory[0].blk = block.number;
@@ -104,17 +110,21 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         supportedInterfaces[ERC165_INTERFACE_ID] = true;
         supportedInterfaces[ERC721_INTERFACE_ID] = true;
         supportedInterfaces[ERC721_METADATA_INTERFACE_ID] = true;
+
+        _setDefaultRoyalty(_royaltyRcv, _royaltyFeeNumerator);
     }
 
     /// @dev Interface identification is specified in ERC-165.
     /// @param _interfaceID Id of the interface
     function supportsInterface(bytes4 _interfaceID)
-        external
+        public
         view
-        override
+        override(ERC2981, IERC165)
         returns (bool)
     {
-        return supportedInterfaces[_interfaceID];
+        return
+            supportedInterfaces[_interfaceID] ||
+            super.supportsInterface(_interfaceID);
     }
 
     function totalSupplyWithoutDecay()
@@ -887,13 +897,23 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         address[] memory _users,
         uint256[] memory _value,
         uint256[] memory _lockDuration
-    ) external nonReentrant onlyOwner {
+    ) external onlyOwner {
         require(_value.length == _lockDuration.length, "invalid data");
         require(_users.length == _value.length, "invalid data");
 
         for (uint256 i = 0; i < _users.length; i++) {
             _createLock(_value[i], _lockDuration[i], _users[i], false);
         }
+    }
+
+    /// @notice Sets the royalty info for all NFT marketplaces
+    /// @param _royaltyRcv The address to recieve royalties
+    /// @param _royaltyFeeNumerator The amount of royalty to recieve
+    function setRoyaltyInfo(address _royaltyRcv, uint96 _royaltyFeeNumerator)
+        external
+        onlyOwner
+    {
+        _setDefaultRoyalty(_royaltyRcv, _royaltyFeeNumerator);
     }
 
     /// @notice Deposit `_value` additional tokens for `_tokenId` without modifying the unlock time
