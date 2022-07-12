@@ -31,8 +31,8 @@ interface IGaugeV2 {
         uint256 supply;
     }
 
-    event Deposit(address indexed from, address tokenId, uint256 amount);
-    event Withdraw(address indexed from, address tokenId, uint256 amount);
+    event Deposit(address indexed from, uint256 amount);
+    event Withdraw(address indexed from, uint256 amount);
     event NotifyReward(
         address indexed from,
         address indexed reward,

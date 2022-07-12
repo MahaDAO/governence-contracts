@@ -45,8 +45,6 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     uint256 internal index;
     mapping(address => uint256) internal supplyIndex;
     mapping(address => uint256) public claimable;
-    mapping(uint256 => uint256) public stakedBalancesNFT; // nft => pool => votes
-    mapping(address => uint256) public stakedBalances; // nft => pool => votes
 
     modifier onlyGauge() {
         require(isGauge[msg.sender], "not gauge");
@@ -224,11 +222,10 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     }
 
     function emitDeposit(
-        address tokenId,
         address account,
         uint256 amount
     ) external override onlyGauge {
-        emit Deposit(account, msg.sender, tokenId, amount);
+        emit Deposit(account, msg.sender, amount);
     }
 
     function detachTokenFromGauge(address tokenId, address account)
@@ -241,11 +238,10 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     }
 
     function emitWithdraw(
-        address tokenId,
         address account,
         uint256 amount
     ) external override onlyGauge {
-        emit Withdraw(account, msg.sender, tokenId, amount);
+        emit Withdraw(account, msg.sender, amount);
     }
 
     function length() external view returns (uint256) {

@@ -23,7 +23,7 @@ import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Recei
  *
  * _Available since v3.3._
  */
-contract TimelockController is
+contract MahaDAOTimelockController is
     AccessControl,
     IERC721Receiver,
     IERC1155Receiver

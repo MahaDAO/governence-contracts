@@ -10,13 +10,11 @@ interface IGaugeVoterV2 {
     function detachTokenFromGauge(address _tokenId, address account) external;
 
     function emitDeposit(
-        address _tokenId,
         address account,
         uint256 amount
     ) external;
 
     function emitWithdraw(
-        address _tokenId,
         address account,
         uint256 amount
     ) external;
@@ -42,13 +40,11 @@ interface IGaugeVoterV2 {
     event Deposit(
         address indexed lp,
         address indexed gauge,
-        address tokenId,
         uint256 amount
     );
     event Withdraw(
         address indexed lp,
         address indexed gauge,
-        address tokenId,
         uint256 amount
     );
     event NotifyReward(
