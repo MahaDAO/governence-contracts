@@ -23,6 +23,8 @@ interface IGaugeVoterV2 {
 
     function distribute(address _gauge) external;
 
+    function reset(address _who) external;
+
     function registry() external view returns (IRegistry);
 
     function notifyRewardAmount(uint256 amount) external;
