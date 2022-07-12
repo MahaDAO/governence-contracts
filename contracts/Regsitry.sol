@@ -10,25 +10,34 @@ contract Registry is AccessControl, IRegistry {
     address public override locker;
     address public override gaugeVoter;
     address public override governor;
+    address public override staker;
     bool public paused;
+
+    bool internal initialized;
 
     bytes32 public constant EMERGENCY_STOP_ROLE =
         keccak256("EMERGENCY_STOP_ROLE");
 
-    constructor(
+    function initialize(
         address _maha,
         address _gaugeVoter,
         address _locker,
         address _governor,
+        address _staker,
         address _governance
-    ) {
+    ) external {
+        require(!initialized, "already initialized");
+
         maha = _maha;
         gaugeVoter = _gaugeVoter;
         locker = _locker;
         governor = _governor;
+        staker = _staker;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _governance);
         _setupRole(EMERGENCY_STOP_ROLE, _governance);
+
+        initialized = true;
     }
 
     modifier onlyGovernance() {
@@ -67,5 +76,10 @@ contract Registry is AccessControl, IRegistry {
     function setGovernor(address _new) external override onlyGovernance {
         emit GovernorChanged(msg.sender, governor, _new);
         governor = _new;
+    }
+
+    function setStaker(address _new) external override onlyGovernance {
+        emit GovernorChanged(msg.sender, governor, _new);
+        staker = _new;
     }
 }
