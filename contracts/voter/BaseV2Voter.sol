@@ -16,14 +16,14 @@ import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
 import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
-import {INFTLocker} from "../interfaces/INFTLocker.sol";
+import {INFTStaker} from "../interfaces/INFTStaker.sol";
 
 /**
  * This contract is an extension of the BaseV1Voter that was originally written by Andre.
  * This contract allows delegation and captures voting power of a user overtime. This contract
  * is also compatible with openzepplin's Governor contract.
  */
-contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2, Votes {
+contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     IRegistry public immutable override registry;
 
     uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
@@ -57,15 +57,20 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2, Votes {
         address _registry,
         address _emissionController,
         address _governance
-    ) EIP712("BaseV2Voter", "1") {
+    ) {
         registry = IRegistry(_registry);
         emissionController = IEmissionController(_emissionController);
 
         _transferOwnership(_governance);
     }
 
-    function reset() external {
+    function reset() external override {
         _reset(msg.sender);
+    }
+
+    function resetFor(address who) external override {
+        require(msg.sender == registry.staker(), "not staker contract");
+        _reset(who);
     }
 
     function _reset(address _tokenId) internal {
@@ -118,7 +123,9 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2, Votes {
         _reset(_who);
 
         uint256 _poolCnt = _poolVote.length;
-        int256 _weight = int256(getVotes(_who));
+
+        INFTStaker staker = INFTStaker(registry.staker());
+        int256 _weight = int256(staker.getVotes(_who));
         int256 _totalVoteWeight = 0;
         int256 _totalWeight = 0;
         int256 _usedWeight = 0;
@@ -157,40 +164,6 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2, Votes {
 
         totalWeight += uint256(_totalWeight);
         usedWeights[_who] = uint256(_usedWeight);
-    }
-
-    function stake(uint256 _tokenId) external {
-        INFTLocker locker = INFTLocker(registry.locker());
-        address _who = locker.ownerOf(_tokenId);
-        require(
-            locker.isApprovedOrOwner(msg.sender, _tokenId),
-            "not token owner"
-        );
-
-        _reset(_who);
-
-        uint256 _weight = locker.balanceOfNFT(_tokenId);
-        _transferVotingUnits(address(0), locker.ownerOf(_tokenId), _weight);
-
-        stakedBalancesNFT[_tokenId] += _weight;
-        stakedBalances[_who] += _weight;
-        locker.voting(_tokenId);
-    }
-
-    function unstake(uint256 _tokenId) external {
-        INFTLocker locker = INFTLocker(registry.locker());
-        address _who = locker.ownerOf(_tokenId);
-        require(
-            locker.isApprovedOrOwner(msg.sender, _tokenId),
-            "not token owner"
-        );
-
-        uint256 _weight = stakedBalancesNFT[_tokenId];
-        _transferVotingUnits(_who, address(0), _weight);
-
-        stakedBalancesNFT[_tokenId] -= _weight;
-        stakedBalances[_who] -= _weight;
-        locker.abstain(_tokenId);
     }
 
     function vote(address[] calldata _poolVote, int256[] calldata _weights)
@@ -396,15 +369,5 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2, Votes {
             success && (data.length == 0 || abi.decode(data, (bool))),
             "transferFrom failed"
         );
-    }
-
-    function _getVotingUnits(address who)
-        internal
-        view
-        virtual
-        override
-        returns (uint256)
-    {
-        return stakedBalances[who];
     }
 }

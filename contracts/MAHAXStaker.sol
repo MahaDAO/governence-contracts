@@ -33,7 +33,7 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
     mapping(uint256 => uint256) public stakedBalancesNFT; // nft => pool => votes
     mapping(address => uint256) public stakedBalances; // nft => pool => votes
 
-    constructor(address _registry) EIP712("BaseV2Voter", "1") {
+    constructor(address _registry) EIP712("MAHAXStaker", "1") {
         registry = IRegistry(_registry);
     }
 
@@ -50,7 +50,7 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
         require(stakedBalancesNFT[_tokenId] == 0, "already staked");
 
         // reset gauge votes
-        IGaugeVoterV2(registry.gaugeVoter()).reset(_who);
+        IGaugeVoterV2(registry.gaugeVoter()).resetFor(_who);
 
         uint256 _weight = locker.balanceOfNFT(_tokenId);
         _transferVotingUnits(address(0), locker.ownerOf(_tokenId), _weight);
