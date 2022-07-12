@@ -57,7 +57,7 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
 
         stakedBalancesNFT[_tokenId] += _weight;
         stakedBalances[_who] += _weight;
-        locker.voting(_tokenId);
+        locker._stake(_tokenId);
 
         emit StakeNFT(msg.sender, _who, _tokenId, _weight);
     }
@@ -77,9 +77,13 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
 
         stakedBalancesNFT[_tokenId] -= _weight;
         stakedBalances[_who] -= _weight;
-        locker.abstain(_tokenId);
+        locker._unstake(_tokenId);
 
         emit UnstakeNFT(msg.sender, _who, _tokenId, _weight);
+    }
+
+    function banFromStake(uint256 _tokenId) external onlyOwner {
+        // todo:
     }
 
     function _getVotingUnits(address who)

@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {ERC2981, IERC165} from "@openzeppelin/contracts/token/common/ERC2981.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -55,7 +54,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
     mapping(uint256 => int128) public slopeChanges; // time -> signed slope change
 
     mapping(uint256 => uint256) public attachments;
-    mapping(uint256 => bool) public voted;
+    mapping(uint256 => bool) public staked;
 
     string public constant name = "Locked MAHA NFT";
     string public constant symbol = "MAHAX";
@@ -233,6 +232,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         override
         returns (bool)
     {
+        // return require(!staked[_tokenId], "staked");
         return (ownerToOperators[_owner])[_operator];
     }
 
@@ -360,7 +360,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         uint256 _tokenId,
         address _sender
     ) internal {
-        require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
+        require(!staked[_tokenId], "staked");
         // Check requirements
         require(_isApprovedOrOwner(_sender, _tokenId), "not approved sender");
         // Clear approval. Throws if `_from` is not the current owner
@@ -751,29 +751,19 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         emit Supply(supplyBefore, supplyBefore + _value);
     }
 
-    function voting(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
-        voted[_tokenId] = true;
+    function _stake(uint256 _tokenId) external override {
+        require(msg.sender == registry.staker(), "not staker");
+        staked[_tokenId] = true;
     }
 
-    function abstain(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
-        voted[_tokenId] = false;
-    }
-
-    function attach(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
-        attachments[_tokenId] = attachments[_tokenId] + 1;
-    }
-
-    function detach(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
-        attachments[_tokenId] = attachments[_tokenId] - 1;
+    function _unstake(uint256 _tokenId) external override {
+        require(msg.sender == registry.staker(), "not staker");
+        staked[_tokenId] = false;
     }
 
     function merge(uint256 _from, uint256 _to) external {
-        require(attachments[_from] == 0 && !voted[_from], "attached");
-        require(_from != _to, "same addr");
+        require(!staked[_from], "staked");
+        require(_from != _to, "same nft");
         require(_isApprovedOrOwner(msg.sender, _from), "from not approved");
         require(_isApprovedOrOwner(msg.sender, _to), "to not approved");
 
@@ -979,7 +969,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         registry.ensureNotPaused();
 
         assert(_isApprovedOrOwner(msg.sender, _tokenId));
-        require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
+        require(!staked[_tokenId], "staked");
 
         LockedBalance memory _locked = locked[_tokenId];
         require(block.timestamp >= _locked.end, "The lock didn't expire");

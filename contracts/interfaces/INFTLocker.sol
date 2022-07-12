@@ -15,13 +15,9 @@ interface INFTLocker is IERC721 {
 
     function isApprovedOrOwner(address, uint256) external view returns (bool);
 
-    function attach(uint256 tokenId) external;
+    function _stake(uint256 tokenId) external;
 
-    function detach(uint256 tokenId) external;
-
-    function voting(uint256 tokenId) external;
-
-    function abstain(uint256 tokenId) external;
+    function _unstake(uint256 tokenId) external;
 
     function totalSupply() external view returns (uint256);
 
