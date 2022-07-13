@@ -10,6 +10,10 @@ interface INFTStaker is IVotes {
 
     function stake(uint256 _tokenId) external;
 
+    function _stakeFromLock(uint256 _tokenId) external;
+
+    function updateStake(uint256 _tokenId) external;
+
     function unstake(uint256 _tokenId) external;
 
     function getStakedBalance(address who) external view returns (uint256);
@@ -19,6 +23,13 @@ interface INFTStaker is IVotes {
         address indexed owner,
         uint256 tokenId,
         uint256 amount
+    );
+    event RestakeNFT(
+        address indexed who,
+        address indexed owner,
+        uint256 tokenId,
+        uint256 oldAmount,
+        uint256 newAmount
     );
     event UnstakeNFT(
         address indexed who,

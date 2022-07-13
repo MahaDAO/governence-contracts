@@ -38,52 +38,98 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
     }
 
     function stake(uint256 _tokenId) external override {
-        registry.ensureNotPaused();
-
         INFTLocker locker = INFTLocker(registry.locker());
-        address _who = locker.ownerOf(_tokenId);
-
         require(
             locker.isApprovedOrOwner(msg.sender, _tokenId),
             "not token owner"
         );
-        require(stakedBalancesNFT[_tokenId] == 0, "already staked");
-
-        // reset gauge votes
-        IGaugeVoterV2(registry.gaugeVoter()).resetFor(_who);
-
-        uint256 _weight = locker.balanceOfNFT(_tokenId);
-        _transferVotingUnits(address(0), locker.ownerOf(_tokenId), _weight);
-
-        stakedBalancesNFT[_tokenId] += _weight;
-        stakedBalances[_who] += _weight;
-        locker._stake(_tokenId);
-
-        emit StakeNFT(msg.sender, _who, _tokenId, _weight);
+        _stake(_tokenId);
     }
 
     function unstake(uint256 _tokenId) external override {
         INFTLocker locker = INFTLocker(registry.locker());
-        address _who = locker.ownerOf(_tokenId);
-
         require(
             locker.isApprovedOrOwner(msg.sender, _tokenId),
             "not token owner"
         );
-        require(stakedBalancesNFT[_tokenId] >= 0, "not staked");
+        _unstake(_tokenId);
+    }
+
+    function _stake(uint256 _tokenId) internal {
+        registry.ensureNotPaused();
+
+        INFTLocker locker = INFTLocker(registry.locker());
+        require(stakedBalancesNFT[_tokenId] == 0, "already staked");
+
+        address _owner = locker.ownerOf(_tokenId);
+
+        uint256 _weight = locker.balanceOfNFT(_tokenId);
+        _transferVotingUnits(address(0), _owner, _weight);
+
+        stakedBalancesNFT[_tokenId] = _weight;
+        stakedBalances[_owner] += _weight;
+        totalWeight += _weight;
+
+        locker._stake(_tokenId);
+
+        emit StakeNFT(msg.sender, _owner, _tokenId, _weight);
+    }
+
+    function _unstake(uint256 _tokenId) internal {
+        INFTLocker locker = INFTLocker(registry.locker());
+        address _owner = locker.ownerOf(_tokenId);
+
+        require(stakedBalancesNFT[_tokenId] > 0, "not staked");
+        IGaugeVoterV2(registry.gaugeVoter()).resetFor(_owner);
 
         uint256 _weight = stakedBalancesNFT[_tokenId];
-        _transferVotingUnits(_who, address(0), _weight);
+        _transferVotingUnits(_owner, address(0), _weight);
 
-        stakedBalancesNFT[_tokenId] -= _weight;
-        stakedBalances[_who] -= _weight;
+        stakedBalancesNFT[_tokenId] = 0;
+        stakedBalances[_owner] -= _weight;
+        totalWeight -= _weight;
+
         locker._unstake(_tokenId);
 
-        emit UnstakeNFT(msg.sender, _who, _tokenId, _weight);
+        emit UnstakeNFT(msg.sender, _owner, _tokenId, _weight);
+    }
+
+    function updateStake(uint256 _tokenId) external override {
+        registry.ensureNotPaused();
+
+        INFTLocker locker = INFTLocker(registry.locker());
+        address _owner = locker.ownerOf(_tokenId);
+        require(
+            locker.isApprovedOrOwner(msg.sender, _tokenId),
+            "not token owner"
+        );
+
+        // reset gauge votes
+        IGaugeVoterV2(registry.gaugeVoter()).resetFor(_owner);
+
+        uint256 _oldWeight = stakedBalancesNFT[_tokenId];
+        uint256 _newWeight = locker.balanceOfNFT(_tokenId);
+
+        stakedBalancesNFT[_tokenId] = _newWeight;
+        stakedBalances[_owner] =
+            (stakedBalances[_owner] + _newWeight) -
+            _oldWeight;
+        totalWeight = (totalWeight + _newWeight) - _oldWeight;
+
+        _transferVotingUnits(_owner, address(0), _oldWeight);
+        _transferVotingUnits(address(0), _owner, _newWeight);
+
+        locker._stake(_tokenId);
+        emit RestakeNFT(msg.sender, _owner, _tokenId, _oldWeight, _newWeight);
+    }
+
+    function _stakeFromLock(uint256 _tokenId) external override {
+        require(msg.sender == registry.locker(), "not locker");
+        _stake(_tokenId);
     }
 
     function banFromStake(uint256 _tokenId) external onlyOwner {
-        // todo:
+        _unstake(_tokenId);
     }
 
     function _getVotingUnits(address who)

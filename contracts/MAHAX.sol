@@ -9,6 +9,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 
 import {IRegistry} from "./interfaces/IRegistry.sol";
 import {INFTLocker} from "./interfaces/INFTLocker.sol";
+import {INFTStaker} from "./interfaces/INFTStaker.sol";
 import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -60,7 +61,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
     string public constant symbol = "MAHAX";
     string public constant version = "1.0.0";
     uint8 public constant decimals = 18;
-    uint256 public minLockAmount = 100 * 1e18;
+    uint256 public minLockAmount = 99 * 1e18;
 
     /// @dev Current count of token
     uint256 internal tokenId;
@@ -697,7 +698,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         uint256 unlockTime,
         LockedBalance memory lockedBalance,
         DepositType depositType,
-        bool shouldPullUserMaha
+        bool _shouldPullUserMaha,
+        bool _stakeNFT
     ) internal {
         registry.ensureNotPaused();
 
@@ -729,7 +731,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         if (
             _value != 0 &&
             depositType != DepositType.MERGE_TYPE &&
-            shouldPullUserMaha
+            _shouldPullUserMaha
         ) {
             assert(
                 IERC20(registry.maha()).transferFrom(
@@ -739,6 +741,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
                 )
             );
         }
+
+        if (_stakeNFT) INFTStaker(registry.staker())._stakeFromLock(_tokenId);
 
         emit Deposit(
             from,
@@ -763,6 +767,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
 
     function merge(uint256 _from, uint256 _to) external {
         require(!staked[_from], "staked");
+        require(!staked[_to], "staked");
+
         require(_from != _to, "same nft");
         require(_isApprovedOrOwner(msg.sender, _from), "from not approved");
         require(_isApprovedOrOwner(msg.sender, _to), "to not approved");
@@ -777,7 +783,15 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         locked[_from] = LockedBalance(0, 0, 0);
         _checkpoint(_from, _locked0, LockedBalance(0, 0, 0));
         _burn(_from);
-        _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE, false);
+        _depositFor(
+            _to,
+            value0,
+            end,
+            _locked1,
+            DepositType.MERGE_TYPE,
+            false,
+            false
+        );
     }
 
     function blockNumber() external view returns (uint256) {
@@ -809,7 +823,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
             0,
             _locked,
             DepositType.DEPOSIT_FOR_TYPE,
-            true
+            true,
+            false
         );
     }
 
@@ -817,11 +832,14 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
     /// @param _value Amount to deposit
     /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
     /// @param _to Address to deposit
+    /// @param _shouldPullUserMaha Should we pull maha with the lock
+    /// @param _stakeNFT should we stake into the staking contract
     function _createLock(
         uint256 _value,
         uint256 _lockDuration,
         address _to,
-        bool shouldPullUserMaha
+        bool _shouldPullUserMaha,
+        bool _stakeNFT
     ) internal returns (uint256) {
         registry.ensureNotPaused();
 
@@ -845,7 +863,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
             unlockTime,
             locked[_tokenId],
             DepositType.CREATE_LOCK_TYPE,
-            shouldPullUserMaha
+            _shouldPullUserMaha,
+            _stakeNFT
         );
 
         require(
@@ -865,18 +884,19 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         uint256 _lockDuration,
         address _to
     ) external nonReentrant returns (uint256) {
-        return _createLock(_value, _lockDuration, _to, true);
+        return _createLock(_value, _lockDuration, _to, true, false);
     }
 
     /// @notice Deposit `_value` tokens for `msg.sender` and lock for `_lockDuration`
     /// @param _value Amount to deposit
     /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
-    function createLock(uint256 _value, uint256 _lockDuration)
-        external
-        nonReentrant
-        returns (uint256)
-    {
-        return _createLock(_value, _lockDuration, msg.sender, true);
+    /// @param _stakeNFT Should we also stake the NFT as well?
+    function createLock(
+        uint256 _value,
+        uint256 _lockDuration,
+        bool _stakeNFT
+    ) external nonReentrant returns (uint256) {
+        return _createLock(_value, _lockDuration, msg.sender, true, _stakeNFT);
     }
 
     /// @notice Upload users.
@@ -892,7 +912,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         require(_users.length == _value.length, "invalid data");
 
         for (uint256 i = 0; i < _users.length; i++) {
-            _createLock(_value[i], _lockDuration[i], _users[i], false);
+            _createLock(_value[i], _lockDuration[i], _users[i], false, false);
         }
     }
 
@@ -904,6 +924,12 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         onlyOwner
     {
         _setDefaultRoyalty(_royaltyRcv, _royaltyFeeNumerator);
+    }
+
+    /// @notice Sets the min amount to lock
+    /// @param _minLockAmount The min amount to lock
+    function setMinLockAmount(uint256 _minLockAmount) external onlyOwner {
+        minLockAmount = _minLockAmount;
     }
 
     /// @notice Deposit `_value` additional tokens for `_tokenId` without modifying the unlock time
@@ -926,7 +952,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
             0,
             _locked,
             DepositType.INCREASE_LOCK_AMOUNT,
-            true
+            true,
+            false
         );
     }
 
@@ -959,6 +986,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
             unlockTime,
             _locked,
             DepositType.INCREASE_UNLOCK_TIME,
+            false,
             false
         );
     }
