@@ -6,11 +6,11 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {ERC2981, IERC165} from "@openzeppelin/contracts/token/common/ERC2981.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 import {IRegistry} from "./interfaces/IRegistry.sol";
 import {INFTLocker} from "./interfaces/INFTLocker.sol";
 import {INFTStaker} from "./interfaces/INFTStaker.sol";
-import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
   @title Voting Escrow
@@ -34,7 +34,7 @@ import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
   # maxtime (4 years?)
 */
 
-contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
+contract MAHAX is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     IRegistry public override registry;
 
     uint256 internal constant WEEK = 1 weeks;
@@ -85,17 +85,17 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
     /// @dev Mapping from owner address to mapping of operator addresses.
     mapping(address => mapping(address => bool)) internal ownerToOperators;
 
-    /// @dev Mapping of interface id to bool about whether or not it's supported
-    mapping(bytes4 => bool) internal supportedInterfaces;
+    bytes32 public constant MIGRATION_ROLE = keccak256("MIGRATION_ROLE");
 
-    /// @dev ERC165 interface ID of ERC165
-    bytes4 internal constant ERC165_INTERFACE_ID = 0x01ffc9a7;
+    modifier onlyGovernance() {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "not governance");
+        _;
+    }
 
-    /// @dev ERC165 interface ID of ERC721
-    bytes4 internal constant ERC721_INTERFACE_ID = 0x80ac58cd;
-
-    /// @dev ERC165 interface ID of ERC721Metadata
-    bytes4 internal constant ERC721_METADATA_INTERFACE_ID = 0x5b5e139f;
+    modifier onlyMigrator() {
+        require(hasRole(MIGRATION_ROLE, msg.sender), "not migrator");
+        _;
+    }
 
     constructor(
         address _registry,
@@ -107,9 +107,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         pointHistory[0].blk = block.number;
         pointHistory[0].ts = block.timestamp;
 
-        supportedInterfaces[ERC165_INTERFACE_ID] = true;
-        supportedInterfaces[ERC721_INTERFACE_ID] = true;
-        supportedInterfaces[ERC721_METADATA_INTERFACE_ID] = true;
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(MIGRATION_ROLE, msg.sender);
 
         _setDefaultRoyalty(_royaltyRcv, _royaltyFeeNumerator);
     }
@@ -119,11 +118,13 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
     function supportsInterface(bytes4 _interfaceID)
         public
         view
-        override(ERC2981, IERC165)
+        override(ERC2981, IERC165, AccessControl)
         returns (bool)
     {
         return
-            supportedInterfaces[_interfaceID] ||
+            bytes4(0x01ffc9a7) == _interfaceID || // ERC165
+            bytes4(0x80ac58cd) == _interfaceID || // ERC721
+            bytes4(0x5b5e139f) == _interfaceID || // ERC721Metadata
             super.supportsInterface(_interfaceID);
     }
 
@@ -887,6 +888,14 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         return _createLock(_value, _lockDuration, _to, true, false);
     }
 
+    function migrateTokenFor(
+        uint256 _value,
+        uint256 _lockDuration,
+        address _to
+    ) external onlyMigrator returns (uint256) {
+        return _createLock(_value, _lockDuration, _to, false, false);
+    }
+
     /// @notice Deposit `_value` tokens for `msg.sender` and lock for `_lockDuration`
     /// @param _value Amount to deposit
     /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
@@ -907,7 +916,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
         address[] memory _users,
         uint256[] memory _value,
         uint256[] memory _lockDuration
-    ) external onlyOwner {
+    ) external onlyMigrator {
         require(_value.length == _lockDuration.length, "invalid data");
         require(_users.length == _value.length, "invalid data");
 
@@ -921,14 +930,14 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable, ERC2981 {
     /// @param _royaltyFeeNumerator The amount of royalty to recieve
     function setRoyaltyInfo(address _royaltyRcv, uint96 _royaltyFeeNumerator)
         external
-        onlyOwner
+        onlyGovernance
     {
         _setDefaultRoyalty(_royaltyRcv, _royaltyFeeNumerator);
     }
 
     /// @notice Sets the min amount to lock
     /// @param _minLockAmount The min amount to lock
-    function setMinLockAmount(uint256 _minLockAmount) external onlyOwner {
+    function setMinLockAmount(uint256 _minLockAmount) external onlyGovernance {
         minLockAmount = _minLockAmount;
     }
 

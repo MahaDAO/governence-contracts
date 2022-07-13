@@ -55,6 +55,11 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
         _unstake(_tokenId);
     }
 
+    function _stakeFromLock(uint256 _tokenId) external override {
+        require(msg.sender == registry.locker(), "not locker");
+        _stake(_tokenId);
+    }
+
     function _stake(uint256 _tokenId) internal {
         registry.ensureNotPaused();
 
@@ -121,11 +126,6 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
 
         locker._stake(_tokenId);
         emit RestakeNFT(msg.sender, _owner, _tokenId, _oldWeight, _newWeight);
-    }
-
-    function _stakeFromLock(uint256 _tokenId) external override {
-        require(msg.sender == registry.locker(), "not locker");
-        _stake(_tokenId);
     }
 
     function banFromStake(uint256 _tokenId) external onlyOwner {
