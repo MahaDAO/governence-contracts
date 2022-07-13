@@ -95,4 +95,14 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
     {
         return stakedBalances[who];
     }
+
+    function getStakedBalance(address who)
+        external
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        return stakedBalances[who];
+    }
 }
