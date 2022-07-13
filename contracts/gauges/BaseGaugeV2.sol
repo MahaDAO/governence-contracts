@@ -23,6 +23,8 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
     uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
     uint256 internal constant PRECISION = 10**18;
 
+    mapping(address => bool) public attached;
+
     // default snx staking contract implementation
     mapping(address => uint256) public rewardRate;
     mapping(address => uint256) public periodFinish;
@@ -521,10 +523,16 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
         derivedBalances[msg.sender] = _derivedBalance;
         derivedSupply += _derivedBalance;
 
+        if (!attached[msg.sender]) {
+            attached[msg.sender] = true;
+            IGaugeVoterV2(registry.gaugeVoter()).attachStakerToGauge(
+                msg.sender
+            );
+        }
+
         _writeCheckpoint(msg.sender, _derivedBalance);
         _writeSupplyCheckpoint();
 
-        IGaugeVoterV2(registry.gaugeVoter()).emitDeposit(msg.sender, amount);
         emit Deposit(msg.sender, amount);
     }
 
@@ -541,6 +549,13 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
         balanceOf[msg.sender] -= amount;
         _safeTransfer(stake, msg.sender, amount);
 
+        if (amount == balanceOf[msg.sender] && attached[msg.sender]) {
+            attached[msg.sender] = false;
+            IGaugeVoterV2(registry.gaugeVoter()).detachStakerFromGauge(
+                msg.sender
+            );
+        }
+
         uint256 _derivedBalance = derivedBalances[msg.sender];
         derivedSupply -= _derivedBalance;
         _derivedBalance = derivedBalance(msg.sender);
@@ -550,7 +565,6 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
         _writeCheckpoint(msg.sender, derivedBalances[msg.sender]);
         _writeSupplyCheckpoint();
 
-        IGaugeVoterV2(registry.gaugeVoter()).emitWithdraw(msg.sender, amount);
         emit Withdraw(msg.sender, amount);
     }
 

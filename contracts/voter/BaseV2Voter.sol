@@ -42,6 +42,8 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     mapping(address => bool) public isGauge;
     mapping(address => bool) public whitelist;
 
+    mapping(address => uint256) public override attachments;
+
     uint256 internal index;
     mapping(address => uint256) internal supplyIndex;
     mapping(address => uint256) public claimable;
@@ -212,36 +214,18 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         return _gauge;
     }
 
-    function attachTokenToGauge(address tokenId, address account)
+    function attachStakerToGauge(address account) external override onlyGauge {
+        attachments[account] = attachments[account] + 1;
+        emit Attach(account, msg.sender);
+    }
+
+    function detachStakerFromGauge(address account)
         external
         override
         onlyGauge
     {
-        // if (tokenId != address(0)) INFTLocker(registry.locker()).attach(tokenId);
-        emit Attach(account, msg.sender, tokenId);
-    }
-
-    function emitDeposit(
-        address account,
-        uint256 amount
-    ) external override onlyGauge {
-        emit Deposit(account, msg.sender, amount);
-    }
-
-    function detachTokenFromGauge(address tokenId, address account)
-        external
-        override
-        onlyGauge
-    {
-        // if (tokenId != address(0)) INFTLocker(registry.locker()).detach(tokenId);
-        emit Detach(account, msg.sender, tokenId);
-    }
-
-    function emitWithdraw(
-        address account,
-        uint256 amount
-    ) external override onlyGauge {
-        emit Withdraw(account, msg.sender, amount);
+        attachments[account] = attachments[account] - 1;
+        emit Detach(account, msg.sender);
     }
 
     function length() external view returns (uint256) {

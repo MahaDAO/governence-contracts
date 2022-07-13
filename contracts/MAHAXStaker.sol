@@ -29,6 +29,7 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
     IRegistry public immutable override registry;
 
     uint256 public totalWeight; // total voting weight
+    bool public disableAttachmentCheck; // check attachments when unstaking
 
     mapping(uint256 => uint256) public stakedBalancesNFT; // nft => pool => votes
     mapping(address => uint256) public stakedBalances; // nft => pool => votes
@@ -48,6 +49,16 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
 
     function unstake(uint256 _tokenId) external override {
         INFTLocker locker = INFTLocker(registry.locker());
+
+        // check if the nfts have been used in a gauge
+        if (!disableAttachmentCheck) {
+            IGaugeVoterV2 gaugeVoter = IGaugeVoterV2(registry.gaugeVoter());
+            require(
+                gaugeVoter.attachments(locker.ownerOf(_tokenId)) == 0,
+                "attached"
+            );
+        }
+
         require(
             locker.isApprovedOrOwner(msg.sender, _tokenId),
             "not token owner"
@@ -130,6 +141,10 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
 
     function banFromStake(uint256 _tokenId) external onlyOwner {
         _unstake(_tokenId);
+    }
+
+    function toggleAttachmentCheck() external onlyOwner {
+        disableAttachmentCheck = !disableAttachmentCheck;
     }
 
     function _getVotingUnits(address who)
