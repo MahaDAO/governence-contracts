@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import hre, { ethers, network } from "hardhat";
 
-import { ZERO_ADDRESS } from "../config";
 import verifyContract from "../verifyContract";
 
 async function main() {
@@ -33,7 +32,7 @@ async function main() {
   );
   const feeDistributorCF = await ethers.getContractFactory("FeeDistributor");
   const mahadaoTimelockControllerCF = await ethers.getContractFactory(
-    "MahaDAOTimelockController"
+    "TimelockController"
   );
   const mahaxStakerCF = await ethers.getContractFactory("MAHAXStaker");
   const mahaxGovernorCF = await ethers.getContractFactory("MAHAXGovernor");
@@ -130,23 +129,6 @@ async function main() {
     deployer.address,
     { gasPrice }
   );
-
-  // const tx2 = await registryCI.setMAHA(mahaCI.address, { gasPrice });
-  // await tx2.wait();
-  // console.log(`Setting Locker in Registry`);
-  // const tx3 = await registryCI.setLocker(mahaxCI.address, { gasPrice });
-  // await tx3.wait();
-  // console.log(`Setting Voter in Registry`);
-  // const tx4 = await registryCI.setVoter(voterCI.address, { gasPrice });
-  // await tx4.wait();
-  // console.log(`Setting Governor in Registry`);
-  // const tx5 = await registryCI.setGovernor(mahaxGovernorCI.address, {
-  //   gasPrice,
-  // });
-  // await tx5.wait();
-  // console.log(`Setting Staker in Registry`);
-  // const tx6 = await registryCI.setStaker(mahaxStakerCI.address, { gasPrice });
-  // await tx6.wait();
 
   // Deploy fee distributor contracts.
   console.log(`Deploying MAHA fee distributor.`);
@@ -247,7 +229,7 @@ async function main() {
     abi: "MockERC20",
     address: solidCI.address,
   };
-  outputFile.MahaToken = {
+  outputFile.MAHA = {
     abi: "MockERC20",
     address: mahaCI.address,
   };
