@@ -5,19 +5,9 @@ pragma solidity ^0.8.0;
 import {IRegistry} from "./IRegistry.sol";
 
 interface IGaugeVoterV2 {
-    function attachTokenToGauge(address _tokenId, address account) external;
+    function attachStakerToGauge(address account) external;
 
-    function detachTokenFromGauge(address _tokenId, address account) external;
-
-    function emitDeposit(
-        address account,
-        uint256 amount
-    ) external;
-
-    function emitWithdraw(
-        address account,
-        uint256 amount
-    ) external;
+    function detachStakerFromGauge(address account) external;
 
     function distribute(address _gauge) external;
 
@@ -29,6 +19,8 @@ interface IGaugeVoterV2 {
 
     function notifyRewardAmount(uint256 amount) external;
 
+    function attachments(address who) external view returns (uint256);
+
     event GaugeCreated(
         address indexed gauge,
         address creator,
@@ -37,16 +29,8 @@ interface IGaugeVoterV2 {
     );
     event Voted(address indexed voter, address tokenId, int256 weight);
     event Abstained(address tokenId, int256 weight);
-    event Deposit(
-        address indexed lp,
-        address indexed gauge,
-        uint256 amount
-    );
-    event Withdraw(
-        address indexed lp,
-        address indexed gauge,
-        uint256 amount
-    );
+    event Deposit(address indexed lp, address indexed gauge, uint256 amount);
+    event Withdraw(address indexed lp, address indexed gauge, uint256 amount);
     event NotifyReward(
         address indexed sender,
         address indexed reward,
@@ -57,8 +41,8 @@ interface IGaugeVoterV2 {
         address indexed gauge,
         uint256 amount
     );
-    event Attach(address indexed owner, address indexed gauge, address tokenId);
-    event Detach(address indexed owner, address indexed gauge, address tokenId);
+    event Attach(address indexed owner, address indexed gauge);
+    event Detach(address indexed owner, address indexed gauge);
     event Whitelisted(
         address indexed whitelister,
         address indexed token,

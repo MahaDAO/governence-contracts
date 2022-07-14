@@ -23,6 +23,8 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
     uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
     uint256 internal constant PRECISION = 10**18;
 
+    mapping(address => bool) public attached;
+
     // default snx staking contract implementation
     mapping(address => uint256) public rewardRate;
     mapping(address => uint256) public periodFinish;
@@ -32,8 +34,6 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
     mapping(address => mapping(address => uint256)) public lastEarn;
     mapping(address => mapping(address => uint256))
         public userRewardPerTokenStored;
-
-    mapping(address => uint256) public tokenIds;
 
     uint256 public totalSupply;
     mapping(address => uint256) public balanceOf;
@@ -323,10 +323,11 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
         uint256 _supply = IERC20(registry.locker()).totalSupply();
 
         if (_supply > 0) {
-            _adjusted = INFTStaker(registry.staker()).getVotes(account);
+            _adjusted = INFTStaker(registry.staker()).getStakedBalance(account);
             _adjusted = (((totalSupply * _adjusted) / _supply) * 80) / 100;
         }
 
+        // because of this we are able to max out the boost by 5x
         return Math.min((_derived + _adjusted), _balance);
     }
 
@@ -522,13 +523,16 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
         derivedBalances[msg.sender] = _derivedBalance;
         derivedSupply += _derivedBalance;
 
+        if (!attached[msg.sender]) {
+            attached[msg.sender] = true;
+            IGaugeVoterV2(registry.gaugeVoter()).attachStakerToGauge(
+                msg.sender
+            );
+        }
+
         _writeCheckpoint(msg.sender, _derivedBalance);
         _writeSupplyCheckpoint();
 
-        IGaugeVoterV2(registry.gaugeVoter()).emitDeposit(
-            msg.sender,
-            amount
-        );
         emit Deposit(msg.sender, amount);
     }
 
@@ -540,13 +544,17 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
         withdrawToken(amount);
     }
 
-    function withdrawToken(uint256 amount)
-        public
-        nonReentrant
-    {
+    function withdrawToken(uint256 amount) public nonReentrant {
         totalSupply -= amount;
         balanceOf[msg.sender] -= amount;
         _safeTransfer(stake, msg.sender, amount);
+
+        if (amount == balanceOf[msg.sender] && attached[msg.sender]) {
+            attached[msg.sender] = false;
+            IGaugeVoterV2(registry.gaugeVoter()).detachStakerFromGauge(
+                msg.sender
+            );
+        }
 
         uint256 _derivedBalance = derivedBalances[msg.sender];
         derivedSupply -= _derivedBalance;
@@ -557,10 +565,6 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
         _writeCheckpoint(msg.sender, derivedBalances[msg.sender]);
         _writeSupplyCheckpoint();
 
-        IGaugeVoterV2(registry.gaugeVoter()).emitWithdraw(
-            msg.sender,
-            amount
-        );
         emit Withdraw(msg.sender, amount);
     }
 
@@ -594,6 +598,7 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
             _safeTransferFrom(token, msg.sender, address(this), amount);
             rewardRate[token] = (amount + _left) / DURATION;
         }
+
         require(rewardRate[token] > 0, "rewardrate = 0");
         uint256 balance = IERC20(token).balanceOf(address(this));
         require(
@@ -601,6 +606,7 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
             "Provided reward too high"
         );
         periodFinish[token] = block.timestamp + DURATION;
+
         if (!isReward[token]) {
             isReward[token] = true;
             rewards.push(token);
