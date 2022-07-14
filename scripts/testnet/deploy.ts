@@ -38,16 +38,22 @@ async function main() {
   const mahaxGovernorCF = await ethers.getContractFactory("MAHAXGovernor");
 
   // Get all the deployed smart contracts.
-  const mahaCI = await mockTokenCF.deploy("MahaDAO", "MAHA", 18, { gasPrice });
-  const solidCI = await mockTokenCF.deploy("SOLID", "SOLID", 18, {
-    gasPrice,
-  });
-  const daiCI = await mockTokenCF.deploy("Dai Stablecoin", "DAI", 18, {
-    gasPrice,
-  });
-  const usdcCI = await mockTokenCF.deploy("USDC", "USDC", 6, {
-    gasPrice,
-  });
+  const mahaCI = await ethers.getContractAt(
+    "MockERC20",
+    "0xAaA6a7A5d7eC7C7691576D557E1D2CDaBeca6C4A"
+  );
+  const solidCI = await ethers.getContractAt(
+    "MockERC20",
+    "0xD09cb6c1aAb18239B7C0880BFcfaAbca461cBac3"
+  );
+  const daiCI = await ethers.getContractAt(
+    "MockERC20",
+    "0xbAE4E07480f16d82Bc13850C36631C21861E245b"
+  );
+  const usdcCI = await ethers.getContractAt(
+    "MockERC20",
+    "0x3e922459b8D5956E3c886aCA472688F811821F6b"
+  );
 
   // Deploy all the smart contracts.
   console.log(`Deploying MAHADAO timelock controller`);
