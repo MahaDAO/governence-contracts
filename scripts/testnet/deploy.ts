@@ -23,14 +23,20 @@ async function main() {
   const mahaxCF = await ethers.getContractFactory(`MAHAX`);
   const registryCF = await ethers.getContractFactory(`Registry`);
   const mockTokenCF = await ethers.getContractFactory(`MockERC20`);
-  const proxyCF = await ethers.getContractFactory(`AdminUpgradeabilityProxy`);
   const emissionControllerCF = await ethers.getContractFactory(
     `EmissionController`
   );
-  const voterCF = await ethers.getContractFactory(`BaseV1Voter`);
-  const gaugeFactoryCF = await ethers.getContractFactory(`BaseV1GaugeFactory`);
-  const bribesFactoryCF = await ethers.getContractFactory(`BaseV1BribeFactory`);
+  const voterCF = await ethers.getContractFactory(`BaseV2Voter`);
+  const gaugeFactoryCF = await ethers.getContractFactory(`BaseV2GaugeFactory`);
+  const bribesFactoryCF = await ethers.getContractFactory(
+    `BaseV2BribesFactory`
+  );
   const feeDistributorCF = await ethers.getContractFactory("FeeDistributor");
+  const mahadaoTimelockControllerCF = await ethers.getContractFactory(
+    "MahaDAOTimelockController"
+  );
+  const mahaxStakerCF = await ethers.getContractFactory("MAHAXStaker");
+  const mahaxGovernorCF = await ethers.getContractFactory("MAHAXGovernor");
 
   // Get all the deployed smart contracts.
   const mahaCI = await mockTokenCF.deploy("MahaDAO", "MAHA", 18, { gasPrice });
@@ -45,39 +51,49 @@ async function main() {
   });
 
   // Deploy all the smart contracts.
-  console.log(`Deploying the registry`);
-  const registryCI = await registryCF.deploy(
-    mahaCI.address,
-    ZERO_ADDRESS,
-    ZERO_ADDRESS,
-    deployer.address,
+  console.log(`Deploying MAHADAO timelock controller`);
+  const mahadaoTimelockControllerCI = await mahadaoTimelockControllerCF.deploy(
+    1 * 60 * 60,
+    [
+      deployer.address,
+      PROXY_ADMIN,
+      "0xF152dA370FA509f08685Fa37a09BA997E41Fb65b",
+      "0x0dd44846a3cc5b4D82DCD29D78d7291112608f0c",
+    ],
+    [
+      deployer.address,
+      PROXY_ADMIN,
+      "0xF152dA370FA509f08685Fa37a09BA997E41Fb65b",
+      "0x0dd44846a3cc5b4D82DCD29D78d7291112608f0c",
+    ],
     { gasPrice }
   );
+  await mahadaoTimelockControllerCI.deployed();
+
+  console.log(`Deploying the registry`);
+  const registryCI = await registryCF.deploy({ gasPrice });
   await registryCI.deployed();
 
-  console.log(`Deploying MAHAX implementation`);
-  const mahaxImplementation = await mahaxCF.deploy({ gasPrice });
-  await mahaxImplementation.deployed();
-
-  console.log(`Deploying AdminUpgradeabilityProxy`);
-  const proxyCI = await proxyCF.deploy(
-    mahaxImplementation.address,
-    PROXY_ADMIN,
-    [],
+  const mahaxGovernorCI = await mahaxGovernorCF.deploy(
+    registryCI.address,
+    mahadaoTimelockControllerCI.address,
     { gasPrice }
   );
-  await proxyCI.deployed();
+  await mahaxGovernorCI.deployed();
 
-  // Loading proxy with mahax abi.
-  const mahaxCI = await ethers.getContractAt(
-    "MAHAX",
-    proxyCI.address,
-    deployer
+  const mahaxStakerCI = await mahaxStakerCF.deploy(registryCI.address, {
+    gasPrice,
+  });
+  await mahaxStakerCI.deployed();
+
+  console.log(`Deploying MAHAX`);
+  const mahaxCI = await mahaxCF.deploy(
+    registryCI.address,
+    deployer.address,
+    10000,
+    { gasPrice }
   );
-
-  console.log(`Initializing MAHAX proxy`);
-  const tx = await mahaxCI.initialize(registryCI.address, { gasPrice });
-  await tx.wait();
+  await mahaxCI.deployed();
 
   console.log(`Deploying gauge and bribe factories`);
   const gaugeFactoryCI = await gaugeFactoryCF.deploy({ gasPrice });
@@ -86,11 +102,12 @@ async function main() {
   await bribesFactoryCI.deployed();
 
   console.log(`Deploying emission controller`);
+  const startTime = Math.floor((Date.now() + 20 * 60 * 1000) / 1000);
   const emissionControllerCI = await emissionControllerCF.deploy(
-    mahaCI.address,
+    registryCI.address,
     12 * 60 * 60, // 12 hr period.
-    Math.floor((Date.now() + 20 * 60 * 1000) / 1000),
-    0,
+    startTime,
+    "1000000000000000000",
     { gasPrice }
   );
   await emissionControllerCI.deployed();
@@ -103,15 +120,33 @@ async function main() {
   );
   await voterCI.deployed();
 
-  console.log(`Setting MAHA in Registry`);
-  const tx2 = await registryCI.setMAHA(mahaCI.address, { gasPrice });
-  await tx2.wait();
-  console.log(`Setting Locker in Registry`);
-  const tx3 = await registryCI.setLocker(mahaxCI.address, { gasPrice });
-  await tx3.wait();
-  console.log(`Setting Voter in Registry`);
-  const tx4 = await registryCI.setVoter(voterCI.address, { gasPrice });
-  await tx4.wait();
+  console.log(`Setting contracts in Registry`);
+  await registryCI.initialize(
+    mahaCI.address,
+    voterCI.address,
+    mahaxCI.address,
+    mahaxGovernorCI.address,
+    mahaxStakerCI.address,
+    deployer.address,
+    { gasPrice }
+  );
+
+  // const tx2 = await registryCI.setMAHA(mahaCI.address, { gasPrice });
+  // await tx2.wait();
+  // console.log(`Setting Locker in Registry`);
+  // const tx3 = await registryCI.setLocker(mahaxCI.address, { gasPrice });
+  // await tx3.wait();
+  // console.log(`Setting Voter in Registry`);
+  // const tx4 = await registryCI.setVoter(voterCI.address, { gasPrice });
+  // await tx4.wait();
+  // console.log(`Setting Governor in Registry`);
+  // const tx5 = await registryCI.setGovernor(mahaxGovernorCI.address, {
+  //   gasPrice,
+  // });
+  // await tx5.wait();
+  // console.log(`Setting Staker in Registry`);
+  // const tx6 = await registryCI.setStaker(mahaxStakerCI.address, { gasPrice });
+  // await tx6.wait();
 
   // Deploy fee distributor contracts.
   console.log(`Deploying MAHA fee distributor.`);
@@ -192,6 +227,18 @@ async function main() {
     abi: "MockERC20",
     address: daiCI.address,
   };
+  outputFile.MAHAXStaker = {
+    abi: "MAHAXStaker",
+    address: mahaxStakerCI.address,
+  };
+  outputFile.MahaDAOTimelockController = {
+    abi: "MahaDAOTimelockController",
+    address: mahadaoTimelockControllerCI.address,
+  };
+  outputFile.MAHAXGovernor = {
+    abi: "MAHAXGovernor",
+    address: mahaxGovernorCI.address,
+  };
   outputFile.USDC = {
     abi: "MockERC20",
     address: usdcCI.address,
@@ -209,23 +256,19 @@ async function main() {
     address: mahaxCI.address,
   };
   outputFile.Voter = {
-    abi: "BaseV1Voter",
+    abi: "BaseV2Voter",
     address: voterCI.address,
   };
   outputFile.Registry = {
     abi: "Registry",
     address: registryCI.address,
   };
-  outputFile.MAHAXImplementation = {
-    abi: "MAHAX",
-    address: mahaxImplementation.address,
-  };
   outputFile.GaugeFactory = {
-    abi: "BaseV1GaugeFactory",
+    abi: "BaseV2GaugeFactory",
     address: gaugeFactoryCI.address,
   };
   outputFile.BribesFactory = {
-    abi: "BaseV1BribeFactory",
+    abi: "BaseV2BribesFactory",
     address: bribesFactoryCI.address,
   };
   outputFile.EmissionController = {
@@ -276,26 +319,44 @@ async function main() {
   );
 
   console.log(`Verifying contracts:\n`);
-  await verifyContract(hre, registryCI.address, [
-    mahaCI.address,
-    ZERO_ADDRESS,
-    ZERO_ADDRESS,
-    deployer.address,
+  await verifyContract(hre, mahadaoTimelockControllerCI.address, [
+    1 * 60 * 60,
+    [
+      deployer.address,
+      PROXY_ADMIN,
+      "0xF152dA370FA509f08685Fa37a09BA997E41Fb65b",
+      "0x0dd44846a3cc5b4D82DCD29D78d7291112608f0c",
+    ],
+    [
+      deployer.address,
+      PROXY_ADMIN,
+      "0xF152dA370FA509f08685Fa37a09BA997E41Fb65b",
+      "0x0dd44846a3cc5b4D82DCD29D78d7291112608f0c",
+    ],
   ]);
-  await verifyContract(hre, mahaxImplementation.address, []);
 
-  await verifyContract(hre, proxyCI.address, [
-    mahaxImplementation.address,
-    PROXY_ADMIN,
-    [],
+  await verifyContract(hre, registryCI.address, []);
+
+  await verifyContract(hre, mahaxGovernorCI.address, [
+    registryCI.address,
+    mahadaoTimelockControllerCI.address,
   ]);
+
+  await verifyContract(hre, mahaxStakerCI.address, [registryCI.address]);
+
+  await verifyContract(hre, mahaxCI.address, [
+    registryCI.address,
+    deployer.address,
+    10000,
+  ]);
+
   await verifyContract(hre, gaugeFactoryCI.address, []);
   await verifyContract(hre, bribesFactoryCI.address, []);
   await verifyContract(hre, emissionControllerCI.address, [
-    mahaCI.address,
+    registryCI.address,
     12 * 60 * 60, // 12 hr period.
-    Math.floor((Date.now() + 20 * 60 * 1000) / 1000),
-    0,
+    startTime,
+    "1000000000000000000",
   ]);
 
   await verifyContract(hre, mahaFeeDistributorCI.address, [
