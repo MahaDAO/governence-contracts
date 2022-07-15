@@ -14,7 +14,7 @@ async function main() {
 
   const gauge = await ethers.getContractAt(
     "BaseGaugeV2",
-    "0xDFE77898a928FDCD2eE489DE6656b227A848DBa2"
+    "0x23B9065D2f960f60e3059961AAff2367A11bb420"
   );
   // const bribe = await ethers.getContractAt(
   //   "BaseV1Bribes",
@@ -49,18 +49,22 @@ async function main() {
   // await maha.approve(bribe.address, amount.mul(3));
   // await dai.approve(bribe.address, amount.mul(3));
 
-  await solid.approve(gauge.address, amount.mul(3));
-  await maha.approve(gauge.address, amount.mul(3));
-  await dai.approve(gauge.address, amount.mul(3));
-  await usdc.approve(gauge.address, amounte6.mul(3));
+  let tx = await solid.approve(gauge.address, amount.mul(3));
+  await tx.wait();
+  tx = await maha.approve(gauge.address, amount.mul(3));
+  await tx.wait();
+  tx = await dai.approve(gauge.address, amount.mul(3));
+  await tx.wait();
+  tx = await usdc.approve(gauge.address, amounte6.mul(3));
+  await tx.wait();
 
   // await bribe.notifyRewardAmount(solid.address, amount);
   // // await bribe.notifyRewardAmount(maha.address, amount);
   // await bribe.notifyRewardAmount(dai.address, amount);
 
   await gauge.notifyRewardAmount(solid.address, amount);
-  // await gauge.notifyRewardAmount(maha.address, amount);
-  // await gauge.notifyRewardAmount(dai.address, amount);
+  await gauge.notifyRewardAmount(maha.address, amount);
+  await gauge.notifyRewardAmount(dai.address, amount);
   await gauge.notifyRewardAmount(usdc.address, amounte6);
 }
 
