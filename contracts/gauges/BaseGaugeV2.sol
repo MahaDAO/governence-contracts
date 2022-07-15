@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
@@ -13,7 +12,7 @@ import {IGaugeV2} from "../interfaces/IGaugeV2.sol";
 import {INFTStaker} from "../interfaces/INFTStaker.sol";
 
 // Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
-contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
+contract BaseGaugeV2 is IGaugeV2 {
     IRegistry public immutable override registry;
     address public immutable stake; // the LP token that needs to be staked for rewards
 
@@ -59,6 +58,15 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
 
     /// @notice The number of checkpoints for each token
     mapping(address => uint256) public rewardPerTokenNumCheckpoints;
+
+    // simple re-entrancy check
+    uint internal _unlocked = 1;
+    modifier lock() {
+        require(_unlocked == 1, "reentrancy");
+        _unlocked = 2;
+        _;
+        _unlocked = 1;
+    }
 
     constructor(address _stake, address _registry) {
         stake = _stake;
@@ -266,7 +274,7 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
     function getReward(address account, address[] memory tokens)
         external
         override
-        nonReentrant
+        lock
     {
         registry.ensureNotPaused();
         require(
@@ -274,9 +282,9 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
             "sender not account or voter"
         );
 
-        // _unlocked = 1; ??
+        _unlocked = 1;
         IGaugeVoterV2(registry.gaugeVoter()).distribute(address(this));
-        // _unlocked = 2; ??
+        _unlocked = 2;
 
         for (uint256 i = 0; i < tokens.length; i++) {
             (
@@ -509,7 +517,7 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
         deposit(IERC20(stake).balanceOf(msg.sender));
     }
 
-    function deposit(uint256 amount) public nonReentrant {
+    function deposit(uint256 amount) public lock {
         registry.ensureNotPaused();
         require(amount > 0, "amount = 0");
 
@@ -544,7 +552,7 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
         withdrawToken(amount);
     }
 
-    function withdrawToken(uint256 amount) public nonReentrant {
+    function withdrawToken(uint256 amount) public lock {
         totalSupply -= amount;
         balanceOf[msg.sender] -= amount;
         _safeTransfer(stake, msg.sender, amount);
@@ -577,7 +585,7 @@ contract BaseGaugeV2 is ReentrancyGuard, IGaugeV2 {
     function notifyRewardAmount(address token, uint256 amount)
         external
         override
-        nonReentrant
+        lock
     {
         require(token != stake, "token = stake");
         require(amount > 0, "amount = 0");
