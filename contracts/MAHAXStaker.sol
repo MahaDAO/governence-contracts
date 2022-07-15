@@ -6,7 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {EIP712, Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
+import {EIP712, IVotes, Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 
 import {IGaugeVoterV2} from "./interfaces/IGaugeVoterV2.sol";
 import {INFTLocker} from "./interfaces/INFTLocker.sol";
@@ -64,6 +64,20 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
             "not token owner"
         );
         _unstake(_tokenId);
+    }
+
+    /**
+     * @dev Returns the delegate that `account` has chosen.
+     */
+    function delegates(address account)
+        public
+        view
+        virtual
+        override(IVotes, Votes)
+        returns (address)
+    {
+        if (super.delegates(account) == address(0)) return account;
+        return super.delegates(account);
     }
 
     function _stakeFromLock(uint256 _tokenId) external override {
