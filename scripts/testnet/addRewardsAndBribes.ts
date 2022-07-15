@@ -14,7 +14,7 @@ async function main() {
 
   const gauge = await ethers.getContractAt(
     "BaseGaugeV2",
-    "0x23B9065D2f960f60e3059961AAff2367A11bb420"
+    "0x9C7C6c2Fb201aC537d9174474c5Ea9c3f31AEaF3"
   );
   // const bribe = await ethers.getContractAt(
   //   "BaseV1Bribes",
