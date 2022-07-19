@@ -1,23 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {ERC2981, IERC165} from "@openzeppelin/contracts/token/common/ERC2981.sol";
-import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
-import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-
 import {ITokenURIGenerator} from "./interfaces/ITokenURIGenerator.sol";
-import {IRegistry} from "./interfaces/IRegistry.sol";
-import {INFTLocker} from "./interfaces/INFTLocker.sol";
-import {INFTStaker} from "./interfaces/INFTStaker.sol";
 
 contract RenderingContract is ITokenURIGenerator {
     /// @dev Returns current token URI metadata
     /// @param _tokenId Token ID to fetch URI for.
-    function tokenURI(uint256 _tokenId) external view returns (string memory) {
+    function tokenURI(uint256 _tokenId)
+        external
+        pure
+        override
+        returns (string memory)
+    {
         return
             string(
                 abi.encodePacked(
