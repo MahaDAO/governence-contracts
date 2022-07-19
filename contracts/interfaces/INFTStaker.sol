@@ -10,6 +10,8 @@ interface INFTStaker is IVotes {
 
     function stake(uint256 _tokenId) external;
 
+    function isStaked(uint256 _tokenId) external view returns (bool);
+
     function _stakeFromLock(uint256 _tokenId) external;
 
     function updateStake(uint256 _tokenId) external;
