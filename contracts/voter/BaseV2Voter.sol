@@ -6,24 +6,24 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
+import {EIP712, Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 
-import {IBribe} from "../interfaces/IBribe.sol";
+import {IBribeV2} from "../interfaces/IBribeV2.sol";
 import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
 import {IEmissionController} from "../interfaces/IEmissionController.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
-import {IGaugeVoter} from "../interfaces/IGaugeVoter.sol";
+import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
-import {INFTLocker} from "../interfaces/INFTLocker.sol";
+import {INFTStaker} from "../interfaces/INFTStaker.sol";
 
 /**
  * This contract is an extension of the BaseV1Voter that was originally written by Andre.
  * This contract allows delegation and captures voting power of a user overtime. This contract
  * is also compatible with openzepplin's Governor contract.
  */
-abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
+contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     IRegistry public immutable override registry;
 
     uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
@@ -36,11 +36,13 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
     mapping(address => address) public poolForGauge; // gauge => pool
     mapping(address => address) public bribes; // gauge => bribe
     mapping(address => int256) public weights; // pool => weight
-    mapping(uint256 => mapping(address => int256)) public votes; // nft => pool => votes
-    mapping(uint256 => address[]) public poolVote; // nft => pools
-    mapping(uint256 => uint256) public usedWeights; // nft => total voting weight of user
+    mapping(address => mapping(address => int256)) public votes; // nft => pool => votes
+    mapping(address => address[]) public poolVote; // nft => pools
+    mapping(address => uint256) public usedWeights; // nft => total voting weight of user
     mapping(address => bool) public isGauge;
     mapping(address => bool) public whitelist;
+
+    mapping(address => uint256) public override attachments;
 
     uint256 internal index;
     mapping(address => uint256) internal supplyIndex;
@@ -62,19 +64,16 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
         _transferOwnership(_governance);
     }
 
-    function reset(uint256 _tokenId) external {
-        require(
-            INFTLocker(registry.locker()).isApprovedOrOwner(
-                msg.sender,
-                _tokenId
-            ),
-            "not approved owner"
-        );
-        _reset(_tokenId);
-        INFTLocker(registry.locker()).abstain(_tokenId);
+    function reset() external override {
+        _reset(msg.sender);
     }
 
-    function _reset(uint256 _tokenId) internal {
+    function resetFor(address who) external override {
+        require(msg.sender == registry.staker(), "not staker contract");
+        _reset(who);
+    }
+
+    function _reset(address _tokenId) internal {
         address[] storage _poolVote = poolVote[_tokenId];
         uint256 _poolVoteCnt = _poolVote.length;
         int256 _totalWeight = 0;
@@ -88,7 +87,7 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
                 weights[_pool] -= _votes;
                 votes[_tokenId][_pool] -= _votes;
                 if (_votes > 0) {
-                    IBribe(bribes[gauges[_pool]])._withdraw(
+                    IBribeV2(bribes[gauges[_pool]])._withdraw(
                         uint256(_votes),
                         _tokenId
                     );
@@ -104,7 +103,7 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
         delete poolVote[_tokenId];
     }
 
-    function poke(uint256 _tokenId) external {
+    function poke(address _tokenId) external {
         address[] memory _poolVote = poolVote[_tokenId];
         uint256 _poolCnt = _poolVote.length;
         int256[] memory _weights = new int256[](_poolCnt);
@@ -117,15 +116,16 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
     }
 
     function _vote(
-        uint256 _tokenId,
+        address _who,
         address[] memory _poolVote,
         int256[] memory _weights
     ) internal {
-        _reset(_tokenId);
+        _reset(_who);
+
         uint256 _poolCnt = _poolVote.length;
-        int256 _weight = int256(
-            INFTLocker(registry.locker()).balanceOfNFT(_tokenId)
-        );
+
+        INFTStaker staker = INFTStaker(registry.staker());
+        int256 _weight = int256(staker.getVotes(_who));
         int256 _totalVoteWeight = 0;
         int256 _totalWeight = 0;
         int256 _usedWeight = 0;
@@ -140,47 +140,37 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
 
             if (isGauge[_gauge]) {
                 int256 _poolWeight = (_weights[i] * _weight) / _totalVoteWeight;
-                require(votes[_tokenId][_pool] == 0, "votes = 0");
+                require(votes[_who][_pool] == 0, "votes = 0");
                 require(_poolWeight != 0, "poolweight = 0");
                 _updateFor(_gauge);
 
-                poolVote[_tokenId].push(_pool);
+                poolVote[_who].push(_pool);
 
                 weights[_pool] += _poolWeight;
-                votes[_tokenId][_pool] += _poolWeight;
+                votes[_who][_pool] += _poolWeight;
                 if (_poolWeight > 0) {
-                    IBribe(bribes[_gauge])._deposit(
+                    IBribeV2(bribes[_gauge])._deposit(
                         uint256(_poolWeight),
-                        _tokenId
+                        _who
                     );
                 } else {
                     _poolWeight = -_poolWeight;
                 }
                 _usedWeight += _poolWeight;
                 _totalWeight += _poolWeight;
-                emit Voted(msg.sender, _tokenId, _poolWeight);
+                emit Voted(msg.sender, _who, _poolWeight);
             }
         }
 
-        if (_usedWeight > 0) INFTLocker(registry.locker()).voting(_tokenId);
         totalWeight += uint256(_totalWeight);
-        usedWeights[_tokenId] = uint256(_usedWeight);
+        usedWeights[_who] = uint256(_usedWeight);
     }
 
-    function vote(
-        uint256 tokenId,
-        address[] calldata _poolVote,
-        int256[] calldata _weights
-    ) external {
-        require(
-            INFTLocker(registry.locker()).isApprovedOrOwner(
-                msg.sender,
-                tokenId
-            ),
-            "not token owner"
-        );
+    function vote(address[] calldata _poolVote, int256[] calldata _weights)
+        external
+    {
         require(_poolVote.length == _weights.length, "invalid weights");
-        _vote(tokenId, _poolVote, _weights);
+        _vote(msg.sender, _poolVote, _weights);
     }
 
     function toggleWhitelist(address what) external onlyOwner {
@@ -224,38 +214,18 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
         return _gauge;
     }
 
-    function attachTokenToGauge(uint256 tokenId, address account)
+    function attachStakerToGauge(address account) external override onlyGauge {
+        attachments[account] = attachments[account] + 1;
+        emit Attach(account, msg.sender);
+    }
+
+    function detachStakerFromGauge(address account)
         external
         override
         onlyGauge
     {
-        if (tokenId > 0) INFTLocker(registry.locker()).attach(tokenId);
-        emit Attach(account, msg.sender, tokenId);
-    }
-
-    function emitDeposit(
-        uint256 tokenId,
-        address account,
-        uint256 amount
-    ) external override onlyGauge {
-        emit Deposit(account, msg.sender, tokenId, amount);
-    }
-
-    function detachTokenFromGauge(uint256 tokenId, address account)
-        external
-        override
-        onlyGauge
-    {
-        if (tokenId > 0) INFTLocker(registry.locker()).detach(tokenId);
-        emit Detach(account, msg.sender, tokenId);
-    }
-
-    function emitWithdraw(
-        uint256 tokenId,
-        address account,
-        uint256 amount
-    ) external override onlyGauge {
-        emit Withdraw(account, msg.sender, tokenId, amount);
+        attachments[account] = attachments[account] - 1;
+        emit Detach(account, msg.sender);
     }
 
     function length() external view returns (uint256) {
@@ -316,20 +286,11 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
         }
     }
 
-    function claimBribes(
-        address[] memory _bribes,
-        address[][] memory _tokens,
-        uint256 _tokenId
-    ) external {
-        require(
-            INFTLocker(registry.locker()).isApprovedOrOwner(
-                msg.sender,
-                _tokenId
-            ),
-            "not approved owner"
-        );
+    function claimBribes(address[] memory _bribes, address[][] memory _tokens)
+        external
+    {
         for (uint256 i = 0; i < _bribes.length; i++) {
-            IBribe(_bribes[i]).getRewardForOwner(_tokenId, _tokens[i]);
+            IBribeV2(_bribes[i]).getRewardForOwner(msg.sender, _tokens[i]);
         }
     }
 
@@ -351,10 +312,6 @@ abstract contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoter, IVotes {
 
     function distribute(address _gauge) external override {
         _distribute(_gauge);
-    }
-
-    function distro() external {
-        distribute(0, pools.length);
     }
 
     function distribute() external {

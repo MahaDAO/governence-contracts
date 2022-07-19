@@ -15,7 +15,7 @@ import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
 import {IGaugeVoter} from "../interfaces/IGaugeVoter.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
-import {INFTLocker} from "../interfaces/INFTLocker.sol";
+import {IOldVotingEscrow} from "../interfaces/IOldVotingEscrow.sol";
 
 contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
     IRegistry public immutable override registry;
@@ -58,14 +58,14 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
 
     function reset(uint256 _tokenId) external {
         require(
-            INFTLocker(registry.locker()).isApprovedOrOwner(
+            IOldVotingEscrow(registry.locker()).isApprovedOrOwner(
                 msg.sender,
                 _tokenId
             ),
             "not approved owner"
         );
         _reset(_tokenId);
-        INFTLocker(registry.locker()).abstain(_tokenId);
+        IOldVotingEscrow(registry.locker()).abstain(_tokenId);
     }
 
     function _reset(uint256 _tokenId) internal {
@@ -118,7 +118,7 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
         _reset(_tokenId);
         uint256 _poolCnt = _poolVote.length;
         int256 _weight = int256(
-            INFTLocker(registry.locker()).balanceOfNFT(_tokenId)
+            IOldVotingEscrow(registry.locker()).balanceOfNFT(_tokenId)
         );
         int256 _totalVoteWeight = 0;
         int256 _totalWeight = 0;
@@ -156,7 +156,7 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
             }
         }
 
-        if (_usedWeight > 0) INFTLocker(registry.locker()).voting(_tokenId);
+        if (_usedWeight > 0) IOldVotingEscrow(registry.locker()).voting(_tokenId);
         totalWeight += uint256(_totalWeight);
         usedWeights[_tokenId] = uint256(_usedWeight);
     }
@@ -167,7 +167,7 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
         int256[] calldata _weights
     ) external {
         require(
-            INFTLocker(registry.locker()).isApprovedOrOwner(
+            IOldVotingEscrow(registry.locker()).isApprovedOrOwner(
                 msg.sender,
                 tokenId
             ),
@@ -223,7 +223,7 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
         override
         onlyGauge
     {
-        if (tokenId > 0) INFTLocker(registry.locker()).attach(tokenId);
+        if (tokenId > 0) IOldVotingEscrow(registry.locker()).attach(tokenId);
         emit Attach(account, msg.sender, tokenId);
     }
 
@@ -240,7 +240,7 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
         override
         onlyGauge
     {
-        if (tokenId > 0) INFTLocker(registry.locker()).detach(tokenId);
+        if (tokenId > 0) IOldVotingEscrow(registry.locker()).detach(tokenId);
         emit Detach(account, msg.sender, tokenId);
     }
 
@@ -316,7 +316,7 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
         uint256 _tokenId
     ) external {
         require(
-            INFTLocker(registry.locker()).isApprovedOrOwner(
+            IOldVotingEscrow(registry.locker()).isApprovedOrOwner(
                 msg.sender,
                 _tokenId
             ),

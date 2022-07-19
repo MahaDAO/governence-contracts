@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {ERC2981, IERC165} from "@openzeppelin/contracts/token/common/ERC2981.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
+import {ITokenURIGenerator} from "./interfaces/ITokenURIGenerator.sol";
 import {IRegistry} from "./interfaces/IRegistry.sol";
 import {INFTLocker} from "./interfaces/INFTLocker.sol";
-import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {INFTStaker} from "./interfaces/INFTStaker.sol";
 
 /**
   @title Voting Escrow
@@ -32,13 +35,15 @@ import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
   # maxtime (4 years?)
 */
 
-contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
+contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     IRegistry public override registry;
 
     uint256 internal constant WEEK = 1 weeks;
     uint256 internal constant MAXTIME = 4 * 365 * 86400;
     int128 internal constant iMAXTIME = 4 * 365 * 86400;
     uint256 internal constant MULTIPLIER = 1 ether;
+
+    ITokenURIGenerator public renderingContract;
 
     uint256 public supply;
     mapping(uint256 => LockedBalance) public locked;
@@ -52,14 +57,11 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
     mapping(uint256 => uint256) public userPointEpoch;
     mapping(uint256 => int128) public slopeChanges; // time -> signed slope change
 
-    mapping(uint256 => uint256) public attachments;
-    mapping(uint256 => bool) public voted;
-
     string public constant name = "Locked MAHA NFT";
     string public constant symbol = "MAHAX";
     string public constant version = "1.0.0";
     uint8 public constant decimals = 18;
-    uint256 public minLockAmount = 100 * 1e18;
+    uint256 public minLockAmount = 99 * 1e18;
 
     /// @dev Current count of token
     uint256 internal tokenId;
@@ -83,38 +85,47 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
     /// @dev Mapping from owner address to mapping of operator addresses.
     mapping(address => mapping(address => bool)) internal ownerToOperators;
 
-    /// @dev Mapping of interface id to bool about whether or not it's supported
-    mapping(bytes4 => bool) internal supportedInterfaces;
+    bytes32 public constant MIGRATION_ROLE = keccak256("MIGRATION_ROLE");
 
-    /// @dev ERC165 interface ID of ERC165
-    bytes4 internal constant ERC165_INTERFACE_ID = 0x01ffc9a7;
+    modifier onlyGovernance() {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "not governance");
+        _;
+    }
 
-    /// @dev ERC165 interface ID of ERC721
-    bytes4 internal constant ERC721_INTERFACE_ID = 0x80ac58cd;
+    modifier onlyMigrator() {
+        require(hasRole(MIGRATION_ROLE, msg.sender), "not migrator");
+        _;
+    }
 
-    /// @dev ERC165 interface ID of ERC721Metadata
-    bytes4 internal constant ERC721_METADATA_INTERFACE_ID = 0x5b5e139f;
-
-    constructor(address _registry) {
+    constructor(
+        address _registry,
+        address _royaltyRcv,
+        uint96 _royaltyFeeNumerator
+    ) {
         registry = IRegistry(_registry);
 
         pointHistory[0].blk = block.number;
         pointHistory[0].ts = block.timestamp;
 
-        supportedInterfaces[ERC165_INTERFACE_ID] = true;
-        supportedInterfaces[ERC721_INTERFACE_ID] = true;
-        supportedInterfaces[ERC721_METADATA_INTERFACE_ID] = true;
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(MIGRATION_ROLE, msg.sender);
+
+        _setDefaultRoyalty(_royaltyRcv, _royaltyFeeNumerator);
     }
 
     /// @dev Interface identification is specified in ERC-165.
     /// @param _interfaceID Id of the interface
     function supportsInterface(bytes4 _interfaceID)
-        external
+        public
         view
-        override
+        override(ERC2981, IERC165, AccessControl)
         returns (bool)
     {
-        return supportedInterfaces[_interfaceID];
+        return
+            bytes4(0x01ffc9a7) == _interfaceID || // ERC165
+            bytes4(0x80ac58cd) == _interfaceID || // ERC721
+            bytes4(0x5b5e139f) == _interfaceID || // ERC721Metadata
+            super.supportsInterface(_interfaceID);
     }
 
     function totalSupplyWithoutDecay()
@@ -350,8 +361,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         uint256 _tokenId,
         address _sender
     ) internal {
-        require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
         // Check requirements
+        require(!_isStaked(_tokenId), "staked");
         require(_isApprovedOrOwner(_sender, _tokenId), "not approved sender");
         // Clear approval. Throws if `_from` is not the current owner
         _clearApproval(_from, _tokenId);
@@ -687,7 +698,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         uint256 unlockTime,
         LockedBalance memory lockedBalance,
         DepositType depositType,
-        bool shouldPullUserMaha
+        bool _shouldPullUserMaha,
+        bool _stakeNFT
     ) internal {
         registry.ensureNotPaused();
 
@@ -719,7 +731,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         if (
             _value != 0 &&
             depositType != DepositType.MERGE_TYPE &&
-            shouldPullUserMaha
+            _shouldPullUserMaha
         ) {
             assert(
                 IERC20(registry.maha()).transferFrom(
@@ -729,6 +741,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
                 )
             );
         }
+
+        if (_stakeNFT) INFTStaker(registry.staker())._stakeFromLock(_tokenId);
 
         emit Deposit(
             from,
@@ -741,29 +755,10 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         emit Supply(supplyBefore, supplyBefore + _value);
     }
 
-    function voting(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
-        voted[_tokenId] = true;
-    }
-
-    function abstain(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
-        voted[_tokenId] = false;
-    }
-
-    function attach(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
-        attachments[_tokenId] = attachments[_tokenId] + 1;
-    }
-
-    function detach(uint256 _tokenId) external override {
-        require(msg.sender == registry.gaugeVoter(), "not gauge voter");
-        attachments[_tokenId] = attachments[_tokenId] - 1;
-    }
-
     function merge(uint256 _from, uint256 _to) external {
-        require(attachments[_from] == 0 && !voted[_from], "attached");
-        require(_from != _to, "same addr");
+        require(!_isStaked(_from), "staked");
+
+        require(_from != _to, "same nft");
         require(_isApprovedOrOwner(msg.sender, _from), "from not approved");
         require(_isApprovedOrOwner(msg.sender, _to), "to not approved");
 
@@ -777,7 +772,15 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         locked[_from] = LockedBalance(0, 0, 0);
         _checkpoint(_from, _locked0, LockedBalance(0, 0, 0));
         _burn(_from);
-        _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE, false);
+        _depositFor(
+            _to,
+            value0,
+            end,
+            _locked1,
+            DepositType.MERGE_TYPE,
+            false,
+            false
+        );
     }
 
     function blockNumber() external view returns (uint256) {
@@ -809,7 +812,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
             0,
             _locked,
             DepositType.DEPOSIT_FOR_TYPE,
-            true
+            true,
+            false
         );
     }
 
@@ -817,18 +821,20 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
     /// @param _value Amount to deposit
     /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
     /// @param _to Address to deposit
+    /// @param _shouldPullUserMaha Should we pull maha with the lock
+    /// @param _stakeNFT should we stake into the staking contract
     function _createLock(
         uint256 _value,
         uint256 _lockDuration,
         address _to,
-        bool shouldPullUserMaha
+        bool _shouldPullUserMaha,
+        bool _stakeNFT
     ) internal returns (uint256) {
         registry.ensureNotPaused();
 
         uint256 unlockTime = ((block.timestamp + _lockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
 
         require(_value > 0, "value = 0"); // dev: need non-zero value
-        require(_value >= 100e18, "value should be >= 100 MAHA");
         require(unlockTime > block.timestamp, "Can only lock in the future");
         require(
             unlockTime <= block.timestamp + MAXTIME,
@@ -845,7 +851,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
             unlockTime,
             locked[_tokenId],
             DepositType.CREATE_LOCK_TYPE,
-            shouldPullUserMaha
+            _shouldPullUserMaha,
+            _stakeNFT
         );
 
         require(
@@ -865,18 +872,28 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         uint256 _lockDuration,
         address _to
     ) external nonReentrant returns (uint256) {
-        return _createLock(_value, _lockDuration, _to, true);
+        return _createLock(_value, _lockDuration, _to, true, false);
+    }
+
+    function migrateTokenFor(
+        uint256 _value,
+        uint256 _lockDuration,
+        address _to,
+        bool _stakeNFT
+    ) external onlyMigrator returns (uint256) {
+        return _createLock(_value, _lockDuration, _to, false, _stakeNFT);
     }
 
     /// @notice Deposit `_value` tokens for `msg.sender` and lock for `_lockDuration`
     /// @param _value Amount to deposit
     /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
-    function createLock(uint256 _value, uint256 _lockDuration)
-        external
-        nonReentrant
-        returns (uint256)
-    {
-        return _createLock(_value, _lockDuration, msg.sender, true);
+    /// @param _stakeNFT Should we also stake the NFT as well?
+    function createLock(
+        uint256 _value,
+        uint256 _lockDuration,
+        bool _stakeNFT
+    ) external nonReentrant returns (uint256) {
+        return _createLock(_value, _lockDuration, msg.sender, true, _stakeNFT);
     }
 
     /// @notice Upload users.
@@ -886,14 +903,37 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
     function uploadUsers(
         address[] memory _users,
         uint256[] memory _value,
-        uint256[] memory _lockDuration
-    ) external nonReentrant onlyOwner {
+        uint256[] memory _lockDuration,
+        bool _stakeNFT
+    ) external onlyMigrator {
         require(_value.length == _lockDuration.length, "invalid data");
         require(_users.length == _value.length, "invalid data");
 
         for (uint256 i = 0; i < _users.length; i++) {
-            _createLock(_value[i], _lockDuration[i], _users[i], false);
+            _createLock(
+                _value[i],
+                _lockDuration[i],
+                _users[i],
+                false,
+                _stakeNFT
+            );
         }
+    }
+
+    /// @notice Sets the royalty info for all NFT marketplaces
+    /// @param _royaltyRcv The address to recieve royalties
+    /// @param _royaltyFeeNumerator The amount of royalty to recieve
+    function setRoyaltyInfo(address _royaltyRcv, uint96 _royaltyFeeNumerator)
+        external
+        onlyGovernance
+    {
+        _setDefaultRoyalty(_royaltyRcv, _royaltyFeeNumerator);
+    }
+
+    /// @notice Sets the min amount to lock
+    /// @param _minLockAmount The min amount to lock
+    function setMinLockAmount(uint256 _minLockAmount) external onlyGovernance {
+        minLockAmount = _minLockAmount;
     }
 
     /// @notice Deposit `_value` additional tokens for `_tokenId` without modifying the unlock time
@@ -916,7 +956,8 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
             0,
             _locked,
             DepositType.INCREASE_LOCK_AMOUNT,
-            true
+            true,
+            false
         );
     }
 
@@ -949,6 +990,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
             unlockTime,
             _locked,
             DepositType.INCREASE_UNLOCK_TIME,
+            false,
             false
         );
     }
@@ -959,7 +1001,7 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         registry.ensureNotPaused();
 
         assert(_isApprovedOrOwner(msg.sender, _tokenId));
-        require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
+        require(!_isStaked(_tokenId), "staked");
 
         LockedBalance memory _locked = locked[_tokenId];
         require(block.timestamp >= _locked.end, "The lock didn't expire");
@@ -981,6 +1023,20 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
 
         emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
         emit Supply(supplyBefore, supplyBefore - value);
+    }
+
+    /// @notice Sets the optional tokenURI override contract.
+    function setRenderingContract(ITokenURIGenerator _contract)
+        external
+        onlyGovernance
+    {
+        renderingContract = _contract;
+    }
+
+    /// @notice If renderingContract is set then returns its tokenURI(tokenId)
+    /// return value, otherwise returns the standard baseTokenURI + tokenId.
+    function tokenURI(uint256 _tokenId) public view returns (string memory) {
+        return renderingContract.tokenURI(_tokenId);
     }
 
     // The following ERC20/minime-compatible methods are not real balanceOf and supply!
@@ -1037,23 +1093,6 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
             }
             return uint256(int256(lastPoint.bias));
         }
-    }
-
-    /// @dev Returns current token URI metadata
-    /// @param _tokenId Token ID to fetch URI for.
-    function tokenURI(uint256 _tokenId) external view returns (string memory) {
-        require(
-            idToOwner[_tokenId] != address(0),
-            "Query for nonexistent token"
-        );
-        return
-            string(
-                abi.encodePacked(
-                    "https://images.mahapeople.com/",
-                    toString(_tokenId),
-                    ".json"
-                )
-            );
     }
 
     function balanceOfNFT(uint256 _tokenId)
@@ -1221,28 +1260,6 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         return _supplyAt(point, point.ts + dt);
     }
 
-    function toString(uint256 value) internal pure returns (string memory) {
-        // Inspired by OraclizeAPI's implementation - MIT license
-        // https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
-
-        if (value == 0) {
-            return "0";
-        }
-        uint256 temp = value;
-        uint256 digits;
-        while (temp != 0) {
-            digits++;
-            temp /= 10;
-        }
-        bytes memory buffer = new bytes(digits);
-        while (value != 0) {
-            digits -= 1;
-            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
-            value /= 10;
-        }
-        return string(buffer);
-    }
-
     function _burn(uint256 _tokenId) internal {
         require(
             _isApprovedOrOwner(msg.sender, _tokenId),
@@ -1256,5 +1273,13 @@ contract MAHAX is ReentrancyGuard, INFTLocker, Ownable {
         // Remove token
         _removeTokenFrom(msg.sender, _tokenId);
         emit Transfer(owner, address(0), _tokenId);
+    }
+
+    function isStaked(uint256 _tokenId) external view returns (bool) {
+        return _isStaked(_tokenId);
+    }
+
+    function _isStaked(uint256 _tokenId) internal view returns (bool) {
+        return INFTStaker(registry.staker()).isStaked(_tokenId);
     }
 }

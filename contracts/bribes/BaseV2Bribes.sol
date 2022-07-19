@@ -3,23 +3,19 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IGaugeVoter} from "../interfaces/IGaugeVoter.sol";
+import {IRegistry} from "../interfaces/IRegistry.sol";
 import {INFTLocker} from "../interfaces/INFTLocker.sol";
-import {IBribe} from "../interfaces/IBribe.sol";
-import {IGauge} from "../interfaces/IGauge.sol";
+import {IBribeV2} from "../interfaces/IBribeV2.sol";
 
-// Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
-contract BaseGaugeV1 is IGauge {
+// Bribes pay out rewards for a given pool based on the votes that were received from the user (goes hand in hand with BaseV1Gauges.vote())
+contract BaseV2Bribes is ReentrancyGuard, IBribeV2 {
     IRegistry public immutable override registry;
-    address public immutable stake; // the LP token that needs to be staked for rewards
 
-    uint256 public derivedSupply;
-    mapping(address => uint256) public derivedBalances;
-
-    uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
-    uint256 internal constant PRECISION = 10**18;
+    uint256 public constant DURATION = 7 days; // rewards are released over 7 days
+    uint256 public constant PRECISION = 10**18;
 
     // default snx staking contract implementation
     mapping(address => uint256) public rewardRate;
@@ -31,13 +27,29 @@ contract BaseGaugeV1 is IGauge {
     mapping(address => mapping(address => uint256))
         public userRewardPerTokenStored;
 
-    mapping(address => uint256) public tokenIds;
+    address[] public rewards;
+    mapping(address => bool) public isReward;
 
     uint256 public totalSupply;
     mapping(address => uint256) public balanceOf;
 
-    address[] public rewards;
-    mapping(address => bool) public isReward;
+    /// @notice A checkpoint for marking balance
+    struct Checkpoint {
+        uint256 timestamp;
+        uint256 balanceOf;
+    }
+
+    /// @notice A checkpoint for marking reward rate
+    struct RewardPerTokenCheckpoint {
+        uint256 timestamp;
+        uint256 rewardPerToken;
+    }
+
+    /// @notice A checkpoint for marking supply
+    struct SupplyCheckpoint {
+        uint256 timestamp;
+        uint256 supply;
+    }
 
     /// @notice A record of balance checkpoints for each account, by index
     mapping(address => mapping(uint256 => Checkpoint)) public checkpoints;
@@ -58,44 +70,34 @@ contract BaseGaugeV1 is IGauge {
     /// @notice The number of checkpoints for each token
     mapping(address => uint256) public rewardPerTokenNumCheckpoints;
 
-    // simple re-entrancy check
-    uint internal _unlocked = 1;
-    modifier lock() {
-        require(_unlocked == 1, "reentrancy");
-        _unlocked = 2;
-        _;
-        _unlocked = 1;
-    }
-
-    constructor(address _stake, address _registry) {
-        stake = _stake;
+    constructor(address _registry) {
         registry = IRegistry(_registry);
     }
 
     /**
      * @notice Determine the prior balance for an account as of a block number
      * @dev Block number must be a finalized block or else this function will revert to prevent misinformation.
-     * @param account The address of the account to check
+     * @param who The token of the NFT to check
      * @param timestamp The timestamp to get the balance at
      * @return The balance the account had as of the given block
      */
-    function getPriorBalanceIndex(address account, uint256 timestamp)
+    function getPriorBalanceIndex(address who, uint256 timestamp)
         public
         view
         returns (uint256)
     {
-        uint256 nCheckpoints = numCheckpoints[account];
+        uint256 nCheckpoints = numCheckpoints[who];
         if (nCheckpoints == 0) {
             return 0;
         }
 
         // First check most recent balance
-        if (checkpoints[account][nCheckpoints - 1].timestamp <= timestamp) {
+        if (checkpoints[who][nCheckpoints - 1].timestamp <= timestamp) {
             return (nCheckpoints - 1);
         }
 
         // Next check implicit zero balance
-        if (checkpoints[account][0].timestamp > timestamp) {
+        if (checkpoints[who][0].timestamp > timestamp) {
             return 0;
         }
 
@@ -103,7 +105,7 @@ contract BaseGaugeV1 is IGauge {
         uint256 upper = nCheckpoints - 1;
         while (upper > lower) {
             uint256 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
-            Checkpoint memory cp = checkpoints[account][center];
+            Checkpoint memory cp = checkpoints[who][center];
             if (cp.timestamp == timestamp) {
                 return center;
             } else if (cp.timestamp < timestamp) {
@@ -199,21 +201,18 @@ contract BaseGaugeV1 is IGauge {
         );
     }
 
-    function _writeCheckpoint(address account, uint256 balance) internal {
+    function _writeCheckpoint(address who, uint256 balance) internal {
         uint256 _timestamp = block.timestamp;
-        uint256 _nCheckPoints = numCheckpoints[account];
+        uint256 _nCheckPoints = numCheckpoints[who];
 
         if (
             _nCheckPoints > 0 &&
-            checkpoints[account][_nCheckPoints - 1].timestamp == _timestamp
+            checkpoints[who][_nCheckPoints - 1].timestamp == _timestamp
         ) {
-            checkpoints[account][_nCheckPoints - 1].balanceOf = balance;
+            checkpoints[who][_nCheckPoints - 1].balanceOf = balance;
         } else {
-            checkpoints[account][_nCheckPoints] = Checkpoint(
-                _timestamp,
-                balance
-            );
-            numCheckpoints[account] = _nCheckPoints + 1;
+            checkpoints[who][_nCheckPoints] = Checkpoint(_timestamp, balance);
+            numCheckpoints[who] = _nCheckPoints + 1;
         }
     }
 
@@ -247,11 +246,11 @@ contract BaseGaugeV1 is IGauge {
             _nCheckPoints > 0 &&
             supplyCheckpoints[_nCheckPoints - 1].timestamp == _timestamp
         ) {
-            supplyCheckpoints[_nCheckPoints - 1].supply = derivedSupply;
+            supplyCheckpoints[_nCheckPoints - 1].supply = totalSupply;
         } else {
             supplyCheckpoints[_nCheckPoints] = SupplyCheckpoint(
                 _timestamp,
-                derivedSupply
+                totalSupply
             );
             supplyNumCheckpoints = _nCheckPoints + 1;
         }
@@ -270,49 +269,51 @@ contract BaseGaugeV1 is IGauge {
         return Math.min(block.timestamp, periodFinish[token]);
     }
 
-    function getReward(address account, address[] memory tokens)
-        external
-        override
-        lock
-    {
-        registry.ensureNotPaused();
-        require(
-            msg.sender == account || msg.sender == registry.gaugeVoter(),
-            "sender not account or voter"
-        );
-
-        _unlocked = 1;
-        IGaugeVoter(registry.gaugeVoter()).distribute(address(this));
-        _unlocked = 2;
-
+    // allows a user to claim rewards for a given token
+    function getReward(address[] memory tokens) external nonReentrant {
         for (uint256 i = 0; i < tokens.length; i++) {
             (
                 rewardPerTokenStored[tokens[i]],
                 lastUpdateTime[tokens[i]]
             ) = _updateRewardPerToken(tokens[i]);
 
-            uint256 _reward = earned(tokens[i], account);
-            lastEarn[tokens[i]][account] = block.timestamp;
-            userRewardPerTokenStored[tokens[i]][account] = rewardPerTokenStored[
-                tokens[i]
-            ];
-            if (_reward > 0) _safeTransfer(tokens[i], account, _reward);
+            uint256 _reward = earned(tokens[i], msg.sender);
+            lastEarn[tokens[i]][msg.sender] = block.timestamp;
+            userRewardPerTokenStored[tokens[i]][
+                msg.sender
+            ] = rewardPerTokenStored[tokens[i]];
+            if (_reward > 0) _safeTransfer(tokens[i], msg.sender, _reward);
 
             emit ClaimRewards(msg.sender, tokens[i], _reward);
         }
+    }
 
-        uint256 _derivedBalance = derivedBalances[account];
-        derivedSupply -= _derivedBalance;
-        _derivedBalance = derivedBalance(account);
-        derivedBalances[account] = _derivedBalance;
-        derivedSupply += _derivedBalance;
+    // used by BaseV1Voter to allow batched reward claims
+    function getRewardForOwner(address _owner, address[] memory tokens)
+        external
+        override
+        nonReentrant
+    {
+        require(msg.sender == registry.gaugeVoter(), "not voter");
+        for (uint256 i = 0; i < tokens.length; i++) {
+            (
+                rewardPerTokenStored[tokens[i]],
+                lastUpdateTime[tokens[i]]
+            ) = _updateRewardPerToken(tokens[i]);
 
-        _writeCheckpoint(account, derivedBalances[account]);
-        _writeSupplyCheckpoint();
+            uint256 _reward = earned(tokens[i], _owner);
+            lastEarn[tokens[i]][_owner] = block.timestamp;
+            userRewardPerTokenStored[tokens[i]][_owner] = rewardPerTokenStored[
+                tokens[i]
+            ];
+            if (_reward > 0) _safeTransfer(tokens[i], _owner, _reward);
+
+            emit ClaimRewards(_owner, tokens[i], _reward);
+        }
     }
 
     function rewardPerToken(address token) public view returns (uint256) {
-        if (derivedSupply == 0) {
+        if (totalSupply == 0) {
             return rewardPerTokenStored[token];
         }
         return
@@ -320,23 +321,7 @@ contract BaseGaugeV1 is IGauge {
             (((lastTimeRewardApplicable(token) -
                 Math.min(lastUpdateTime[token], periodFinish[token])) *
                 rewardRate[token] *
-                PRECISION) / derivedSupply);
-    }
-
-    function derivedBalance(address account) public view returns (uint256) {
-        uint256 _tokenId = tokenIds[account];
-        uint256 _balance = balanceOf[account];
-        uint256 _derived = (_balance * 20) / 100;
-        uint256 _adjusted = 0;
-        uint256 _supply = IERC20(registry.locker()).totalSupply();
-        if (
-            account == INFTLocker(registry.locker()).ownerOf(_tokenId) &&
-            _supply > 0
-        ) {
-            _adjusted = INFTLocker(registry.locker()).balanceOfNFT(_tokenId);
-            _adjusted = (((totalSupply * _adjusted) / _supply) * 80) / 100;
-        }
-        return Math.min((_derived + _adjusted), _balance);
+                PRECISION) / totalSupply);
     }
 
     function batchRewardPerToken(address token, uint256 maxRuns) external {
@@ -368,7 +353,7 @@ contract BaseGaugeV1 is IGauge {
             SupplyCheckpoint memory sp0 = supplyCheckpoints[i];
             if (sp0.supply > 0) {
                 SupplyCheckpoint memory sp1 = supplyCheckpoints[i + 1];
-                (uint256 _reward, uint256 _endTime) = _calcRewardPerToken(
+                (uint256 _reward, uint256 endTime) = _calcRewardPerToken(
                     token,
                     sp1.timestamp,
                     sp0.timestamp,
@@ -376,8 +361,8 @@ contract BaseGaugeV1 is IGauge {
                     _startTimestamp
                 );
                 reward += _reward;
-                _writeRewardPerTokenCheckpoint(token, reward, _endTime);
-                _startTimestamp = _endTime;
+                _writeRewardPerTokenCheckpoint(token, reward, endTime);
+                _startTimestamp = endTime;
             }
         }
 
@@ -458,29 +443,24 @@ contract BaseGaugeV1 is IGauge {
         return (reward, _startTimestamp);
     }
 
-    // earned is an estimation, it won't be exact till the supply > rewardPerToken calculations have run
-    function earned(address token, address account)
-        public
-        view
-        returns (uint256)
-    {
+    function earned(address token, address who) public view returns (uint256) {
         uint256 _startTimestamp = Math.max(
-            lastEarn[token][account],
+            lastEarn[token][who],
             rewardPerTokenCheckpoints[token][0].timestamp
         );
-        if (numCheckpoints[account] == 0) {
+        if (numCheckpoints[who] == 0) {
             return 0;
         }
 
-        uint256 _startIndex = getPriorBalanceIndex(account, _startTimestamp);
-        uint256 _endIndex = numCheckpoints[account] - 1;
+        uint256 _startIndex = getPriorBalanceIndex(who, _startTimestamp);
+        uint256 _endIndex = numCheckpoints[who] - 1;
 
         uint256 reward = 0;
 
         if (_endIndex - _startIndex > 1) {
             for (uint256 i = _startIndex; i < _endIndex - 1; i++) {
-                Checkpoint memory cp0 = checkpoints[account][i];
-                Checkpoint memory cp1 = checkpoints[account][i + 1];
+                Checkpoint memory cp0 = checkpoints[who][i];
+                Checkpoint memory cp1 = checkpoints[who][i + 1];
                 (uint256 _rewardPerTokenStored0, ) = getPriorRewardPerToken(
                     token,
                     cp0.timestamp
@@ -496,7 +476,7 @@ contract BaseGaugeV1 is IGauge {
             }
         }
 
-        Checkpoint memory cp = checkpoints[account][_endIndex];
+        Checkpoint memory cp = checkpoints[who][_endIndex];
         (uint256 _rewardPerTokenStored, ) = getPriorRewardPerToken(
             token,
             cp.timestamp
@@ -506,105 +486,38 @@ contract BaseGaugeV1 is IGauge {
                 (rewardPerToken(token) -
                     Math.max(
                         _rewardPerTokenStored,
-                        userRewardPerTokenStored[token][account]
+                        userRewardPerTokenStored[token][who]
                     ))) /
             PRECISION;
 
         return reward;
     }
 
-    function depositAll(uint256 tokenId) external {
-        deposit(IERC20(stake).balanceOf(msg.sender), tokenId);
-    }
-
-    function deposit(uint256 amount, uint256 tokenId) public lock {
+    // This is an external function, but internal notation is used since it can only be called "internally" from BaseV1Gauges
+    function _deposit(uint256 amount, address who) external override {
         registry.ensureNotPaused();
-        require(amount > 0, "amount = 0");
 
-        _safeTransferFrom(stake, msg.sender, address(this), amount);
+        require(msg.sender == registry.gaugeVoter(), "not voter");
         totalSupply += amount;
-        balanceOf[msg.sender] += amount;
+        balanceOf[who] += amount;
 
-        if (tokenId > 0) {
-            require(
-                INFTLocker(registry.locker()).ownerOf(tokenId) == msg.sender,
-                "bad owner"
-            );
-            if (tokenIds[msg.sender] == 0) {
-                tokenIds[msg.sender] = tokenId;
-                IGaugeVoter(registry.gaugeVoter()).attachTokenToGauge(
-                    tokenId,
-                    msg.sender
-                );
-            }
-            require(tokenIds[msg.sender] == tokenId, "bad tokenId");
-        } else {
-            tokenId = tokenIds[msg.sender];
-        }
-
-        uint256 _derivedBalance = derivedBalances[msg.sender];
-        derivedSupply -= _derivedBalance;
-        _derivedBalance = derivedBalance(msg.sender);
-        derivedBalances[msg.sender] = _derivedBalance;
-        derivedSupply += _derivedBalance;
-
-        _writeCheckpoint(msg.sender, _derivedBalance);
+        _writeCheckpoint(who, balanceOf[who]);
         _writeSupplyCheckpoint();
 
-        IGaugeVoter(registry.gaugeVoter()).emitDeposit(
-            tokenId,
-            msg.sender,
-            amount
-        );
-        emit Deposit(msg.sender, tokenId, amount);
+        emit Deposit(msg.sender, who, amount);
     }
 
-    function withdrawAll() external {
-        withdraw(balanceOf[msg.sender]);
-    }
+    function _withdraw(uint256 amount, address who) external override {
+        registry.ensureNotPaused();
 
-    function withdraw(uint256 amount) public {
-        uint256 tokenId = 0;
-        if (amount == balanceOf[msg.sender]) {
-            tokenId = tokenIds[msg.sender];
-        }
-        withdrawToken(amount, tokenId);
-    }
-
-    function withdrawToken(uint256 amount, uint256 tokenId)
-        public
-        lock
-    {
+        require(msg.sender == registry.gaugeVoter(), "not voter");
         totalSupply -= amount;
-        balanceOf[msg.sender] -= amount;
-        _safeTransfer(stake, msg.sender, amount);
+        balanceOf[who] -= amount;
 
-        if (tokenId > 0) {
-            require(tokenId == tokenIds[msg.sender], "bad tokenId");
-            tokenIds[msg.sender] = 0;
-            IGaugeVoter(registry.gaugeVoter()).detachTokenFromGauge(
-                tokenId,
-                msg.sender
-            );
-        } else {
-            tokenId = tokenIds[msg.sender];
-        }
-
-        uint256 _derivedBalance = derivedBalances[msg.sender];
-        derivedSupply -= _derivedBalance;
-        _derivedBalance = derivedBalance(msg.sender);
-        derivedBalances[msg.sender] = _derivedBalance;
-        derivedSupply += _derivedBalance;
-
-        _writeCheckpoint(msg.sender, derivedBalances[msg.sender]);
+        _writeCheckpoint(who, balanceOf[who]);
         _writeSupplyCheckpoint();
 
-        IGaugeVoter(registry.gaugeVoter()).emitWithdraw(
-            tokenId,
-            msg.sender,
-            amount
-        );
-        emit Withdraw(msg.sender, tokenId, amount);
+        emit Withdraw(msg.sender, who, amount);
     }
 
     function left(address token) external view override returns (uint256) {
@@ -613,12 +526,12 @@ contract BaseGaugeV1 is IGauge {
         return _remaining * rewardRate[token];
     }
 
+    // used to notify a gauge/bribe of a given reward, this can create griefing attacks by extending rewards
     function notifyRewardAmount(address token, uint256 amount)
         external
         override
-        lock
+        nonReentrant
     {
-        require(token != stake, "token = stake");
         require(amount > 0, "amount = 0");
         if (rewardRate[token] == 0)
             _writeRewardPerTokenCheckpoint(token, 0, block.timestamp);
@@ -633,11 +546,11 @@ contract BaseGaugeV1 is IGauge {
         } else {
             uint256 _remaining = periodFinish[token] - block.timestamp;
             uint256 _left = _remaining * rewardRate[token];
-            require(amount > _left, "amount > left");
+            require(amount > _left, "amount < left");
             _safeTransferFrom(token, msg.sender, address(this), amount);
             rewardRate[token] = (amount + _left) / DURATION;
         }
-        require(rewardRate[token] > 0, "rewardrate = 0");
+        require(rewardRate[token] > 0, "rewardRate = 0");
         uint256 balance = IERC20(token).balanceOf(address(this));
         require(
             rewardRate[token] <= balance / DURATION,
@@ -657,7 +570,7 @@ contract BaseGaugeV1 is IGauge {
         address to,
         uint256 value
     ) internal {
-        require(token.code.length > 0, "invalid code length");
+        require(token.code.length > 0, "invalid token code");
         (bool success, bytes memory data) = token.call(
             abi.encodeWithSelector(IERC20.transfer.selector, to, value)
         );
@@ -673,7 +586,7 @@ contract BaseGaugeV1 is IGauge {
         address to,
         uint256 value
     ) internal {
-        require(token.code.length > 0, "invalid code length");
+        require(token.code.length > 0, "invalid token code");
         (bool success, bytes memory data) = token.call(
             abi.encodeWithSelector(
                 IERC20.transferFrom.selector,
@@ -685,21 +598,6 @@ contract BaseGaugeV1 is IGauge {
         require(
             success && (data.length == 0 || abi.decode(data, (bool))),
             "transferFrom failed"
-        );
-    }
-
-    function _safeApprove(
-        address token,
-        address spender,
-        uint256 value
-    ) internal {
-        require(token.code.length > 0, "invalid code length");
-        (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(IERC20.approve.selector, spender, value)
-        );
-        require(
-            success && (data.length == 0 || abi.decode(data, (bool))),
-            "approve failed"
         );
     }
 }
