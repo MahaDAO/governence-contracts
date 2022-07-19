@@ -1,6 +1,7 @@
 import hre, { ethers, network } from "hardhat";
 import verifyContract from "./verifyContract";
 import { saveABI } from "./utils";
+import { DEPLOYED_REGISTRY } from "./config";
 
 async function main() {
   console.log(`Deploying to ${network.name}...`);
@@ -8,15 +9,14 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}.`);
 
-  const registry = "0x270Cb299Bd822A856c0599235b3ABdd1B42afe85";
   const mahaxCF = await ethers.getContractFactory(`MAHAXStaker`);
 
   console.log(`Deploying MAHAXStaker implementation...`);
-  const staker = await mahaxCF.deploy(registry);
+  const staker = await mahaxCF.deploy(DEPLOYED_REGISTRY);
   console.log(
     `Deployed MAHAXStaker at ${staker.address}, ${staker.deployTransaction.hash}\n`
   );
-  await verifyContract(hre, staker.address, [registry]);
+  await verifyContract(hre, staker.address, [DEPLOYED_REGISTRY]);
 
   saveABI("MAHAXStaker", "MAHAXStaker", staker.address);
   console.log(`Deployment on ${network.name} complete!`);

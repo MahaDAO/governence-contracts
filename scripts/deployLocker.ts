@@ -1,6 +1,7 @@
 import hre, { ethers, network } from "hardhat";
 import verifyContract from "./verifyContract";
 import { saveABI } from "./utils";
+import { DEPLOYED_REGISTRY } from "./config";
 
 async function main() {
   console.log(`Deploying to ${network.name}...`);
@@ -8,7 +9,6 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}.`);
 
-  const registry = "0x270Cb299Bd822A856c0599235b3ABdd1B42afe85";
   const _royaltyRcv = "0x6bfc9DB28f0A6d11a8d9d64c86026DDD2fad293B";
   const _royaltyFeeNumerator = "1000";
 
@@ -16,7 +16,7 @@ async function main() {
 
   console.log(`Deploying MAHAX implementation...`);
   const mahax = await mahaxCF.deploy(
-    registry,
+    DEPLOYED_REGISTRY,
     _royaltyRcv,
     _royaltyFeeNumerator
   );
@@ -24,7 +24,7 @@ async function main() {
     `Deployed MAHAXLocker at ${mahax.address}, ${mahax.deployTransaction.hash}`
   );
   await verifyContract(hre, mahax.address, [
-    registry,
+    DEPLOYED_REGISTRY,
     _royaltyRcv,
     _royaltyFeeNumerator,
   ]);
