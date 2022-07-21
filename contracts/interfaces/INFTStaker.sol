@@ -6,6 +6,8 @@ import {IRegistry} from "./IRegistry.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
 interface INFTStaker is IVotes {
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
     function name() external view returns (string memory);
 
     function symbol() external view returns (string memory);
@@ -23,6 +25,8 @@ interface INFTStaker is IVotes {
     function isStaked(uint256 _tokenId) external view returns (bool);
 
     function _stakeFromLock(uint256 _tokenId) external;
+
+    function _updateFromLock(uint256 _tokenId) external;
 
     function updateStake(uint256 _tokenId) external;
 

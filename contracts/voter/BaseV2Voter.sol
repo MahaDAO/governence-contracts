@@ -53,15 +53,9 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         _;
     }
 
-    constructor(
-        address _registry,
-        address _emissionController,
-        address _governance
-    ) {
+    constructor(address _registry, address _emissionController) {
         registry = IRegistry(_registry);
         emissionController = IEmissionController(_emissionController);
-
-        _transferOwnership(_governance);
     }
 
     function reset() external override {
@@ -73,46 +67,46 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         _reset(who);
     }
 
-    function _reset(address _tokenId) internal {
-        address[] storage _poolVote = poolVote[_tokenId];
+    function _reset(address _who) internal {
+        address[] storage _poolVote = poolVote[_who];
         uint256 _poolVoteCnt = _poolVote.length;
         int256 _totalWeight = 0;
 
         for (uint256 i = 0; i < _poolVoteCnt; i++) {
             address _pool = _poolVote[i];
-            int256 _votes = votes[_tokenId][_pool];
+            int256 _votes = votes[_who][_pool];
 
             if (_votes != 0) {
                 _updateFor(gauges[_pool]);
                 weights[_pool] -= _votes;
-                votes[_tokenId][_pool] -= _votes;
+                votes[_who][_pool] -= _votes;
                 if (_votes > 0) {
                     IBribeV2(bribes[gauges[_pool]])._withdraw(
                         uint256(_votes),
-                        _tokenId
+                        _who
                     );
                     _totalWeight += _votes;
                 } else {
                     _totalWeight -= _votes;
                 }
-                emit Abstained(_tokenId, _votes);
+                emit Abstained(_who, _votes);
             }
         }
         totalWeight -= uint256(_totalWeight);
-        usedWeights[_tokenId] = 0;
-        delete poolVote[_tokenId];
+        usedWeights[_who] = 0;
+        delete poolVote[_who];
     }
 
-    function poke(address _tokenId) external {
-        address[] memory _poolVote = poolVote[_tokenId];
+    function poke(address _who) external {
+        address[] memory _poolVote = poolVote[_who];
         uint256 _poolCnt = _poolVote.length;
         int256[] memory _weights = new int256[](_poolCnt);
 
         for (uint256 i = 0; i < _poolCnt; i++) {
-            _weights[i] = votes[_tokenId][_poolVote[i]];
+            _weights[i] = votes[_who][_poolVote[i]];
         }
 
-        _vote(_tokenId, _poolVote, _weights);
+        _vote(_who, _poolVote, _weights);
     }
 
     function _vote(
@@ -176,6 +170,13 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     function toggleWhitelist(address what) external onlyOwner {
         whitelist[what] = !whitelist[what];
         emit Whitelisted(msg.sender, what, whitelist[what]);
+    }
+
+    function setEmissionController(address _emissionController)
+        external
+        onlyOwner
+    {
+        emissionController = IEmissionController(_emissionController);
     }
 
     function registerGauge(
@@ -270,7 +271,7 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
             supplyIndex[_gauge] = _index; // update _gauge current position to global position
             uint256 _delta = _index - _supplyIndex; // see if there is any difference that need to be accrued
             if (_delta > 0) {
-                uint256 _share = (uint256(_supplied) * _delta) / 1e18; // add accrued difference for each supplied token
+                uint256 _share = (uint256(_supplied) * _delta) / 1e18; // add accrued difference for each address
                 claimable[_gauge] += _share;
             }
         } else {

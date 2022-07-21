@@ -12,7 +12,8 @@ import {IGaugeV2} from "../interfaces/IGaugeV2.sol";
 import {INFTStaker} from "../interfaces/INFTStaker.sol";
 
 // Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
-contract BaseGaugeV2 is IGaugeV2 {
+// This guage is for Uni v3 LP tokens
+contract BaseGaugeV2UniV3 is IGaugeV2 {
     IRegistry public immutable override registry;
     address public immutable stake; // the LP token that needs to be staked for rewards
 
