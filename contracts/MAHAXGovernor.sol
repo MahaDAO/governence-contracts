@@ -47,7 +47,7 @@ contract MAHAXGovernor is
         uint256 blockNumber,
         bytes memory /*params*/
     ) internal view virtual override returns (uint256) {
-        return IVotes(registry.gaugeVoter()).getPastVotes(account, blockNumber);
+        return IVotes(registry.staker()).getPastVotes(account, blockNumber);
     }
 
     function votingDelay()
