@@ -361,15 +361,14 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
                 (uint256 oldValue, uint256 newValue) = _delegateCheckpoints[
                     from
                 ].push(_subtract, amount);
-                emit Transfer(from, to, amount);
                 emit DelegateVotesChanged(from, oldValue, newValue);
             }
             if (to != address(0)) {
                 (uint256 oldValue, uint256 newValue) = _delegateCheckpoints[to]
                     .push(_add, amount);
-                emit Transfer(to, from, amount);
                 emit DelegateVotesChanged(to, oldValue, newValue);
             }
+            emit Transfer(from, to, amount);
         }
     }
 
