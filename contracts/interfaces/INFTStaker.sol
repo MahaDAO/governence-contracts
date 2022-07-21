@@ -18,6 +18,8 @@ interface INFTStaker is IVotes {
 
     function balanceOf(address account) external view returns (uint256);
 
+    function getStakedBalance(address who) external view returns (uint256);
+
     function registry() external view returns (IRegistry);
 
     function stake(uint256 _tokenId) external;
@@ -25,8 +27,6 @@ interface INFTStaker is IVotes {
     function isStaked(uint256 _tokenId) external view returns (bool);
 
     function _stakeFromLock(uint256 _tokenId) external;
-
-    function _updateFromLock(uint256 _tokenId) external;
 
     function updateStake(uint256 _tokenId) external;
 

@@ -82,28 +82,31 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
 
     function _stakeFromLock(uint256 _tokenId) external override {
         require(msg.sender == registry.locker(), "not locker");
-        _stake(_tokenId);
-    }
+        if (stakedBalancesNFT[_tokenId] == 0) _stake(_tokenId);
+        else {
+            INFTLocker locker = INFTLocker(registry.locker());
+            address _owner = locker.ownerOf(_tokenId);
 
-    function _updateFromLock(uint256 _tokenId) external override {
-        require(msg.sender == registry.locker(), "not locker");
+            uint256 _oldWeight = stakedBalancesNFT[_tokenId];
+            uint256 _newWeight = locker.balanceOfNFT(_tokenId);
 
-        INFTLocker locker = INFTLocker(registry.locker());
-        address _owner = locker.ownerOf(_tokenId);
+            stakedBalancesNFT[_tokenId] = _newWeight;
+            stakedBalances[_owner] =
+                (stakedBalances[_owner] + _newWeight) -
+                _oldWeight;
+            totalWeight = (totalWeight + _newWeight) - _oldWeight;
 
-        uint256 _oldWeight = stakedBalancesNFT[_tokenId];
-        uint256 _newWeight = locker.balanceOfNFT(_tokenId);
+            _transferVotingUnits(_owner, address(0), _oldWeight);
+            _transferVotingUnits(address(0), _owner, _newWeight);
 
-        stakedBalancesNFT[_tokenId] = _newWeight;
-        stakedBalances[_owner] =
-            (stakedBalances[_owner] + _newWeight) -
-            _oldWeight;
-        totalWeight = (totalWeight + _newWeight) - _oldWeight;
-
-        _transferVotingUnits(_owner, address(0), _oldWeight);
-        _transferVotingUnits(address(0), _owner, _newWeight);
-
-        emit RestakeNFT(msg.sender, _owner, _tokenId, _oldWeight, _newWeight);
+            emit RestakeNFT(
+                msg.sender,
+                _owner,
+                _tokenId,
+                _oldWeight,
+                _newWeight
+            );
+        }
     }
 
     function _stake(uint256 _tokenId) internal {
@@ -186,7 +189,7 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
         return stakedBalances[who];
     }
 
-    function balanceOf(address who)
+    function getStakedBalance(address who)
         external
         view
         virtual
@@ -194,6 +197,16 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
         returns (uint256)
     {
         return stakedBalances[who];
+    }
+
+    function balanceOf(address who)
+        external
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        return _delegateCheckpoints[who].latest();
     }
 
     function totalSupply() external view virtual override returns (uint256) {
@@ -339,12 +352,9 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
         address to,
         uint256 amount
     ) internal virtual {
-        if (from == address(0)) {
-            _totalCheckpoints.push(_add, amount);
-        }
-        if (to == address(0)) {
-            _totalCheckpoints.push(_subtract, amount);
-        }
+        if (from == address(0)) _totalCheckpoints.push(_add, amount);
+        if (to == address(0)) _totalCheckpoints.push(_subtract, amount);
+
         _moveDelegateVotes(delegates(from), delegates(to), amount);
     }
 

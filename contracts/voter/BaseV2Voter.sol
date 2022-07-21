@@ -119,7 +119,7 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         uint256 _poolCnt = _poolVote.length;
 
         INFTStaker staker = INFTStaker(registry.staker());
-        int256 _weight = int256(staker.getVotes(_who));
+        int256 _weight = int256(staker.getStakedBalance(_who));
         int256 _totalVoteWeight = 0;
         int256 _totalWeight = 0;
         int256 _usedWeight = 0;

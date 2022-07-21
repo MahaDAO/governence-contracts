@@ -755,7 +755,11 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         emit Supply(supplyBefore, supplyBefore + _value);
     }
 
-    function merge(uint256 _from, uint256 _to) external {
+    function merge(
+        uint256 _from,
+        uint256 _to,
+        bool _updateNFTstake
+    ) external {
         require(!_isStaked(_from), "staked");
 
         require(_from != _to, "same nft");
@@ -778,8 +782,8 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             end,
             _locked1,
             DepositType.MERGE_TYPE,
-            false,
-            false
+            true,
+            _updateNFTstake
         );
     }
 
@@ -797,10 +801,11 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     ///      cannot extend their locktime and deposit for a brand new user
     /// @param _tokenId lock NFT
     /// @param _value Amount to add to user's lock
-    function depositFor(uint256 _tokenId, uint256 _value)
-        external
-        nonReentrant
-    {
+    function depositFor(
+        uint256 _tokenId,
+        uint256 _value,
+        bool _updateNFTstake
+    ) external nonReentrant {
         LockedBalance memory _locked = locked[_tokenId];
 
         require(_value > 0, "value = 0"); // dev: need non-zero value
@@ -813,7 +818,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             _locked,
             DepositType.DEPOSIT_FOR_TYPE,
             true,
-            false
+            _updateNFTstake
         );
     }
 
@@ -870,9 +875,10 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     function createLockFor(
         uint256 _value,
         uint256 _lockDuration,
-        address _to
+        address _to,
+        bool _stakeNFT
     ) external nonReentrant returns (uint256) {
-        return _createLock(_value, _lockDuration, _to, true, false);
+        return _createLock(_value, _lockDuration, _to, true, _stakeNFT);
     }
 
     function migrateTokenFor(
