@@ -6,6 +6,16 @@ import {IRegistry} from "./IRegistry.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
 interface INFTStaker is IVotes {
+    function name() external view returns (string memory);
+
+    function symbol() external view returns (string memory);
+
+    function decimals() external view returns (uint8);
+
+    function totalSupply() external view returns (uint256);
+
+    function balanceOf(address account) external view returns (uint256);
+
     function registry() external view returns (IRegistry);
 
     function stake(uint256 _tokenId) external;
@@ -17,8 +27,6 @@ interface INFTStaker is IVotes {
     function updateStake(uint256 _tokenId) external;
 
     function unstake(uint256 _tokenId) external;
-
-    function getStakedBalance(address who) external view returns (uint256);
 
     event StakeNFT(
         address indexed who,

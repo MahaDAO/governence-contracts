@@ -166,7 +166,7 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
         return stakedBalances[who];
     }
 
-    function getStakedBalance(address who)
+    function balanceOf(address who)
         external
         view
         virtual
@@ -174,6 +174,22 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, Votes, INFTStaker {
         returns (uint256)
     {
         return stakedBalances[who];
+    }
+
+    function name() external view virtual override returns (string memory) {
+        return "MAHAX Staked NFT";
+    }
+
+    function symbol() external view virtual override returns (string memory) {
+        return "MAHAX";
+    }
+
+    function decimals() external view virtual override returns (uint8) {
+        return 18;
+    }
+
+    function totalSupply() external view virtual override returns (uint256) {
+        return totalWeight;
     }
 
     function isStaked(uint256 tokenId)
