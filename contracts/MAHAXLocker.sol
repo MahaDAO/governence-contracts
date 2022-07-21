@@ -759,7 +759,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         uint256 _from,
         uint256 _to,
         bool _updateNFTstake
-    ) external {
+    ) external override {
         require(!_isStaked(_from), "staked");
 
         require(_from != _to, "same nft");
@@ -787,12 +787,12 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         );
     }
 
-    function blockNumber() external view returns (uint256) {
+    function blockNumber() external view override returns (uint256) {
         return block.number;
     }
 
     /// @notice Record global data to checkpoint
-    function checkpoint() external {
+    function checkpoint() external override {
         _checkpoint(0, LockedBalance(0, 0, 0), LockedBalance(0, 0, 0));
     }
 
@@ -805,7 +805,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         uint256 _tokenId,
         uint256 _value,
         bool _updateNFTstake
-    ) external nonReentrant {
+    ) external override nonReentrant {
         LockedBalance memory _locked = locked[_tokenId];
 
         require(_value > 0, "value = 0"); // dev: need non-zero value
@@ -877,7 +877,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         uint256 _lockDuration,
         address _to,
         bool _stakeNFT
-    ) external nonReentrant returns (uint256) {
+    ) external override nonReentrant returns (uint256) {
         return _createLock(_value, _lockDuration, _to, true, _stakeNFT);
     }
 
@@ -886,7 +886,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         uint256 _lockDuration,
         address _to,
         bool _stakeNFT
-    ) external onlyMigrator returns (uint256) {
+    ) external override onlyMigrator returns (uint256) {
         return _createLock(_value, _lockDuration, _to, false, _stakeNFT);
     }
 
@@ -898,7 +898,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         uint256 _value,
         uint256 _lockDuration,
         bool _stakeNFT
-    ) external nonReentrant returns (uint256) {
+    ) external override nonReentrant returns (uint256) {
         return _createLock(_value, _lockDuration, msg.sender, true, _stakeNFT);
     }
 
