@@ -7,14 +7,17 @@ import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 import {INFTLocker} from "./interfaces/INFTLocker.sol";
+import {ILockMigrator} from "./interfaces/ILockMigrator.sol";
 
-contract LockMigrator is Ownable {
+contract LockMigrator is ILockMigrator, Ownable {
     bytes32 public merkleRoot;
     uint256 public migrationReward;
 
     IERC20 public maha;
     INFTLocker public mahaxLocker;
 
+    // Old token id is migrated or not?
+    // old token id => bool.
     mapping (uint256 => bool) public isTokenIdMigrated;
 
     constructor(
@@ -30,20 +33,21 @@ contract LockMigrator is Ownable {
     function _sendMigrationReward(address who) internal {
         if (migrationReward > 0) {
             maha.transfer(who, migrationReward);
+            emit TransferMigrationReward(who, migrationReward);
         }
     }
 
-    function setMigrationReward(uint256 reward) external onlyOwner {
+    function setMigrationReward(uint256 reward) external override onlyOwner {
+        emit MigrationRewardChanged(migrationReward, reward);
         migrationReward = reward;
     }
 
     function migrateLock(
         uint256 _value,
         uint256 _lockDuration,
-        address _owner,
         uint256 _tokenId,
         bytes32[] memory proof
-    ) external returns (uint256) {
+    ) external override returns (uint256) {
         require(
             _tokenId != 0,
             "Migrator: invalid token id"
@@ -56,7 +60,7 @@ contract LockMigrator is Ownable {
         bool _isLockvalid = isLockValid(
             _value,
             _lockDuration,
-            _owner,
+            msg.sender,
             _tokenId,
             proof
         );
@@ -65,11 +69,11 @@ contract LockMigrator is Ownable {
             "Migrator: invalid lock"
         );
 
-        uint256 newTokenId = mahaxLocker.migrateTokenFor(_value, _lockDuration, _owner, true);
+        uint256 newTokenId = mahaxLocker.migrateTokenFor(_value, _lockDuration, msg.sender, true);
         require(newTokenId > 0, "Migrator: migration failed");
 
         isTokenIdMigrated[_tokenId] = true;
-        _sendMigrationReward(_owner);
+        _sendMigrationReward(msg.sender);
 
         return newTokenId;
     }
@@ -80,7 +84,7 @@ contract LockMigrator is Ownable {
         address _owner,
         uint256 _tokenId,
         bytes32[] memory proof
-    ) public view returns (bool) {
+    ) public override view returns (bool) {
         bytes32 leaf = keccak256(abi.encode(
             _value,
             _lockDuration,
