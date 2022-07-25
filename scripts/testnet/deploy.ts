@@ -19,7 +19,7 @@ async function main() {
   console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
 
   // Get all smart contract factories.
-  const mahaxCF = await ethers.getContractFactory(`MAHAX`);
+  const mahaxCF = await ethers.getContractFactory(`MAHAXLocker`);
   const registryCF = await ethers.getContractFactory(`Registry`);
   const mockTokenCF = await ethers.getContractFactory(`MockERC20`);
   const emissionControllerCF = await ethers.getContractFactory(
@@ -120,7 +120,6 @@ async function main() {
   const voterCI = await voterCF.deploy(
     registryCI.address,
     emissionControllerCI.address,
-    deployer.address,
     { gasPrice }
   );
   await voterCI.deployed();
