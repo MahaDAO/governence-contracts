@@ -16,6 +16,8 @@ contract LockMigrator is ILockMigrator, Ownable {
     IERC20 public maha;
     INFTLocker public mahaxLocker;
 
+    uint256 internal constant WEEK = 1 weeks;
+
     // Old token id is migrated or not?
     // old token id => bool.
     mapping (uint256 => bool) public isTokenIdMigrated;
@@ -44,22 +46,26 @@ contract LockMigrator is ILockMigrator, Ownable {
 
     function migrateLock(
         uint256 _value,
-        uint256 _lockDuration,
+        uint256 _endDate,
         uint256 _tokenId,
         bytes32[] memory proof
     ) external override returns (uint256) {
         require(
+            _endDate >= (block.timestamp + 2 * WEEK),
+            "Migrator: end date expired or will expired soon"
+        );
+        require(
             _tokenId != 0,
-            "Migrator: invalid token id"
+            "Migrator: tokenId is 0"
         );
         require(
             !isTokenIdMigrated[_tokenId],
-            "Migrator: already migrated"
+            "Migrator: tokenId already migrated"
         );
 
         bool _isLockvalid = isLockValid(
             _value,
-            _lockDuration,
+            _endDate,
             msg.sender,
             _tokenId,
             proof
@@ -69,6 +75,7 @@ contract LockMigrator is ILockMigrator, Ownable {
             "Migrator: invalid lock"
         );
 
+        uint256 _lockDuration = _endDate - block.timestamp;
         uint256 newTokenId = mahaxLocker.migrateTokenFor(_value, _lockDuration, msg.sender, true);
         require(newTokenId > 0, "Migrator: migration failed");
 
@@ -80,14 +87,14 @@ contract LockMigrator is ILockMigrator, Ownable {
 
     function isLockValid(
         uint256 _value,
-        uint256 _lockDuration,
+        uint256 _endDate,
         address _owner,
         uint256 _tokenId,
         bytes32[] memory proof
     ) public override view returns (bool) {
         bytes32 leaf = keccak256(abi.encode(
             _value,
-            _lockDuration,
+            _endDate,
             _owner,
             _tokenId
         ));
