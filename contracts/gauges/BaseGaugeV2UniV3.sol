@@ -2,19 +2,21 @@
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
-import "@uniswap/v3-staker/contracts/interfaces/IUniswapV3Staker.sol";
-import "@uniswap/v3-staker/contracts/libraries/IncentiveId.sol";
-import "@uniswap/v3-staker/contracts/libraries/NFTPositionInfo.sol";
-import "@uniswap/v3-staker/contracts/libraries/TransferHelperExtended.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/interfaces/IERC20Minimal.sol";
-import "@uniswap/v3-periphery/contracts/base/Multicall.sol";
 
 import {RewardMath} from "../utils/RewardMath.sol";
 import {INonfungiblePositionManager} from "../interfaces/INonfungiblePositionManager.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
+import "../utils/NFTPositionInfo.sol";
+import "../utils/Multicall.sol";
+import "../utils/TransferHelperExtended.sol";
+import "../interfaces/IUniswapV3Staker.sol";
+import "../utils/IncentiveId.sol";
+import {INFTStaker} from "../interfaces/INFTStaker.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title Uniswap V3 canonical staking interface
 contract BaseGaugeV2UniV3 is IGauge, IUniswapV3Staker, Multicall {
