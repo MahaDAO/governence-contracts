@@ -1,333 +1,492 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+pragma abicoder v2;
 
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import "@uniswap/v3-staker/contracts/interfaces/IUniswapV3Staker.sol";
+import "@uniswap/v3-staker/contracts/libraries/IncentiveId.sol";
+import "@uniswap/v3-staker/contracts/libraries/NFTPositionInfo.sol";
+import "@uniswap/v3-staker/contracts/libraries/TransferHelperExtended.sol";
+import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
+import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+import "@uniswap/v3-core/contracts/interfaces/IERC20Minimal.sol";
+import "@uniswap/v3-periphery/contracts/base/Multicall.sol";
 
+import {RewardMath} from "../utils/RewardMath.sol";
+import {INonfungiblePositionManager} from "../interfaces/INonfungiblePositionManager.sol";
+import {IGauge} from "../interfaces/IGauge.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
-import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
-import {INFTLocker} from "../interfaces/INFTLocker.sol";
-import {IBribe} from "../interfaces/IBribe.sol";
-import {IGaugeV2} from "../interfaces/IGaugeV2.sol";
-import {INFTStaker} from "../interfaces/INFTStaker.sol";
 
-// Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
-// This guage is for Uni v3 LP tokens
-contract BaseGaugeV2UniV3 is IGaugeV2 {
+/// @title Uniswap V3 canonical staking interface
+contract BaseGaugeV2UniV3 is IGauge, IUniswapV3Staker, Multicall {
     IRegistry public immutable override registry;
-    address public immutable stake; // the LP token that needs to be staked for rewards
 
-    uint256 public derivedSupply;
-    mapping(address => uint256) public derivedBalances;
-
-    uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
-    uint256 internal constant PRECISION = 10**18;
-
-    mapping(address => bool) public attached;
-
-    // default snx staking contract implementation
-    mapping(address => uint256) public rewardRate;
-    mapping(address => uint256) public periodFinish;
-    mapping(address => uint256) public lastUpdateTime;
-    mapping(address => uint256) public rewardPerTokenStored;
-
-    mapping(address => mapping(address => uint256)) public lastEarn;
-    mapping(address => mapping(address => uint256))
-        public userRewardPerTokenStored;
-
-    uint256 public totalSupply;
-    mapping(address => uint256) public balanceOf;
-
-    address[] public rewards;
-    mapping(address => bool) public isReward;
-
-    /// @notice A record of balance checkpoints for each account, by index
-    mapping(address => mapping(uint256 => Checkpoint)) public checkpoints;
-
-    /// @notice The number of checkpoints for each account
-    mapping(address => uint256) public numCheckpoints;
-
-    /// @notice A record of balance checkpoints for each token, by index
-    mapping(uint256 => SupplyCheckpoint) public supplyCheckpoints;
-
-    /// @notice The number of checkpoints
-    uint256 public supplyNumCheckpoints;
-
-    /// @notice A record of balance checkpoints for each token, by index
-    mapping(address => mapping(uint256 => RewardPerTokenCheckpoint))
-        public rewardPerTokenCheckpoints;
-
-    /// @notice The number of checkpoints for each token
-    mapping(address => uint256) public rewardPerTokenNumCheckpoints;
-
-    // simple re-entrancy check
-    uint256 internal _unlocked = 1;
-    modifier lock() {
-        require(_unlocked == 1, "reentrancy");
-        _unlocked = 2;
-        _;
-        _unlocked = 1;
+    /// @notice Represents a staking incentive
+    struct Incentive {
+        uint256 totalRewardUnclaimed;
+        uint160 totalSecondsClaimedX128;
+        uint96 numberOfStakes;
     }
 
-    constructor(address _stake, address _registry) {
-        stake = _stake;
-        registry = IRegistry(_registry);
+    /// @notice Represents the deposit of a liquidity NFT
+    struct Deposit {
+        address owner;
+        uint48 numberOfStakes;
+        int24 tickLower;
+        int24 tickUpper;
     }
 
-    /**
-     * @notice Determine the prior balance for an account as of a block number
-     * @dev Block number must be a finalized block or else this function will revert to prevent misinformation.
-     * @param account The address of the account to check
-     * @param timestamp The timestamp to get the balance at
-     * @return The balance the account had as of the given block
-     */
-    function getPriorBalanceIndex(address account, uint256 timestamp)
+    /// @notice Represents a staked liquidity NFT
+    struct Stake {
+        uint160 secondsPerLiquidityInsideInitialX128;
+        uint96 liquidityNoOverflow;
+        uint128 liquidityIfOverflow;
+    }
+
+    /// @inheritdoc IUniswapV3Staker
+    IUniswapV3Factory public immutable override factory;
+    /// @inheritdoc IUniswapV3Staker
+    INonfungiblePositionManager
+        public immutable
+        override nonfungiblePositionManager;
+
+    /// @inheritdoc IUniswapV3Staker
+    uint256 public immutable override maxIncentiveStartLeadTime;
+    /// @inheritdoc IUniswapV3Staker
+    uint256 public immutable override maxIncentiveDuration;
+
+    /// @dev bytes32 refers to the return value of IncentiveId.compute
+    mapping(bytes32 => Incentive) public override incentives;
+
+    /// @dev deposits[tokenId] => Deposit
+    mapping(uint256 => Deposit) public override deposits;
+
+    /// @dev stakes[tokenId][incentiveHash] => Stake
+    mapping(uint256 => mapping(bytes32 => Stake)) private _stakes;
+
+    /// @inheritdoc IUniswapV3Staker
+    function stakes(uint256 tokenId, bytes32 incentiveId)
         public
         view
-        returns (uint256)
+        override
+        returns (
+            uint160 secondsPerLiquidityInsideInitialX128,
+            uint128 liquidity
+        )
     {
-        uint256 nCheckpoints = numCheckpoints[account];
-        if (nCheckpoints == 0) {
-            return 0;
+        Stake storage stake = _stakes[tokenId][incentiveId];
+        secondsPerLiquidityInsideInitialX128 = stake
+            .secondsPerLiquidityInsideInitialX128;
+        liquidity = stake.liquidityNoOverflow;
+        if (liquidity == type(uint96).max) {
+            liquidity = stake.liquidityIfOverflow;
         }
-
-        // First check most recent balance
-        if (checkpoints[account][nCheckpoints - 1].timestamp <= timestamp) {
-            return (nCheckpoints - 1);
-        }
-
-        // Next check implicit zero balance
-        if (checkpoints[account][0].timestamp > timestamp) {
-            return 0;
-        }
-
-        uint256 lower = 0;
-        uint256 upper = nCheckpoints - 1;
-        while (upper > lower) {
-            uint256 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
-            Checkpoint memory cp = checkpoints[account][center];
-            if (cp.timestamp == timestamp) {
-                return center;
-            } else if (cp.timestamp < timestamp) {
-                lower = center;
-            } else {
-                upper = center - 1;
-            }
-        }
-        return lower;
     }
 
-    function getPriorSupplyIndex(uint256 timestamp)
+    /// @dev rewards[rewardToken][owner] => uint256
+    /// @inheritdoc IUniswapV3Staker
+    mapping(IERC20Minimal => mapping(address => uint256))
         public
-        view
-        returns (uint256)
-    {
-        uint256 nCheckpoints = supplyNumCheckpoints;
-        if (nCheckpoints == 0) {
-            return 0;
-        }
+        override rewards;
 
-        // First check most recent balance
-        if (supplyCheckpoints[nCheckpoints - 1].timestamp <= timestamp) {
-            return (nCheckpoints - 1);
-        }
-
-        // Next check implicit zero balance
-        if (supplyCheckpoints[0].timestamp > timestamp) {
-            return 0;
-        }
-
-        uint256 lower = 0;
-        uint256 upper = nCheckpoints - 1;
-        while (upper > lower) {
-            uint256 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
-            SupplyCheckpoint memory cp = supplyCheckpoints[center];
-            if (cp.timestamp == timestamp) {
-                return center;
-            } else if (cp.timestamp < timestamp) {
-                lower = center;
-            } else {
-                upper = center - 1;
-            }
-        }
-        return lower;
+    /// @param _factory the Uniswap V3 factory
+    /// @param _nonfungiblePositionManager the NFT position manager contract address
+    /// @param _maxIncentiveStartLeadTime the max duration of an incentive in seconds
+    /// @param _maxIncentiveDuration the max amount of seconds into the future the incentive startTime can be set
+    constructor(
+        IRegistry _registry,
+        IUniswapV3Factory _factory,
+        INonfungiblePositionManager _nonfungiblePositionManager,
+        uint256 _maxIncentiveStartLeadTime,
+        uint256 _maxIncentiveDuration
+    ) {
+        factory = _factory;
+        registry = _registry;
+        nonfungiblePositionManager = _nonfungiblePositionManager;
+        maxIncentiveStartLeadTime = _maxIncentiveStartLeadTime;
+        maxIncentiveDuration = _maxIncentiveDuration;
     }
 
-    function getPriorRewardPerToken(address token, uint256 timestamp)
-        public
-        view
-        returns (uint256, uint256)
-    {
-        uint256 nCheckpoints = rewardPerTokenNumCheckpoints[token];
-        if (nCheckpoints == 0) {
-            return (0, 0);
-        }
-
-        // First check most recent balance
-        if (
-            rewardPerTokenCheckpoints[token][nCheckpoints - 1].timestamp <=
-            timestamp
-        ) {
-            return (
-                rewardPerTokenCheckpoints[token][nCheckpoints - 1]
-                    .rewardPerToken,
-                rewardPerTokenCheckpoints[token][nCheckpoints - 1].timestamp
-            );
-        }
-
-        // Next check implicit zero balance
-        if (rewardPerTokenCheckpoints[token][0].timestamp > timestamp) {
-            return (0, 0);
-        }
-
-        uint256 lower = 0;
-        uint256 upper = nCheckpoints - 1;
-        while (upper > lower) {
-            uint256 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
-            RewardPerTokenCheckpoint memory cp = rewardPerTokenCheckpoints[
-                token
-            ][center];
-            if (cp.timestamp == timestamp) {
-                return (cp.rewardPerToken, cp.timestamp);
-            } else if (cp.timestamp < timestamp) {
-                lower = center;
-            } else {
-                upper = center - 1;
-            }
-        }
-        return (
-            rewardPerTokenCheckpoints[token][lower].rewardPerToken,
-            rewardPerTokenCheckpoints[token][lower].timestamp
-        );
-    }
-
-    function _writeCheckpoint(address account, uint256 balance) internal {
-        uint256 _timestamp = block.timestamp;
-        uint256 _nCheckPoints = numCheckpoints[account];
-
-        if (
-            _nCheckPoints > 0 &&
-            checkpoints[account][_nCheckPoints - 1].timestamp == _timestamp
-        ) {
-            checkpoints[account][_nCheckPoints - 1].balanceOf = balance;
-        } else {
-            checkpoints[account][_nCheckPoints] = Checkpoint(
-                _timestamp,
-                balance
-            );
-            numCheckpoints[account] = _nCheckPoints + 1;
-        }
-    }
-
-    function _writeRewardPerTokenCheckpoint(
-        address token,
-        uint256 reward,
-        uint256 timestamp
-    ) internal {
-        uint256 _nCheckPoints = rewardPerTokenNumCheckpoints[token];
-
-        if (
-            _nCheckPoints > 0 &&
-            rewardPerTokenCheckpoints[token][_nCheckPoints - 1].timestamp ==
-            timestamp
-        ) {
-            rewardPerTokenCheckpoints[token][_nCheckPoints - 1]
-                .rewardPerToken = reward;
-        } else {
-            rewardPerTokenCheckpoints[token][
-                _nCheckPoints
-            ] = RewardPerTokenCheckpoint(timestamp, reward);
-            rewardPerTokenNumCheckpoints[token] = _nCheckPoints + 1;
-        }
-    }
-
-    function _writeSupplyCheckpoint() internal {
-        uint256 _nCheckPoints = supplyNumCheckpoints;
-        uint256 _timestamp = block.timestamp;
-
-        if (
-            _nCheckPoints > 0 &&
-            supplyCheckpoints[_nCheckPoints - 1].timestamp == _timestamp
-        ) {
-            supplyCheckpoints[_nCheckPoints - 1].supply = derivedSupply;
-        } else {
-            supplyCheckpoints[_nCheckPoints] = SupplyCheckpoint(
-                _timestamp,
-                derivedSupply
-            );
-            supplyNumCheckpoints = _nCheckPoints + 1;
-        }
-    }
-
-    function rewardsListLength() external view returns (uint256) {
-        return rewards.length;
-    }
-
-    // returns the last time the reward was modified or periodFinish if the reward has ended
-    function lastTimeRewardApplicable(address token)
-        public
-        view
-        returns (uint256)
-    {
-        return Math.min(block.timestamp, periodFinish[token]);
-    }
-
-    function getReward(address account, address[] memory tokens)
+    /// @inheritdoc IUniswapV3Staker
+    function createIncentive(IncentiveKey memory key, uint256 reward)
         external
         override
-        lock
     {
-        registry.ensureNotPaused();
         require(
-            msg.sender == account || msg.sender == registry.gaugeVoter(),
-            "sender not account or voter"
+            reward > 0,
+            "UniswapV3Staker::createIncentive: reward must be positive"
+        );
+        require(
+            block.timestamp <= key.startTime,
+            "UniswapV3Staker::createIncentive: start time must be now or in the future"
+        );
+        require(
+            key.startTime - block.timestamp <= maxIncentiveStartLeadTime,
+            "UniswapV3Staker::createIncentive: start time too far into future"
+        );
+        require(
+            key.startTime < key.endTime,
+            "UniswapV3Staker::createIncentive: start time must be before end time"
+        );
+        require(
+            key.endTime - key.startTime <= maxIncentiveDuration,
+            "UniswapV3Staker::createIncentive: incentive duration is too long"
         );
 
-        _unlocked = 1;
-        IGaugeVoterV2(registry.gaugeVoter()).distribute(address(this));
-        _unlocked = 2;
+        bytes32 incentiveId = IncentiveId.compute(key);
 
-        for (uint256 i = 0; i < tokens.length; i++) {
-            (
-                rewardPerTokenStored[tokens[i]],
-                lastUpdateTime[tokens[i]]
-            ) = _updateRewardPerToken(tokens[i]);
+        incentives[incentiveId].totalRewardUnclaimed += reward;
 
-            uint256 _reward = earned(tokens[i], account);
-            lastEarn[tokens[i]][account] = block.timestamp;
-            userRewardPerTokenStored[tokens[i]][account] = rewardPerTokenStored[
-                tokens[i]
-            ];
-            if (_reward > 0) _safeTransfer(tokens[i], account, _reward);
+        TransferHelperExtended.safeTransferFrom(
+            address(key.rewardToken),
+            msg.sender,
+            address(this),
+            reward
+        );
 
-            emit ClaimRewards(msg.sender, tokens[i], _reward);
-        }
-
-        uint256 _derivedBalance = derivedBalances[account];
-        derivedSupply -= _derivedBalance;
-        _derivedBalance = derivedBalance(account);
-        derivedBalances[account] = _derivedBalance;
-        derivedSupply += _derivedBalance;
-
-        _writeCheckpoint(account, derivedBalances[account]);
-        _writeSupplyCheckpoint();
+        emit IncentiveCreated(
+            key.rewardToken,
+            key.pool,
+            key.startTime,
+            key.endTime,
+            key.refundee,
+            reward
+        );
     }
 
-    function rewardPerToken(address token) public view returns (uint256) {
-        if (derivedSupply == 0) {
-            return rewardPerTokenStored[token];
-        }
-        return
-            rewardPerTokenStored[token] +
-            (((lastTimeRewardApplicable(token) -
-                Math.min(lastUpdateTime[token], periodFinish[token])) *
-                rewardRate[token] *
-                PRECISION) / derivedSupply);
+    /// @inheritdoc IUniswapV3Staker
+    function endIncentive(IncentiveKey memory key)
+        external
+        override
+        returns (uint256 refund)
+    {
+        require(
+            block.timestamp >= key.endTime,
+            "UniswapV3Staker::endIncentive: cannot end incentive before end time"
+        );
+
+        bytes32 incentiveId = IncentiveId.compute(key);
+        Incentive storage incentive = incentives[incentiveId];
+
+        refund = incentive.totalRewardUnclaimed;
+
+        require(
+            refund > 0,
+            "UniswapV3Staker::endIncentive: no refund available"
+        );
+        require(
+            incentive.numberOfStakes == 0,
+            "UniswapV3Staker::endIncentive: cannot end incentive while deposits are staked"
+        );
+
+        // issue the refund
+        incentive.totalRewardUnclaimed = 0;
+        TransferHelperExtended.safeTransfer(
+            address(key.rewardToken),
+            key.refundee,
+            refund
+        );
+
+        // note we never clear totalSecondsClaimedX128
+
+        emit IncentiveEnded(incentiveId, refund);
     }
 
-    function derivedBalance(address account) public view returns (uint256) {
-        uint256 _balance = balanceOf[account];
-        uint256 _derived = (_balance * 20) / 100;
+    /// @notice Upon receiving a Uniswap V3 ERC721, creates the token deposit setting owner to `from`. Also stakes token
+    /// in one or more incentives if properly formatted `data` has a length > 0.
+    /// @inheritdoc IERC721Receiver
+    function onERC721Received(
+        address,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external override returns (bytes4) {
+        require(
+            msg.sender == address(nonfungiblePositionManager),
+            "UniswapV3Staker::onERC721Received: not a univ3 nft"
+        );
+
+        (
+            ,
+            ,
+            ,
+            ,
+            ,
+            int24 tickLower,
+            int24 tickUpper,
+            ,
+            ,
+            ,
+            ,
+
+        ) = nonfungiblePositionManager.positions(tokenId);
+
+        deposits[tokenId] = Deposit({
+            owner: from,
+            numberOfStakes: 0,
+            tickLower: tickLower,
+            tickUpper: tickUpper
+        });
+        emit DepositTransferred(tokenId, address(0), from);
+
+        if (data.length > 0) {
+            if (data.length == 160) {
+                _stakeToken(abi.decode(data, (IncentiveKey)), tokenId);
+            } else {
+                IncentiveKey[] memory keys = abi.decode(data, (IncentiveKey[]));
+                for (uint256 i = 0; i < keys.length; i++) {
+                    _stakeToken(keys[i], tokenId);
+                }
+            }
+        }
+        return this.onERC721Received.selector;
+    }
+
+    /// @inheritdoc IUniswapV3Staker
+    function transferDeposit(uint256 tokenId, address to) external override {
+        require(
+            to != address(0),
+            "UniswapV3Staker::transferDeposit: invalid transfer recipient"
+        );
+        address owner = deposits[tokenId].owner;
+        require(
+            owner == msg.sender,
+            "UniswapV3Staker::transferDeposit: can only be called by deposit owner"
+        );
+        deposits[tokenId].owner = to;
+        emit DepositTransferred(tokenId, owner, to);
+    }
+
+    /// @inheritdoc IUniswapV3Staker
+    function withdrawToken(
+        uint256 tokenId,
+        address to,
+        bytes memory data
+    ) external override {
+        require(
+            to != address(this),
+            "UniswapV3Staker::withdrawToken: cannot withdraw to staker"
+        );
+        Deposit memory deposit = deposits[tokenId];
+        require(
+            deposit.numberOfStakes == 0,
+            "UniswapV3Staker::withdrawToken: cannot withdraw token while staked"
+        );
+        require(
+            deposit.owner == msg.sender,
+            "UniswapV3Staker::withdrawToken: only owner can withdraw token"
+        );
+
+        delete deposits[tokenId];
+        emit DepositTransferred(tokenId, deposit.owner, address(0));
+
+        nonfungiblePositionManager.safeTransferFrom(
+            address(this),
+            to,
+            tokenId,
+            data
+        );
+    }
+
+    /// @inheritdoc IUniswapV3Staker
+    function stakeToken(IncentiveKey memory key, uint256 tokenId)
+        external
+        override
+    {
+        require(
+            deposits[tokenId].owner == msg.sender,
+            "UniswapV3Staker::stakeToken: only owner can stake token"
+        );
+
+        _stakeToken(key, tokenId);
+    }
+
+    /// @inheritdoc IUniswapV3Staker
+    function unstakeToken(IncentiveKey memory key, uint256 tokenId)
+        external
+        override
+    {
+        Deposit memory deposit = deposits[tokenId];
+        // anyone can call unstakeToken if the block time is after the end time of the incentive
+        if (block.timestamp < key.endTime) {
+            require(
+                deposit.owner == msg.sender,
+                "UniswapV3Staker::unstakeToken: only owner can withdraw token before incentive end time"
+            );
+        }
+
+        bytes32 incentiveId = IncentiveId.compute(key);
+
+        (
+            uint160 secondsPerLiquidityInsideInitialX128,
+            uint128 liquidity
+        ) = stakes(tokenId, incentiveId);
+
+        require(
+            liquidity != 0,
+            "UniswapV3Staker::unstakeToken: stake does not exist"
+        );
+
+        Incentive storage incentive = incentives[incentiveId];
+
+        deposits[tokenId].numberOfStakes--;
+        incentive.numberOfStakes--;
+
+        (, uint160 secondsPerLiquidityInsideX128, ) = key
+            .pool
+            .snapshotCumulativesInside(deposit.tickLower, deposit.tickUpper);
+        (uint256 reward, uint160 secondsInsideX128) = RewardMath
+            .computeRewardAmount(
+                incentive.totalRewardUnclaimed,
+                incentive.totalSecondsClaimedX128,
+                key.startTime,
+                key.endTime,
+                liquidity,
+                secondsPerLiquidityInsideInitialX128,
+                secondsPerLiquidityInsideX128,
+                block.timestamp
+            );
+
+        // if this overflows, e.g. after 2^32-1 full liquidity seconds have been claimed,
+        // reward rate will fall drastically so it's safe
+        incentive.totalSecondsClaimedX128 += secondsInsideX128;
+        // reward is never greater than total reward unclaimed
+        incentive.totalRewardUnclaimed -= reward;
+        // this only overflows if a token has a total supply greater than type(uint256).max
+        rewards[key.rewardToken][deposit.owner] += reward;
+
+        Stake storage stake = _stakes[tokenId][incentiveId];
+        delete stake.secondsPerLiquidityInsideInitialX128;
+        delete stake.liquidityNoOverflow;
+        if (liquidity >= type(uint96).max) delete stake.liquidityIfOverflow;
+        emit TokenUnstaked(tokenId, incentiveId);
+    }
+
+    /// @inheritdoc IUniswapV3Staker
+    function claimReward(
+        IERC20Minimal rewardToken,
+        address to,
+        uint256 amountRequested
+    ) external override returns (uint256 reward) {
+        reward = rewards[rewardToken][msg.sender];
+        if (amountRequested != 0 && amountRequested < reward) {
+            reward = amountRequested;
+        }
+
+        rewards[rewardToken][msg.sender] -= reward;
+        TransferHelperExtended.safeTransfer(address(rewardToken), to, reward);
+
+        emit RewardClaimed(to, reward);
+    }
+
+    /// @inheritdoc IUniswapV3Staker
+    function getRewardInfo(IncentiveKey memory key, uint256 tokenId)
+        external
+        view
+        override
+        returns (uint256 reward, uint160 secondsInsideX128)
+    {
+        bytes32 incentiveId = IncentiveId.compute(key);
+
+        (
+            uint160 secondsPerLiquidityInsideInitialX128,
+            uint128 liquidity
+        ) = stakes(tokenId, incentiveId);
+        require(
+            liquidity > 0,
+            "UniswapV3Staker::getRewardInfo: stake does not exist"
+        );
+
+        Deposit memory deposit = deposits[tokenId];
+        Incentive memory incentive = incentives[incentiveId];
+
+        (, uint160 secondsPerLiquidityInsideX128, ) = key
+            .pool
+            .snapshotCumulativesInside(deposit.tickLower, deposit.tickUpper);
+
+        (reward, secondsInsideX128) = RewardMath.computeRewardAmount(
+            incentive.totalRewardUnclaimed,
+            incentive.totalSecondsClaimedX128,
+            key.startTime,
+            key.endTime,
+            liquidity,
+            secondsPerLiquidityInsideInitialX128,
+            secondsPerLiquidityInsideX128,
+            block.timestamp
+        );
+    }
+
+    /// @dev Stakes a deposited token without doing an ownership check
+    function _stakeToken(IncentiveKey memory key, uint256 tokenId) private {
+        require(
+            block.timestamp >= key.startTime,
+            "UniswapV3Staker::stakeToken: incentive not started"
+        );
+        require(
+            block.timestamp < key.endTime,
+            "UniswapV3Staker::stakeToken: incentive ended"
+        );
+
+        bytes32 incentiveId = IncentiveId.compute(key);
+
+        require(
+            incentives[incentiveId].totalRewardUnclaimed > 0,
+            "UniswapV3Staker::stakeToken: non-existent incentive"
+        );
+        require(
+            _stakes[tokenId][incentiveId].liquidityNoOverflow == 0,
+            "UniswapV3Staker::stakeToken: token already staked"
+        );
+
+        (
+            IUniswapV3Pool pool,
+            int24 tickLower,
+            int24 tickUpper,
+            uint128 _liquidity
+        ) = NFTPositionInfo.getPositionInfo(
+                factory,
+                nonfungiblePositionManager,
+                tokenId
+            );
+
+        uint256 liquidity = derivedLiquidity(_liquidity);
+
+        require(
+            pool == key.pool,
+            "UniswapV3Staker::stakeToken: token pool is not the incentive pool"
+        );
+        require(
+            liquidity > 0,
+            "UniswapV3Staker::stakeToken: cannot stake token with 0 liquidity"
+        );
+
+        deposits[tokenId].numberOfStakes++;
+        incentives[incentiveId].numberOfStakes++;
+
+        (, uint160 secondsPerLiquidityInsideX128, ) = pool
+            .snapshotCumulativesInside(tickLower, tickUpper);
+
+        if (liquidity >= type(uint96).max) {
+            _stakes[tokenId][incentiveId] = Stake({
+                secondsPerLiquidityInsideInitialX128: secondsPerLiquidityInsideX128,
+                liquidityNoOverflow: type(uint96).max,
+                liquidityIfOverflow: liquidity
+            });
+        } else {
+            Stake storage stake = _stakes[tokenId][incentiveId];
+            stake
+                .secondsPerLiquidityInsideInitialX128 = secondsPerLiquidityInsideX128;
+            stake.liquidityNoOverflow = uint96(liquidity);
+        }
+
+        emit TokenStaked(tokenId, incentiveId, liquidity);
+    }
+
+    function derivedLiquidity(uint256 liquidity, address account)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 _derived = (liquidity * 20) / 100;
         uint256 _adjusted = 0;
         uint256 _supply = IERC20(registry.locker()).totalSupply();
 
@@ -337,341 +496,6 @@ contract BaseGaugeV2UniV3 is IGaugeV2 {
         }
 
         // because of this we are able to max out the boost by 5x
-        return Math.min((_derived + _adjusted), _balance);
-    }
-
-    function batchRewardPerToken(address token, uint256 maxRuns) external {
-        (
-            rewardPerTokenStored[token],
-            lastUpdateTime[token]
-        ) = _batchRewardPerToken(token, maxRuns);
-    }
-
-    function _batchRewardPerToken(address token, uint256 maxRuns)
-        internal
-        returns (uint256, uint256)
-    {
-        uint256 _startTimestamp = lastUpdateTime[token];
-        uint256 reward = rewardPerTokenStored[token];
-
-        if (supplyNumCheckpoints == 0) {
-            return (reward, _startTimestamp);
-        }
-
-        if (rewardRate[token] == 0) {
-            return (reward, block.timestamp);
-        }
-
-        uint256 _startIndex = getPriorSupplyIndex(_startTimestamp);
-        uint256 _endIndex = Math.min(supplyNumCheckpoints - 1, maxRuns);
-
-        for (uint256 i = _startIndex; i < _endIndex; i++) {
-            SupplyCheckpoint memory sp0 = supplyCheckpoints[i];
-            if (sp0.supply > 0) {
-                SupplyCheckpoint memory sp1 = supplyCheckpoints[i + 1];
-                (uint256 _reward, uint256 _endTime) = _calcRewardPerToken(
-                    token,
-                    sp1.timestamp,
-                    sp0.timestamp,
-                    sp0.supply,
-                    _startTimestamp
-                );
-                reward += _reward;
-                _writeRewardPerTokenCheckpoint(token, reward, _endTime);
-                _startTimestamp = _endTime;
-            }
-        }
-
-        return (reward, _startTimestamp);
-    }
-
-    function _calcRewardPerToken(
-        address token,
-        uint256 timestamp1,
-        uint256 timestamp0,
-        uint256 supply,
-        uint256 startTimestamp
-    ) internal view returns (uint256, uint256) {
-        uint256 endTime = Math.max(timestamp1, startTimestamp);
-        return (
-            (((Math.min(endTime, periodFinish[token]) -
-                Math.min(
-                    Math.max(timestamp0, startTimestamp),
-                    periodFinish[token]
-                )) *
-                rewardRate[token] *
-                PRECISION) / supply),
-            endTime
-        );
-    }
-
-    function _updateRewardPerToken(address token)
-        internal
-        returns (uint256, uint256)
-    {
-        uint256 _startTimestamp = lastUpdateTime[token];
-        uint256 reward = rewardPerTokenStored[token];
-
-        if (supplyNumCheckpoints == 0) {
-            return (reward, _startTimestamp);
-        }
-
-        if (rewardRate[token] == 0) {
-            return (reward, block.timestamp);
-        }
-
-        uint256 _startIndex = getPriorSupplyIndex(_startTimestamp);
-        uint256 _endIndex = supplyNumCheckpoints - 1;
-
-        if (_endIndex - _startIndex > 1) {
-            for (uint256 i = _startIndex; i < _endIndex - 1; i++) {
-                SupplyCheckpoint memory sp0 = supplyCheckpoints[i];
-                if (sp0.supply > 0) {
-                    SupplyCheckpoint memory sp1 = supplyCheckpoints[i + 1];
-                    (uint256 _reward, uint256 _endTime) = _calcRewardPerToken(
-                        token,
-                        sp1.timestamp,
-                        sp0.timestamp,
-                        sp0.supply,
-                        _startTimestamp
-                    );
-                    reward += _reward;
-                    _writeRewardPerTokenCheckpoint(token, reward, _endTime);
-                    _startTimestamp = _endTime;
-                }
-            }
-        }
-
-        SupplyCheckpoint memory sp = supplyCheckpoints[_endIndex];
-        if (sp.supply > 0) {
-            (uint256 _reward, ) = _calcRewardPerToken(
-                token,
-                lastTimeRewardApplicable(token),
-                Math.max(sp.timestamp, _startTimestamp),
-                sp.supply,
-                _startTimestamp
-            );
-            reward += _reward;
-            _writeRewardPerTokenCheckpoint(token, reward, block.timestamp);
-            _startTimestamp = block.timestamp;
-        }
-
-        return (reward, _startTimestamp);
-    }
-
-    // earned is an estimation, it won't be exact till the supply > rewardPerToken calculations have run
-    function earned(address token, address account)
-        public
-        view
-        returns (uint256)
-    {
-        uint256 _startTimestamp = Math.max(
-            lastEarn[token][account],
-            rewardPerTokenCheckpoints[token][0].timestamp
-        );
-        if (numCheckpoints[account] == 0) {
-            return 0;
-        }
-
-        uint256 _startIndex = getPriorBalanceIndex(account, _startTimestamp);
-        uint256 _endIndex = numCheckpoints[account] - 1;
-
-        uint256 reward = 0;
-
-        if (_endIndex - _startIndex > 1) {
-            for (uint256 i = _startIndex; i < _endIndex - 1; i++) {
-                Checkpoint memory cp0 = checkpoints[account][i];
-                Checkpoint memory cp1 = checkpoints[account][i + 1];
-                (uint256 _rewardPerTokenStored0, ) = getPriorRewardPerToken(
-                    token,
-                    cp0.timestamp
-                );
-                (uint256 _rewardPerTokenStored1, ) = getPriorRewardPerToken(
-                    token,
-                    cp1.timestamp
-                );
-                reward +=
-                    (cp0.balanceOf *
-                        (_rewardPerTokenStored1 - _rewardPerTokenStored0)) /
-                    PRECISION;
-            }
-        }
-
-        Checkpoint memory cp = checkpoints[account][_endIndex];
-        (uint256 _rewardPerTokenStored, ) = getPriorRewardPerToken(
-            token,
-            cp.timestamp
-        );
-        reward +=
-            (cp.balanceOf *
-                (rewardPerToken(token) -
-                    Math.max(
-                        _rewardPerTokenStored,
-                        userRewardPerTokenStored[token][account]
-                    ))) /
-            PRECISION;
-
-        return reward;
-    }
-
-    function depositAll() external {
-        deposit(IERC20(stake).balanceOf(msg.sender));
-    }
-
-    function deposit(uint256 amount) public lock {
-        registry.ensureNotPaused();
-        require(amount > 0, "amount = 0");
-
-        _safeTransferFrom(stake, msg.sender, address(this), amount);
-        totalSupply += amount;
-        balanceOf[msg.sender] += amount;
-
-        uint256 _derivedBalance = derivedBalances[msg.sender];
-        derivedSupply -= _derivedBalance;
-        _derivedBalance = derivedBalance(msg.sender);
-        derivedBalances[msg.sender] = _derivedBalance;
-        derivedSupply += _derivedBalance;
-
-        if (!attached[msg.sender]) {
-            attached[msg.sender] = true;
-            IGaugeVoterV2(registry.gaugeVoter()).attachStakerToGauge(
-                msg.sender
-            );
-        }
-
-        _writeCheckpoint(msg.sender, _derivedBalance);
-        _writeSupplyCheckpoint();
-
-        emit Deposit(msg.sender, amount);
-    }
-
-    function withdrawAll() external {
-        withdraw(balanceOf[msg.sender]);
-    }
-
-    function withdraw(uint256 amount) public {
-        withdrawToken(amount);
-    }
-
-    function withdrawToken(uint256 amount) public lock {
-        totalSupply -= amount;
-        balanceOf[msg.sender] -= amount;
-        _safeTransfer(stake, msg.sender, amount);
-
-        if (amount == balanceOf[msg.sender] && attached[msg.sender]) {
-            attached[msg.sender] = false;
-            IGaugeVoterV2(registry.gaugeVoter()).detachStakerFromGauge(
-                msg.sender
-            );
-        }
-
-        uint256 _derivedBalance = derivedBalances[msg.sender];
-        derivedSupply -= _derivedBalance;
-        _derivedBalance = derivedBalance(msg.sender);
-        derivedBalances[msg.sender] = _derivedBalance;
-        derivedSupply += _derivedBalance;
-
-        _writeCheckpoint(msg.sender, derivedBalances[msg.sender]);
-        _writeSupplyCheckpoint();
-
-        emit Withdraw(msg.sender, amount);
-    }
-
-    function left(address token) external view override returns (uint256) {
-        if (block.timestamp >= periodFinish[token]) return 0;
-        uint256 _remaining = periodFinish[token] - block.timestamp;
-        return _remaining * rewardRate[token];
-    }
-
-    function notifyRewardAmount(address token, uint256 amount)
-        external
-        override
-        lock
-    {
-        require(token != stake, "token = stake");
-        require(amount > 0, "amount = 0");
-        if (rewardRate[token] == 0)
-            _writeRewardPerTokenCheckpoint(token, 0, block.timestamp);
-        (
-            rewardPerTokenStored[token],
-            lastUpdateTime[token]
-        ) = _updateRewardPerToken(token);
-
-        if (block.timestamp >= periodFinish[token]) {
-            _safeTransferFrom(token, msg.sender, address(this), amount);
-            rewardRate[token] = amount / DURATION;
-        } else {
-            uint256 _remaining = periodFinish[token] - block.timestamp;
-            uint256 _left = _remaining * rewardRate[token];
-            require(amount > _left, "amount > left");
-            _safeTransferFrom(token, msg.sender, address(this), amount);
-            rewardRate[token] = (amount + _left) / DURATION;
-        }
-
-        require(rewardRate[token] > 0, "rewardrate = 0");
-        uint256 balance = IERC20(token).balanceOf(address(this));
-        require(
-            rewardRate[token] <= balance / DURATION,
-            "Provided reward too high"
-        );
-        periodFinish[token] = block.timestamp + DURATION;
-
-        if (!isReward[token]) {
-            isReward[token] = true;
-            rewards.push(token);
-        }
-
-        emit NotifyReward(msg.sender, token, amount);
-    }
-
-    function _safeTransfer(
-        address token,
-        address to,
-        uint256 value
-    ) internal {
-        require(token.code.length > 0, "invalid code length");
-        (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(IERC20.transfer.selector, to, value)
-        );
-        require(
-            success && (data.length == 0 || abi.decode(data, (bool))),
-            "transfer failed"
-        );
-    }
-
-    function _safeTransferFrom(
-        address token,
-        address from,
-        address to,
-        uint256 value
-    ) internal {
-        require(token.code.length > 0, "invalid code length");
-        (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(
-                IERC20.transferFrom.selector,
-                from,
-                to,
-                value
-            )
-        );
-        require(
-            success && (data.length == 0 || abi.decode(data, (bool))),
-            "transferFrom failed"
-        );
-    }
-
-    function _safeApprove(
-        address token,
-        address spender,
-        uint256 value
-    ) internal {
-        require(token.code.length > 0, "invalid code length");
-        (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(IERC20.approve.selector, spender, value)
-        );
-        require(
-            success && (data.length == 0 || abi.decode(data, (bool))),
-            "approve failed"
-        );
+        return Math.min((_derived + _adjusted), liquidity);
     }
 }

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import {IGauge} from "./IGauge.sol";
 
-interface IGaugeV2 {
+interface IGaugeV1 is IGauge {
     /// @notice A checkpoint for marking balance
     struct Checkpoint {
         uint256 timestamp;
@@ -23,8 +23,8 @@ interface IGaugeV2 {
         uint256 supply;
     }
 
-    event Deposit(address indexed from, uint256 amount);
-    event Withdraw(address indexed from, uint256 amount);
+    event Deposit(address indexed from, uint256 tokenId, uint256 amount);
+    event Withdraw(address indexed from, uint256 tokenId, uint256 amount);
     event NotifyReward(
         address indexed from,
         address indexed reward,
