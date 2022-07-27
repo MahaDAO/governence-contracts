@@ -8,7 +8,7 @@ import "@uniswap/v3-core/contracts/interfaces/IERC20Minimal.sol";
 
 import {RewardMath} from "../utils/RewardMath.sol";
 import {INonfungiblePositionManager} from "../interfaces/INonfungiblePositionManager.sol";
-import {IGauge} from "../interfaces/IGauge.sol";
+import {IGaugeV2UniV3} from "../interfaces/IGaugeV2UniV3.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import "../utils/NFTPositionInfo.sol";
 import "../utils/Multicall.sol";
@@ -19,7 +19,7 @@ import {INFTStaker} from "../interfaces/INFTStaker.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title Uniswap V3 canonical staking interface
-contract BaseGaugeV2UniV3 is IGauge, IUniswapV3Staker, Multicall {
+contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall {
     IRegistry public immutable override registry;
 
     /// @notice Represents a staking incentive
