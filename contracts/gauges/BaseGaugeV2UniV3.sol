@@ -42,6 +42,7 @@ contract BaseGaugeV2UniV3 is IGauge, IUniswapV3Staker, Multicall {
         uint160 secondsPerLiquidityInsideInitialX128;
         uint96 liquidityNoOverflow;
         uint128 liquidityIfOverflow;
+        uint128 nonDerivedLiquidity;
     }
 
     /// @inheritdoc IUniswapV3Staker
@@ -64,6 +65,8 @@ contract BaseGaugeV2UniV3 is IGauge, IUniswapV3Staker, Multicall {
 
     /// @dev stakes[tokenId][incentiveHash] => Stake
     mapping(uint256 => mapping(bytes32 => Stake)) private _stakes;
+
+    uint256 public totalSupply;
 
     /// @inheritdoc IUniswapV3Staker
     function stakes(uint256 tokenId, bytes32 incentiveId)
@@ -323,6 +326,8 @@ contract BaseGaugeV2UniV3 is IGauge, IUniswapV3Staker, Multicall {
             uint128 liquidity
         ) = stakes(tokenId, incentiveId);
 
+        totalSupply -= uint256(_stakes[tokenId][incentiveId].nonDerivedLiquidity);
+
         require(
             liquidity != 0,
             "UniswapV3Staker::unstakeToken: stake does not exist"
@@ -450,7 +455,8 @@ contract BaseGaugeV2UniV3 is IGauge, IUniswapV3Staker, Multicall {
                 tokenId
             );
 
-        uint256 liquidity = derivedLiquidity(_liquidity);
+        totalSupply += uint256(_liquidity);
+        uint128 liquidity = uint128(derivedLiquidity(_liquidity, deposits[tokenId].owner));
 
         require(
             pool == key.pool,
@@ -471,7 +477,8 @@ contract BaseGaugeV2UniV3 is IGauge, IUniswapV3Staker, Multicall {
             _stakes[tokenId][incentiveId] = Stake({
                 secondsPerLiquidityInsideInitialX128: secondsPerLiquidityInsideX128,
                 liquidityNoOverflow: type(uint96).max,
-                liquidityIfOverflow: liquidity
+                liquidityIfOverflow: liquidity,
+                nonDerivedLiquidity: _liquidity
             });
         } else {
             Stake storage stake = _stakes[tokenId][incentiveId];
