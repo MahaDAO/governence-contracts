@@ -13,7 +13,7 @@ import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IGaugeWrapper} from "../interfaces/IGaugeWrapper.sol";
 
 /// @title Uniswap V3 gauge wrapper.
-contract BaseGaugeV2UniV3 is ReentrancyGuard, IGaugeWrapper {
+contract BaseGaugeV2UniV3Wrapper is ReentrancyGuard, IGaugeWrapper {
     address public immutable pool;
 
     IUniswapV3Staker public override staker;
