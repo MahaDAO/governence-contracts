@@ -2,7 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-interface IRegistry {
+import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
+
+interface IRegistry is IAccessControl{
     event MahaChanged(address indexed whom, address _old, address _new);
     event VoterChanged(address indexed whom, address _old, address _new);
     event LockerChanged(address indexed whom, address _old, address _new);
