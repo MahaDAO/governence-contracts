@@ -85,10 +85,13 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     /// @return rewardsOwed The amount of the reward token claimable by the owner
     function rewards(IERC20Minimal rewardToken, address owner) external view returns (uint256 rewardsOwed);
 
-    /// @notice Creates a new liquidity mining incentive program
-    /// @param key Details of the incentive to create
-    /// @param reward The amount of reward tokens to be distributed
-    function createIncentive(IncentiveKey memory key, uint256 reward) external;
+    // /// @notice Creates a new liquidity mining incentive program
+    // /// @param key Details of the incentive to create
+    // /// @param reward The amount of reward tokens to be distributed
+    // function createIncentive(IncentiveKey memory key, uint256 reward) external;
+
+    function notifyRewardAmount(address token, uint256 amount)
+        external;
 
     /// @notice Ends an incentive after the incentive end time has passed and all stakes have been withdrawn
     /// @param key Details of the incentive to end

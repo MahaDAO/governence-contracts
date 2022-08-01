@@ -5,6 +5,7 @@ pragma abicoder v2;
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/interfaces/IERC20Minimal.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {RewardMath} from "../utils/RewardMath.sol";
 import {INonfungiblePositionManager} from "../interfaces/INonfungiblePositionManager.sol";
@@ -19,7 +20,7 @@ import {INFTStaker} from "../interfaces/INFTStaker.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title Uniswap V3 canonical staking interface
-contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall {
+contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall, ReentrancyGuard {
     IRegistry public immutable override registry;
 
     /// @notice Represents a staking incentive
@@ -66,6 +67,9 @@ contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall {
     /// @dev stakes[tokenId][incentiveHash] => Stake
     mapping(uint256 => mapping(bytes32 => Stake)) private _stakes;
 
+    /// @dev _incentiveKeys[token] => IncentiveKey
+    mapping (address => IncentiveKey) private _incentiveKeys;
+
     uint256 public totalSupply;
 
     /// @inheritdoc IUniswapV3Staker
@@ -111,23 +115,27 @@ contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall {
         maxIncentiveDuration = _maxIncentiveDuration;
     }
 
-    /// @inheritdoc IUniswapV3Staker
-    function createIncentive(IncentiveKey memory key, uint256 reward)
-        external
-        override
+    function _createIncentive(IncentiveKey memory key, uint256 reward, bool isFirstTime)
+        internal
     {
         require(
             reward > 0,
             "UniswapV3Staker::createIncentive: reward must be positive"
         );
-        require(
-            block.timestamp <= key.startTime,
-            "UniswapV3Staker::createIncentive: start time must be now or in the future"
-        );
-        require(
-            key.startTime - block.timestamp <= maxIncentiveStartLeadTime,
-            "UniswapV3Staker::createIncentive: start time too far into future"
-        );
+
+        if (isFirstTime) {
+            // If the key is used first time, do basic start time validations.
+            require(
+                block.timestamp <= key.startTime,
+                "UniswapV3Staker::createIncentive: start time must be now or in the future"
+            );
+
+            require(
+                key.startTime - block.timestamp <= maxIncentiveStartLeadTime,
+                "UniswapV3Staker::createIncentive: start time too far into future"
+            );
+        }
+
         require(
             key.startTime < key.endTime,
             "UniswapV3Staker::createIncentive: start time must be before end time"
@@ -506,5 +514,36 @@ contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall {
 
         // because of this we are able to max out the boost by 5x
         return Math.min((_derived + _adjusted), liquidity);
+    }
+
+    function notifyRewardAmount(address token, uint256 amount)
+        external
+        override
+        nonReentrant
+    {
+        IERC20Minimal _token = IERC20Minimal(token);
+
+        IncentiveKey memory _key = _incentiveKeys[token];
+        bool isFirstTime = false;
+
+        // Check if this token is already part of any incentive key.
+        if (address(_key.rewardToken) == address(0)) {
+            _key = IUniswapV3Staker.IncentiveKey({
+                rewardToken: _token,
+                pool: IUniswapV3Pool(address(0)), // Todo: change this.
+                startTime: block.timestamp,
+                endTime: type(uint256).max,
+                refundee: address(0) // Todo: change this.
+            });
+
+            // If no, then create new incentive key and store it to
+            // be able to map it next time.
+            _incentiveKeys[token] = _key;
+
+            // Also mark that this key is being used first time.
+            isFirstTime = true;
+        }
+
+        _createIncentive(_key, amount, isFirstTime);
     }
 }
