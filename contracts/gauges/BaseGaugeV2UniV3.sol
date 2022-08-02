@@ -531,6 +531,14 @@ contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall, Reentra
         return Math.min((_derived + _adjusted), liquidity);
     }
 
+    function left(address token) external view returns (uint256) {
+        IncentiveKey memory _key = _incentiveKeys[token];
+
+        bytes32 incentiveId = IncentiveId.compute(_key);
+
+        return incentives[incentiveId].totalRewardUnclaimed;
+    }
+
     function notifyRewardAmount(address token, uint256 amount)
         external
         override
