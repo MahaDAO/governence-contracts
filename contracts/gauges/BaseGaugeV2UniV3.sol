@@ -78,14 +78,6 @@ contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall, Reentra
 
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
 
-    modifier onlyGovernance() {
-        require(
-            registry.hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "not governance"
-        );
-        _;
-    }
-
     /// @inheritdoc IUniswapV3Staker
     function stakes(uint256 tokenId, bytes32 incentiveId)
         public
@@ -111,25 +103,22 @@ contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall, Reentra
         public
         override rewards;
 
-    constructor(
-        address _pool,
-        address _registry
-    ) {
-        pool = IUniswapV3Pool(_pool);
-        registry = IRegistry(_registry);
-    }
-
     /// @param _factory the Uniswap V3 factory
     /// @param _nonfungiblePositionManager the NFT position manager contract address
     /// @param _maxIncentiveStartLeadTime the max duration of an incentive in seconds
     /// @param _maxIncentiveDuration the max amount of seconds into the future the incentive startTime can be set
-    function initialize(
+    constructor(
+        address _pool,
+        address _registry,
         address _refundee,
         IUniswapV3Factory _factory,
         INonfungiblePositionManager _nonfungiblePositionManager,
         uint256 _maxIncentiveStartLeadTime,
         uint256 _maxIncentiveDuration
-    ) external onlyGovernance {
+    ) {
+        pool = IUniswapV3Pool(_pool);
+        registry = IRegistry(_registry);
+
         refundee = _refundee;
         factory = _factory;
         nonfungiblePositionManager = _nonfungiblePositionManager;
@@ -540,6 +529,14 @@ contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall, Reentra
 
         // because of this we are able to max out the boost by 5x
         return Math.min((_derived + _adjusted), liquidity);
+    }
+
+    function left(address token) external view returns (uint256) {
+        IncentiveKey memory _key = _incentiveKeys[token];
+
+        bytes32 incentiveId = IncentiveId.compute(_key);
+
+        return incentives[incentiveId].totalRewardUnclaimed;
     }
 
     function notifyRewardAmount(address token, uint256 amount)

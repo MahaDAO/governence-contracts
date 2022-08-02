@@ -12,7 +12,6 @@ import {IBribeV2} from "../interfaces/IBribeV2.sol";
 import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
 import {IEmissionController} from "../interfaces/IEmissionController.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
-import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
 import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
@@ -181,8 +180,8 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
 
     function registerGauge(
         address _pool,
-        address _bribefactory,
-        address _gaugefactory
+        address _bribe,
+        address _gauge
     ) external onlyOwner returns (address) {
         registry.ensureNotPaused(); // ensure protocol is active
 
@@ -190,17 +189,8 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
 
         // sanity checks
         require(whitelist[_pool], "pool not whitelisted");
-        require(whitelist[_bribefactory], "bribe factory not whitelisted");
-        require(whitelist[_gaugefactory], "gauge factory not whitelisted");
-
-        address _bribe = IBribeFactory(_bribefactory).createBribe(
-            address(registry)
-        );
-        address _gauge = IGaugeFactory(_gaugefactory).createGauge(
-            _pool,
-            _bribe,
-            address(registry)
-        );
+        require(whitelist[_bribe], "bribe factory not whitelisted");
+        require(whitelist[_gauge], "gauge factory not whitelisted");
 
         IERC20(registry.maha()).approve(_gauge, type(uint256).max);
         bribes[_gauge] = _bribe;
@@ -276,22 +266,6 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
             }
         } else {
             supplyIndex[_gauge] = index; // new users are set to the default global state
-        }
-    }
-
-    function claimRewards(address[] memory _gauges, address[][] memory _tokens)
-        external
-    {
-        for (uint256 i = 0; i < _gauges.length; i++) {
-            IGauge(_gauges[i]).getReward(msg.sender, _tokens[i]);
-        }
-    }
-
-    function claimBribes(address[] memory _bribes, address[][] memory _tokens)
-        external
-    {
-        for (uint256 i = 0; i < _bribes.length; i++) {
-            IBribeV2(_bribes[i]).getRewardForOwner(msg.sender, _tokens[i]);
         }
     }
 
