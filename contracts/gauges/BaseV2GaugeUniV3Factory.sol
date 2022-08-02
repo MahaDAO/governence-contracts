@@ -5,39 +5,17 @@ import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV
 
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {BaseGaugeV2UniV3} from "./BaseGaugeV2UniV3.sol";
-import {IGaugeV2UniV3Factory} from "../interfaces/IGaugeV2UniV3Factory.sol";
+import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
 import {INonfungiblePositionManager} from "../interfaces/INonfungiblePositionManager.sol";
 
-contract BaseV2GaugeUniV3Factory is IGaugeV2UniV3Factory {
+contract BaseV2GaugeUniV3Factory is IGaugeFactory {
     function createGauge(
         address _pool,
         address _bribe,
-        address _registry,
-        address _uniswapV3factory,
-        address _nonfungiblePositionManager,
-        uint256 _maxIncentiveStartLeadTime,
-        uint256 _maxIncentiveDuration
+        address _registry
     ) external override returns (address) {
-        address guage = address(
-            new BaseGaugeV2UniV3(
-                IRegistry(_registry),
-                IUniswapV3Factory(_uniswapV3factory),
-                INonfungiblePositionManager(_nonfungiblePositionManager),
-                _maxIncentiveStartLeadTime,
-                _maxIncentiveDuration
-            )
-        );
-
-        emit GaugeCreated(
-            guage,
-            _pool,
-            _bribe,
-            _registry,
-            _uniswapV3factory,
-            _nonfungiblePositionManager,
-            _maxIncentiveStartLeadTime,
-            _maxIncentiveDuration
-        );
+        address guage = address(new BaseGaugeV2UniV3(_pool, _registry));
+        emit GaugeCreated(guage, _pool, _bribe);
         return guage;
     }
 }
