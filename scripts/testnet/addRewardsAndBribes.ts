@@ -12,16 +12,16 @@ async function main() {
   const gasPrice = estimateGasPrice.mul(3).div(2);
   console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
 
-  const gauge = await ethers.getContractAt(
-    "BaseGaugeV2",
-    "0x9C7C6c2Fb201aC537d9174474c5Ea9c3f31AEaF3"
-  );
-  // const bribe = await ethers.getContractAt(
-  //   "BaseV1Bribes",
-  //   "0x1A024C2F7Fe5D267E22834c676560b71BEAba6F7"
+  // const gauge = await ethers.getContractAt(
+  //   "BaseGaugeV2",
+  //   "0x500e99A6FE5D37a83762A3Febd1447b52C62ee5E"
   // );
-  const amount = BigNumber.from(10).pow(18).mul(1e3);
-  const amounte6 = BigNumber.from(10).pow(6).mul(1e3);
+  const gauge = await ethers.getContractAt(
+    "BaseV1Bribes",
+    "0xA093166Ea0B2aD61C41eE345393247293C0900B6"
+  );
+  const amount = BigNumber.from(10).pow(18).mul(1e8);
+  const amounte6 = BigNumber.from(10).pow(6).mul(1e8);
 
   const solid = await ethers.getContractAt(
     "MockERC20",
