@@ -72,7 +72,7 @@ contract BaseGaugeV2UniV3 is IGaugeV2UniV3, IUniswapV3Staker, Multicall, Reentra
     mapping(uint256 => mapping(bytes32 => Stake)) private _stakes;
 
     /// @dev _incentiveKeys[token] => IncentiveKey
-    mapping (address => IncentiveKey) private _incentiveKeys;
+    mapping (address => IncentiveKey) public _incentiveKeys;
 
     uint256 public totalSupply;
 
