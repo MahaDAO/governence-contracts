@@ -159,11 +159,12 @@ contract BaseGaugeV2UniV3 is
                 nonDerivedLiquidity: _liquidity
             });
         } else {
-            Stake storage stake = _stakes[tokenId];
-            stake
-                .secondsPerLiquidityInsideInitialX128 = secondsPerLiquidityInsideX128;
-            stake.liquidityNoOverflow = uint96(liquidity);
-            stake.nonDerivedLiquidity = _liquidity;
+            _stakes[tokenId] = Stake({
+                secondsPerLiquidityInsideInitialX128: secondsPerLiquidityInsideX128,
+                liquidityNoOverflow: uint96(liquidity),
+                liquidityIfOverflow: 0,
+                nonDerivedLiquidity: _liquidity
+            });
         }
 
         emit TokenStaked(tokenId);
@@ -176,15 +177,8 @@ contract BaseGaugeV2UniV3 is
         address to,
         bytes memory data
     ) external override {
-        Deposit memory deposit = deposits[tokenId];
-
-        // try to update rewards; if this breaks then we want to still
-        // allow the NFT to be withdrawn
-        try _updateReward(tokenId) {
-            /* do nothing */
-        } catch {
-            // skip if update reward failed for some reason
-        }
+        // try to update rewards
+        _updateReward(tokenId);
 
         totalSupply -= uint256(_stakes[tokenId].nonDerivedLiquidity);
         numberOfStakes--;
@@ -194,7 +188,7 @@ contract BaseGaugeV2UniV3 is
             "UniswapV3Staker::withdrawToken: cannot withdraw to staker"
         );
         require(
-            deposit.owner == msg.sender,
+            deposits[tokenId].owner == msg.sender,
             "UniswapV3Staker::withdrawToken: only owner can withdraw token"
         );
 
