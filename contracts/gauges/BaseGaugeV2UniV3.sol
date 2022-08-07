@@ -32,21 +32,17 @@ contract BaseGaugeV2UniV3 is
 
     IUniswapV3Pool public immutable pool;
 
-    /// @notice Represents a staking incentive
-    // struct Incentive {
     uint256 public totalRewardUnclaimed;
     uint160 public totalSecondsClaimedX128;
     uint96 public numberOfStakes;
-    // }
 
-    IERC20 public rewardToken;
     uint256 public startTime;
     uint256 public endTime;
+    uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
 
     /// @notice Represents the deposit of a liquidity NFT
     struct Deposit {
         address owner;
-        uint48 numberOfStakes;
         int24 tickLower;
         int24 tickUpper;
     }
@@ -99,9 +95,8 @@ contract BaseGaugeV2UniV3 is
         secondsPerLiquidityInsideInitialX128 = stake
             .secondsPerLiquidityInsideInitialX128;
         liquidity = stake.liquidityNoOverflow;
-        if (liquidity == type(uint96).max) {
+        if (liquidity == type(uint96).max)
             liquidity = stake.liquidityIfOverflow;
-        }
     }
 
     /// @dev rewards[owner] => uint256
@@ -110,16 +105,12 @@ contract BaseGaugeV2UniV3 is
 
     /// @param _factory the Uniswap V3 factory
     /// @param _nonfungiblePositionManager the NFT position manager contract address
-    /// @param _maxIncentiveStartLeadTime the max duration of an incentive in seconds
-    /// @param _maxIncentiveDuration the max amount of seconds into the future the incentive startTime can be set
     constructor(
         address _pool,
         address _registry,
         address _refundee,
         IUniswapV3Factory _factory,
-        INonfungiblePositionManager _nonfungiblePositionManager,
-        uint256 _maxIncentiveStartLeadTime,
-        uint256 _maxIncentiveDuration
+        INonfungiblePositionManager _nonfungiblePositionManager
     ) {
         pool = IUniswapV3Pool(_pool);
         registry = IRegistry(_registry);
@@ -127,73 +118,7 @@ contract BaseGaugeV2UniV3 is
         refundee = _refundee;
         factory = _factory;
         nonfungiblePositionManager = _nonfungiblePositionManager;
-        maxIncentiveStartLeadTime = _maxIncentiveStartLeadTime;
-        maxIncentiveDuration = _maxIncentiveDuration;
-    }
-
-    function _createIncentive(uint256 reward) internal {
-        require(
-            reward > 0,
-            "UniswapV3Staker::createIncentive: reward must be positive"
-        );
-
-        require(
-            startTime < endTime,
-            "UniswapV3Staker::createIncentive: start time must be before end time"
-        );
-        require(
-            endTime - startTime <= maxIncentiveDuration,
-            "UniswapV3Staker::createIncentive: incentive duration is too long"
-        );
-
-        totalRewardUnclaimed += reward;
-
-        TransferHelperExtended.safeTransferFrom(
-            address(rewardToken),
-            msg.sender,
-            address(this),
-            reward
-        );
-
-        emit IncentiveCreated(
-            rewardToken,
-            pool,
-            startTime,
-            endTime,
-            refundee,
-            reward
-        );
-    }
-
-    /// @inheritdoc IUniswapV3Staker
-    function endIncentive() external override returns (uint256 refund) {
-        require(
-            block.timestamp >= endTime,
-            "UniswapV3Staker::endIncentive: cannot end incentive before end time"
-        );
-
-        refund = totalRewardUnclaimed;
-
-        require(
-            refund > 0,
-            "UniswapV3Staker::endIncentive: no refund available"
-        );
-        require(
-            numberOfStakes == 0,
-            "UniswapV3Staker::endIncentive: cannot end incentive while deposits are staked"
-        );
-
-        // issue the refund
-        totalRewardUnclaimed = 0;
-        TransferHelperExtended.safeTransfer(
-            address(rewardToken),
-            refundee,
-            refund
-        );
-
-        // note we never clear totalSecondsClaimedX128
-
-        emit IncentiveEnded(refund);
+        startTime = block.timestamp;
     }
 
     /// @notice Upon receiving a Uniswap V3 ERC721, creates the token deposit setting owner to `from`. Also stakes token
@@ -210,45 +135,58 @@ contract BaseGaugeV2UniV3 is
         );
 
         (
-            ,
-            ,
-            ,
-            ,
-            ,
+            IUniswapV3Pool _pool,
             int24 tickLower,
             int24 tickUpper,
-            ,
-            ,
-            ,
-            ,
-
-        ) = nonfungiblePositionManager.positions(tokenId);
+            uint128 _liquidity
+        ) = NFTPositionInfo.getPositionInfo(
+                factory,
+                nonfungiblePositionManager,
+                tokenId
+            );
 
         deposits[tokenId] = Deposit({
             owner: from,
-            numberOfStakes: 0,
             tickLower: tickLower,
             tickUpper: tickUpper
         });
-        emit DepositTransferred(tokenId, address(0), from);
 
-        if (data.length == 2) _stakeToken(tokenId);
+        require(
+            _pool == pool,
+            "UniswapV3Staker::stakeToken: token pool is not the right pool"
+        );
+        require(
+            _liquidity > 0,
+            "UniswapV3Staker::stakeToken: cannot stake token with 0 liquidity"
+        );
+
+        totalSupply += uint256(_liquidity);
+        uint128 liquidity = uint128(
+            derivedLiquidity(_liquidity, deposits[tokenId].owner)
+        );
+
+        numberOfStakes++;
+
+        (, uint160 secondsPerLiquidityInsideX128, ) = _pool
+            .snapshotCumulativesInside(tickLower, tickUpper);
+
+        if (liquidity >= type(uint96).max) {
+            _stakes[tokenId] = Stake({
+                secondsPerLiquidityInsideInitialX128: secondsPerLiquidityInsideX128,
+                liquidityNoOverflow: type(uint96).max,
+                liquidityIfOverflow: liquidity,
+                nonDerivedLiquidity: _liquidity
+            });
+        } else {
+            Stake storage stake = _stakes[tokenId];
+            stake
+                .secondsPerLiquidityInsideInitialX128 = secondsPerLiquidityInsideX128;
+            stake.liquidityNoOverflow = uint96(liquidity);
+            stake.nonDerivedLiquidity = _liquidity;
+        }
+
+        emit TokenStaked(tokenId);
         return this.onERC721Received.selector;
-    }
-
-    /// @inheritdoc IUniswapV3Staker
-    function transferDeposit(uint256 tokenId, address to) external override {
-        require(
-            to != address(0),
-            "UniswapV3Staker::transferDeposit: invalid transfer recipient"
-        );
-        address owner = deposits[tokenId].owner;
-        require(
-            owner == msg.sender,
-            "UniswapV3Staker::transferDeposit: can only be called by deposit owner"
-        );
-        deposits[tokenId].owner = to;
-        emit DepositTransferred(tokenId, owner, to);
     }
 
     /// @inheritdoc IUniswapV3Staker
@@ -257,14 +195,15 @@ contract BaseGaugeV2UniV3 is
         address to,
         bytes memory data
     ) external override {
+        Deposit memory deposit = deposits[tokenId];
+        _updateReward(tokenId);
+
+        totalSupply -= uint256(_stakes[tokenId].nonDerivedLiquidity);
+        numberOfStakes--;
+
         require(
             to != address(this),
             "UniswapV3Staker::withdrawToken: cannot withdraw to staker"
-        );
-        Deposit memory deposit = deposits[tokenId];
-        require(
-            deposit.numberOfStakes == 0,
-            "UniswapV3Staker::withdrawToken: cannot withdraw token while staked"
         );
         require(
             deposit.owner == msg.sender,
@@ -272,7 +211,9 @@ contract BaseGaugeV2UniV3 is
         );
 
         delete deposits[tokenId];
-        emit DepositTransferred(tokenId, deposit.owner, address(0));
+        delete _stakes[tokenId];
+
+        emit TokenUnstaked(tokenId);
 
         nonfungiblePositionManager.safeTransferFrom(
             address(this),
@@ -282,48 +223,22 @@ contract BaseGaugeV2UniV3 is
         );
     }
 
-    /// @inheritdoc IUniswapV3Staker
-    function stakeToken(uint256 tokenId) external override {
-        require(
-            deposits[tokenId].owner == msg.sender,
-            "UniswapV3Staker::stakeToken: only owner can stake token"
-        );
-
-        _stakeToken(tokenId);
-    }
-
-    /// @inheritdoc IUniswapV3Staker
-    function unstakeToken(uint256 tokenId) external override {
+    function _updateReward(uint256 tokenId) internal {
         Deposit memory deposit = deposits[tokenId];
-        // anyone can call unstakeToken if the block time is after the end time of the incentive
-        if (block.timestamp < endTime) {
-            require(
-                deposit.owner == msg.sender,
-                "UniswapV3Staker::unstakeToken: only owner can withdraw token before incentive end time"
-            );
-        }
 
         (
             uint160 secondsPerLiquidityInsideInitialX128,
             uint128 liquidity
         ) = stakes(tokenId);
 
-        totalSupply -= uint256(_stakes[tokenId].nonDerivedLiquidity);
-
         require(
             liquidity != 0,
             "UniswapV3Staker::unstakeToken: stake does not exist"
         );
-        // require(
-        //     key.pool == pool,
-        //     "UniswapV3Staker::stakeToken: token pool is not the incentive pool"
-        // );
-
-        deposits[tokenId].numberOfStakes--;
-        numberOfStakes--;
 
         (, uint160 secondsPerLiquidityInsideX128, ) = pool
             .snapshotCumulativesInside(deposit.tickLower, deposit.tickUpper);
+
         (uint256 reward, uint160 secondsInsideX128) = RewardMath
             .computeRewardAmount(
                 totalRewardUnclaimed,
@@ -343,27 +258,17 @@ contract BaseGaugeV2UniV3 is
         totalRewardUnclaimed -= reward;
         // this only overflows if a token has a total supply greater than type(uint256).max
         rewards[deposit.owner] += reward;
-
-        Stake storage stake = _stakes[tokenId];
-        delete stake.secondsPerLiquidityInsideInitialX128;
-        delete stake.liquidityNoOverflow;
-        if (liquidity >= type(uint96).max) delete stake.liquidityIfOverflow;
-        emit TokenUnstaked(tokenId);
     }
 
     /// @inheritdoc IUniswapV3Staker
-    function claimReward(address to, uint256 amountRequested)
+    function claimReward(address to)
         external
         override
         returns (uint256 reward)
     {
         reward = rewards[msg.sender];
-        if (amountRequested != 0 && amountRequested < reward)
-            reward = amountRequested;
-
         rewards[msg.sender] -= reward;
-        TransferHelperExtended.safeTransfer(address(rewardToken), to, reward);
-
+        TransferHelperExtended.safeTransfer(registry.maha(), to, reward);
         emit RewardClaimed(to, reward);
     }
 
@@ -398,74 +303,6 @@ contract BaseGaugeV2UniV3 is
             secondsPerLiquidityInsideX128,
             block.timestamp
         );
-    }
-
-    /// @dev Stakes a deposited token without doing an ownership check
-    function _stakeToken(uint256 tokenId) private {
-        require(
-            block.timestamp >= startTime,
-            "UniswapV3Staker::stakeToken: incentive not started"
-        );
-        require(
-            block.timestamp < endTime,
-            "UniswapV3Staker::stakeToken: incentive ended"
-        );
-
-        require(
-            totalRewardUnclaimed > 0,
-            "UniswapV3Staker::stakeToken: non-existent incentive"
-        );
-        require(
-            _stakes[tokenId].liquidityNoOverflow == 0,
-            "UniswapV3Staker::stakeToken: token already staked"
-        );
-
-        (
-            IUniswapV3Pool _pool,
-            int24 tickLower,
-            int24 tickUpper,
-            uint128 _liquidity
-        ) = NFTPositionInfo.getPositionInfo(
-                factory,
-                nonfungiblePositionManager,
-                tokenId
-            );
-
-        totalSupply += uint256(_liquidity);
-        uint128 liquidity = uint128(
-            derivedLiquidity(_liquidity, deposits[tokenId].owner)
-        );
-
-        require(
-            _pool == pool,
-            "UniswapV3Staker::stakeToken: token pool is not the incentive pool"
-        );
-        require(
-            liquidity > 0,
-            "UniswapV3Staker::stakeToken: cannot stake token with 0 liquidity"
-        );
-
-        deposits[tokenId].numberOfStakes++;
-        numberOfStakes++;
-
-        (, uint160 secondsPerLiquidityInsideX128, ) = _pool
-            .snapshotCumulativesInside(tickLower, tickUpper);
-
-        if (liquidity >= type(uint96).max) {
-            _stakes[tokenId] = Stake({
-                secondsPerLiquidityInsideInitialX128: secondsPerLiquidityInsideX128,
-                liquidityNoOverflow: type(uint96).max,
-                liquidityIfOverflow: liquidity,
-                nonDerivedLiquidity: _liquidity
-            });
-        } else {
-            Stake storage stake = _stakes[tokenId];
-            stake
-                .secondsPerLiquidityInsideInitialX128 = secondsPerLiquidityInsideX128;
-            stake.liquidityNoOverflow = uint96(liquidity);
-        }
-
-        emit TokenStaked(tokenId, liquidity);
     }
 
     function derivedLiquidity(uint256 liquidity, address account)
@@ -504,6 +341,21 @@ contract BaseGaugeV2UniV3 is
     }
 
     function notifyRewardAmount(uint256 amount) external override nonReentrant {
-        _createIncentive(amount);
+        require(
+            amount > 0,
+            "UniswapV3Staker::createIncentive: reward must be positive"
+        );
+
+        totalRewardUnclaimed += amount;
+        endTime = block.timestamp + DURATION;
+
+        TransferHelperExtended.safeTransferFrom(
+            registry.maha(),
+            msg.sender,
+            address(this),
+            amount
+        );
+
+        emit IncentiveCreated(pool, startTime, endTime, refundee, amount);
     }
 }

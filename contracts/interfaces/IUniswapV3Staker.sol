@@ -65,7 +65,7 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         view
         returns (
             address owner,
-            uint48 numberOfStakes,
+            // uint48 numberOfStakes,
             int24 tickLower,
             int24 tickUpper
         );
@@ -95,14 +95,14 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
 
     function notifyRewardAmount(uint256 amount) external;
 
-    /// @notice Ends an incentive after the incentive end time has passed and all stakes have been withdrawn
-    /// @return refund The remaining reward tokens when the incentive is ended
-    function endIncentive() external returns (uint256 refund);
+    // /// @notice Ends an incentive after the incentive end time has passed and all stakes have been withdrawn
+    // /// @return refund The remaining reward tokens when the incentive is ended
+    // function endIncentive() external returns (uint256 refund);
 
-    /// @notice Transfers ownership of a deposit from the sender to the given recipient
-    /// @param tokenId The ID of the token (and the deposit) to transfer
-    /// @param to The new owner of the deposit
-    function transferDeposit(uint256 tokenId, address to) external;
+    // /// @notice Transfers ownership of a deposit from the sender to the given recipient
+    // /// @param tokenId The ID of the token (and the deposit) to transfer
+    // /// @param to The new owner of the deposit
+    // function transferDeposit(uint256 tokenId, address to) external;
 
     /// @notice Withdraws a Uniswap V3 LP token `tokenId` from this contract to the recipient `to`
     /// @param tokenId The unique identifier of an Uniswap V3 LP token
@@ -116,19 +116,16 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
 
     /// @notice Stakes a Uniswap V3 LP token
     /// @param tokenId The ID of the token to stake
-    function stakeToken(uint256 tokenId) external;
+    // function stakeToken(uint256 tokenId) external;
 
     /// @notice Unstakes a Uniswap V3 LP token
     /// @param tokenId The ID of the token to unstake
-    function unstakeToken(uint256 tokenId) external;
+    // function _unstakeToken(uint256 tokenId) internal;
 
     /// @notice Transfers `amountRequested` of accrued `rewardToken` rewards from the contract to the recipient `to`
     /// @param to The address where claimed rewards will be sent to
-    /// @param amountRequested The amount of reward tokens to claim. Claims entire reward amount if set to 0.
     /// @return reward The amount of reward tokens claimed
-    function claimReward(address to, uint256 amountRequested)
-        external
-        returns (uint256 reward);
+    function claimReward(address to) external returns (uint256 reward);
 
     /// @notice Calculates the reward amount that will be received for the given stake
     /// @param tokenId The ID of the token
@@ -138,14 +135,12 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         returns (uint256 reward, uint160 secondsInsideX128);
 
     /// @notice Event emitted when a liquidity mining incentive has been created
-    /// @param rewardToken The token being distributed as a reward
     /// @param pool The Uniswap V3 pool
     /// @param startTime The time when the incentive program begins
     /// @param endTime The time when rewards stop accruing
     /// @param refundee The address which receives any remaining reward tokens after the end time
     /// @param reward The amount of reward tokens to be distributed
     event IncentiveCreated(
-        IERC20 indexed rewardToken,
         IUniswapV3Pool indexed pool,
         uint256 startTime,
         uint256 endTime,
@@ -153,9 +148,9 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         uint256 reward
     );
 
-    /// @notice Event that can be emitted when a liquidity mining incentive has ended
-    /// @param refund The amount of reward tokens refunded
-    event IncentiveEnded(uint256 refund);
+    // /// @notice Event that can be emitted when a liquidity mining incentive has ended
+    // /// @param refund The amount of reward tokens refunded
+    // event IncentiveEnded(uint256 refund);
 
     /// @notice Emitted when ownership of a deposit changes
     /// @param tokenId The ID of the deposit (and token) that is being transferred
