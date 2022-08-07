@@ -11,22 +11,7 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "./INonfungiblePositionManager.sol";
 import "./IMulticall.sol";
 
-/// @title Uniswap V3 Staker Interface
-/// @notice Allows staking nonfungible liquidity tokens in exchange for reward tokens
 interface IUniswapV3Staker is IERC721Receiver, IMulticall {
-    // /// @param rewardToken The token being distributed as a reward
-    // /// @param pool The Uniswap V3 pool
-    // /// @param startTime The time when the incentive program begins
-    // /// @param endTime The time when rewards stop accruing
-    // /// @param refundee The address which receives any remaining reward tokens when the incentive is ended
-    // struct IncentiveKey {
-    //     IERC20 rewardToken;
-    //     IUniswapV3Pool pool;
-    //     uint256 startTime;
-    //     uint256 endTime;
-    //     address refundee;
-    // }
-
     /// @notice The Uniswap V3 Factory
     function factory() external view returns (IUniswapV3Factory);
 
@@ -57,7 +42,6 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
 
     /// @notice Returns information about a deposited NFT
     /// @return owner The owner of the deposited NFT
-    /// @return numberOfStakes Counter of how many incentives for which the liquidity is staked
     /// @return tickLower The lower tick of the range
     /// @return tickUpper The upper tick of the range
     function deposits(uint256 tokenId)
@@ -65,7 +49,6 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         view
         returns (
             address owner,
-            // uint48 numberOfStakes,
             int24 tickLower,
             int24 tickUpper
         );
@@ -88,21 +71,9 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     /// @return rewardsOwed The amount of the reward token claimable by the owner
     function rewards(address owner) external view returns (uint256 rewardsOwed);
 
-    // /// @notice Creates a new liquidity mining incentive program
-    // /// @param key Details of the incentive to create
-    // /// @param reward The amount of reward tokens to be distributed
-    // function createIncentive(IncentiveKey memory key, uint256 reward) external;
-
-    function notifyRewardAmount(uint256 amount) external;
-
-    // /// @notice Ends an incentive after the incentive end time has passed and all stakes have been withdrawn
-    // /// @return refund The remaining reward tokens when the incentive is ended
-    // function endIncentive() external returns (uint256 refund);
-
-    // /// @notice Transfers ownership of a deposit from the sender to the given recipient
-    // /// @param tokenId The ID of the token (and the deposit) to transfer
-    // /// @param to The new owner of the deposit
-    // function transferDeposit(uint256 tokenId, address to) external;
+    /// @notice Creates a new liquidity mining incentive program
+    /// @param reward The amount of reward tokens to be distributed
+    function notifyRewardAmount(uint256 reward) external;
 
     /// @notice Withdraws a Uniswap V3 LP token `tokenId` from this contract to the recipient `to`
     /// @param tokenId The unique identifier of an Uniswap V3 LP token
@@ -114,52 +85,24 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         bytes memory data
     ) external;
 
-    /// @notice Stakes a Uniswap V3 LP token
-    /// @param tokenId The ID of the token to stake
-    // function stakeToken(uint256 tokenId) external;
-
-    /// @notice Unstakes a Uniswap V3 LP token
-    /// @param tokenId The ID of the token to unstake
-    // function _unstakeToken(uint256 tokenId) internal;
-
     /// @notice Transfers `amountRequested` of accrued `rewardToken` rewards from the contract to the recipient `to`
     /// @param to The address where claimed rewards will be sent to
-    /// @return reward The amount of reward tokens claimed
-    function claimReward(address to) external returns (uint256 reward);
-
-    /// @notice Calculates the reward amount that will be received for the given stake
     /// @param tokenId The ID of the token
-    /// @return reward The reward accrued to the NFT for the given incentive thus far
-    function getRewardInfo(uint256 tokenId)
+    /// @return reward The amount of reward tokens claimed
+    function claimReward(uint256 tokenId, address to)
         external
-        returns (uint256 reward, uint160 secondsInsideX128);
+        returns (uint256 reward);
 
     /// @notice Event emitted when a liquidity mining incentive has been created
     /// @param pool The Uniswap V3 pool
     /// @param startTime The time when the incentive program begins
     /// @param endTime The time when rewards stop accruing
-    /// @param refundee The address which receives any remaining reward tokens after the end time
     /// @param reward The amount of reward tokens to be distributed
     event IncentiveCreated(
         IUniswapV3Pool indexed pool,
         uint256 startTime,
         uint256 endTime,
-        address refundee,
         uint256 reward
-    );
-
-    // /// @notice Event that can be emitted when a liquidity mining incentive has ended
-    // /// @param refund The amount of reward tokens refunded
-    // event IncentiveEnded(uint256 refund);
-
-    /// @notice Emitted when ownership of a deposit changes
-    /// @param tokenId The ID of the deposit (and token) that is being transferred
-    /// @param oldOwner The owner before the deposit was transferred
-    /// @param newOwner The owner after the deposit was transferred
-    event DepositTransferred(
-        uint256 indexed tokenId,
-        address indexed oldOwner,
-        address indexed newOwner
     );
 
     /// @notice Event emitted when a Uniswap V3 LP token has been staked

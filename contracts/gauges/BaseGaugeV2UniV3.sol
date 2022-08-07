@@ -26,19 +26,15 @@ contract BaseGaugeV2UniV3 is
     Multicall,
     ReentrancyGuard
 {
-    address public refundee;
-
     IRegistry public immutable override registry;
-
     IUniswapV3Pool public immutable pool;
 
     uint256 public totalRewardUnclaimed;
     uint160 public totalSecondsClaimedX128;
     uint96 public numberOfStakes;
-
     uint256 public startTime;
     uint256 public endTime;
-    uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
+    uint256 public constant DURATION = 7 days; // rewards are released over 7 days
 
     /// @notice Represents the deposit of a liquidity NFT
     struct Deposit {
@@ -57,29 +53,36 @@ contract BaseGaugeV2UniV3 is
 
     /// @inheritdoc IUniswapV3Staker
     IUniswapV3Factory public override factory;
+
     /// @inheritdoc IUniswapV3Staker
     INonfungiblePositionManager public override nonfungiblePositionManager;
-
-    /// @inheritdoc IUniswapV3Staker
-    uint256 public override maxIncentiveStartLeadTime;
-    /// @inheritdoc IUniswapV3Staker
-    uint256 public override maxIncentiveDuration;
-
-    /// @dev bytes32 refers to the return value of IncentiveId.compute
-    // mapping(bytes32 => Incentive) public override incentives;
 
     /// @dev deposits[tokenId] => Deposit
     mapping(uint256 => Deposit) public override deposits;
 
-    /// @dev stakes[tokenId][incentiveHash] => Stake
+    /// @dev stakes[tokenId] => Stake
     mapping(uint256 => Stake) private _stakes;
-
-    /// @dev _incentiveKeys[token] => IncentiveKey
-    // mapping(address => IncentiveKey) public _incentiveKeys;
 
     uint256 public totalSupply;
 
-    bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
+    /// @dev rewards[owner] => uint256
+    /// @inheritdoc IUniswapV3Staker
+    mapping(address => uint256) public override rewards;
+
+    /// @param _factory the Uniswap V3 factory
+    /// @param _nonfungiblePositionManager the NFT position manager contract address
+    constructor(
+        address _pool,
+        address _registry,
+        IUniswapV3Factory _factory,
+        INonfungiblePositionManager _nonfungiblePositionManager
+    ) {
+        pool = IUniswapV3Pool(_pool);
+        registry = IRegistry(_registry);
+        factory = _factory;
+        nonfungiblePositionManager = _nonfungiblePositionManager;
+        startTime = block.timestamp;
+    }
 
     /// @inheritdoc IUniswapV3Staker
     function stakes(uint256 tokenId)
@@ -97,28 +100,6 @@ contract BaseGaugeV2UniV3 is
         liquidity = stake.liquidityNoOverflow;
         if (liquidity == type(uint96).max)
             liquidity = stake.liquidityIfOverflow;
-    }
-
-    /// @dev rewards[owner] => uint256
-    /// @inheritdoc IUniswapV3Staker
-    mapping(address => uint256) public override rewards;
-
-    /// @param _factory the Uniswap V3 factory
-    /// @param _nonfungiblePositionManager the NFT position manager contract address
-    constructor(
-        address _pool,
-        address _registry,
-        address _refundee,
-        IUniswapV3Factory _factory,
-        INonfungiblePositionManager _nonfungiblePositionManager
-    ) {
-        pool = IUniswapV3Pool(_pool);
-        registry = IRegistry(_registry);
-
-        refundee = _refundee;
-        factory = _factory;
-        nonfungiblePositionManager = _nonfungiblePositionManager;
-        startTime = block.timestamp;
     }
 
     /// @notice Upon receiving a Uniswap V3 ERC721, creates the token deposit setting owner to `from`. Also stakes token
@@ -196,7 +177,14 @@ contract BaseGaugeV2UniV3 is
         bytes memory data
     ) external override {
         Deposit memory deposit = deposits[tokenId];
-        _updateReward(tokenId);
+
+        // try to update rewards; if this breaks then we want to still
+        // allow the NFT to be withdrawn
+        try _updateReward(tokenId) {
+            /* do nothing */
+        } catch {
+            // skip if update reward failed for some reason
+        }
 
         totalSupply -= uint256(_stakes[tokenId].nonDerivedLiquidity);
         numberOfStakes--;
@@ -261,48 +249,16 @@ contract BaseGaugeV2UniV3 is
     }
 
     /// @inheritdoc IUniswapV3Staker
-    function claimReward(address to)
+    function claimReward(uint256 tokenId, address to)
         external
         override
         returns (uint256 reward)
     {
+        _updateReward(tokenId);
         reward = rewards[msg.sender];
         rewards[msg.sender] -= reward;
         TransferHelperExtended.safeTransfer(registry.maha(), to, reward);
         emit RewardClaimed(to, reward);
-    }
-
-    /// @inheritdoc IUniswapV3Staker
-    function getRewardInfo(uint256 tokenId)
-        external
-        view
-        override
-        returns (uint256 reward, uint160 secondsInsideX128)
-    {
-        (
-            uint160 secondsPerLiquidityInsideInitialX128,
-            uint128 liquidity
-        ) = stakes(tokenId);
-        require(
-            liquidity > 0,
-            "UniswapV3Staker::getRewardInfo: stake does not exist"
-        );
-
-        Deposit memory deposit = deposits[tokenId];
-
-        (, uint160 secondsPerLiquidityInsideX128, ) = pool
-            .snapshotCumulativesInside(deposit.tickLower, deposit.tickUpper);
-
-        (reward, secondsInsideX128) = RewardMath.computeRewardAmount(
-            totalRewardUnclaimed,
-            totalSecondsClaimedX128,
-            startTime,
-            endTime,
-            liquidity,
-            secondsPerLiquidityInsideInitialX128,
-            secondsPerLiquidityInsideX128,
-            block.timestamp
-        );
     }
 
     function derivedLiquidity(uint256 liquidity, address account)
@@ -323,7 +279,7 @@ contract BaseGaugeV2UniV3 is
         return Math.min((_derived + _adjusted), liquidity);
     }
 
-    function left(address token) external view returns (uint256) {
+    function left() external view returns (uint256) {
         return totalRewardUnclaimed;
     }
 
@@ -356,6 +312,6 @@ contract BaseGaugeV2UniV3 is
             amount
         );
 
-        emit IncentiveCreated(pool, startTime, endTime, refundee, amount);
+        emit IncentiveCreated(pool, startTime, endTime, amount);
     }
 }
