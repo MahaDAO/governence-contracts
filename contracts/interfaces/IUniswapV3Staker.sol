@@ -21,12 +21,6 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         view
         returns (INonfungiblePositionManager);
 
-    /// @notice The max duration of an incentive in seconds
-    function maxIncentiveDuration() external view returns (uint256);
-
-    /// @notice The max amount of seconds into the future the incentive startTime can be set
-    function maxIncentiveStartLeadTime() external view returns (uint256);
-
     /// @notice Represents a staking incentive
     /// @return totalRewardUnclaimed The amount of reward token not yet claimed by users
     /// @return totalSecondsClaimedX128 Total liquidity-seconds claimed, represented as a UQ32.128
@@ -71,9 +65,11 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     /// @return rewardsOwed The amount of the reward token claimable by the owner
     function rewards(address owner) external view returns (uint256 rewardsOwed);
 
+    function left(address token) external view returns (uint256);
+
     /// @notice Creates a new liquidity mining incentive program
     /// @param reward The amount of reward tokens to be distributed
-    function notifyRewardAmount(uint256 reward) external;
+    function notifyRewardAmount(address token, uint256 reward) external;
 
     /// @notice Withdraws a Uniswap V3 LP token `tokenId` from this contract to the recipient `to`
     /// @param tokenId The unique identifier of an Uniswap V3 LP token

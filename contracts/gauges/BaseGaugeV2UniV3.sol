@@ -167,7 +167,7 @@ contract BaseGaugeV2UniV3 is
             });
         }
 
-        emit TokenStaked(tokenId);
+        emit TokenStaked(tokenId, _liquidity);
         return this.onERC721Received.selector;
     }
 
@@ -275,7 +275,7 @@ contract BaseGaugeV2UniV3 is
         return Math.min((_derived + _adjusted), liquidity);
     }
 
-    function left() external view returns (uint256) {
+    function left(address token) external view override returns (uint256) {
         return totalRewardUnclaimed;
     }
 
@@ -292,7 +292,11 @@ contract BaseGaugeV2UniV3 is
         return (totalRewardUnclaimed, totalSecondsClaimedX128, numberOfStakes);
     }
 
-    function notifyRewardAmount(uint256 amount) external override nonReentrant {
+    function notifyRewardAmount(address token, uint256 amount) external override nonReentrant {
+        require(
+            token == registry.maha(),
+            "UniswapV3Staker::createIncentive: only maha allowed"
+        );
         require(
             amount > 0,
             "UniswapV3Staker::createIncentive: reward must be positive"
