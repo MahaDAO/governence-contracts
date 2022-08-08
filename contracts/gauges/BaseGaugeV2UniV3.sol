@@ -129,6 +129,9 @@ contract BaseGaugeV2UniV3 is
         nonfungiblePositionManager = _nonfungiblePositionManager;
         maxIncentiveStartLeadTime = _maxIncentiveStartLeadTime;
         maxIncentiveDuration = _maxIncentiveDuration;
+
+        startTime = block.timestamp;
+        endTime = block.timestamp + maxIncentiveDuration;
     }
 
     function _createIncentive(uint256 reward) internal {
@@ -503,7 +506,7 @@ contract BaseGaugeV2UniV3 is
         return (totalRewardUnclaimed, totalSecondsClaimedX128, numberOfStakes);
     }
 
-    function notifyRewardAmount(uint256 amount) external override nonReentrant {
+    function notifyRewardAmount(address token, uint256 amount) external override nonReentrant {
         _createIncentive(amount);
     }
 }

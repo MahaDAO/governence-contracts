@@ -17,13 +17,23 @@ async function main() {
   const gasPrice = estimateGasPrice.mul(3).div(2);
   console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
 
-  // Get all smart contract factories.
+  // Get all smart contract factories
   const univ3GaugeContractFactory = await ethers.getContractFactory(
     "BaseGaugeV2UniV3"
   );
   const bribesContractFactory = await ethers.getContractFactory("BaseV2Bribes");
 
   // Get all the deployed smart contracts.
+  const voter = await ethers.getContractAt(
+    "BaseV2Voter",
+    "0x84352AE3a54C98d8DD9753c553b2d60DF66914e6"
+  );
+  const registry = await ethers.getContractAt(
+    "Registry",
+    "0x6726827420b42B1C8A07ceCc480a77b3397e87f8"
+  );
+  const poolAddr = "0x7160dD61d95Ec9460FC84a318dEB3ce6B2c0a75f";
+
   const mahaCI = await ethers.getContractAt(
     "MockERC20",
     "0xAaA6a7A5d7eC7C7691576D557E1D2CDaBeca6C4A"
@@ -42,8 +52,8 @@ async function main() {
   );
 
   const univ3GaugeContractInstance = await univ3GaugeContractFactory.deploy(
-    "0x8bE3814F675f8CeCbd40ADC9B3B72f221Df4fA4E",
-    "0xac595de42aA6c820A25bd2f8A0122912F532B816",
+    poolAddr,
+    registry.address,
     deployer.address,
     "0x1F98431c8aD98523631AE4a59f267346ea31F984",
     "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
@@ -54,18 +64,17 @@ async function main() {
 
   await univ3GaugeContractInstance.deployed();
 
-  const bribesInstance = await bribesContractFactory.deploy(
-    "0xac595de42aA6c820A25bd2f8A0122912F532B816",
-    { gasPrice }
-  );
+  const bribesInstance = await bribesContractFactory.deploy(registry.address, {
+    gasPrice,
+  });
   await bribesInstance.deployed();
 
   console.log("G", univ3GaugeContractInstance.address);
   console.log("B", bribesInstance.address);
 
   await verifyContract(hre, univ3GaugeContractInstance.address, [
-    "0x8bE3814F675f8CeCbd40ADC9B3B72f221Df4fA4E",
-    "0xac595de42aA6c820A25bd2f8A0122912F532B816",
+    poolAddr,
+    registry.address,
     deployer.address,
     "0x1F98431c8aD98523631AE4a59f267346ea31F984",
     "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
@@ -73,9 +82,26 @@ async function main() {
     "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
   ]);
 
-  await verifyContract(hre, bribesInstance.address, [
-    "0xac595de42aA6c820A25bd2f8A0122912F532B816",
-  ]);
+  await verifyContract(hre, bribesInstance.address, [registry.address]);
+
+  let tx = await voter.toggleWhitelist(poolAddr, { gasPrice });
+  await tx.wait();
+  tx = await voter.toggleWhitelist(univ3GaugeContractInstance.address, {
+    gasPrice,
+  });
+  await tx.wait();
+  tx = await voter.toggleWhitelist(bribesInstance.address, {
+    gasPrice,
+  });
+  await tx.wait();
+
+  tx = await voter.registerGauge(
+    poolAddr,
+    bribesInstance.address,
+    univ3GaugeContractInstance.address,
+    { gasPrice }
+  );
+  await tx.wait();
 
   // Mint fee to fee distributors.
   console.log(`Minting MAHA to Fee distributor`);

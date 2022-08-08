@@ -24,6 +24,16 @@ async function main() {
   const bribesContractFactory = await ethers.getContractFactory("BaseV2Bribes");
 
   // Get all the deployed smart contracts.
+  const voter = await ethers.getContractAt(
+    "BaseV2Voter",
+    "0xFF872b8A23e59B54A7D22DEbc7FEafcf239cB798"
+  );
+  const registry = await ethers.getContractAt(
+    "Registry",
+    "0xe3aAd64Bdc20770C12A0D09cBf26bE9c30587408"
+  );
+  const poolAddr = "0xe3aAd64Bdc20770C12A0D09cBf26bE9c30587408";
+
   const mahaCI = await ethers.getContractAt(
     "MockERC20",
     "0xAaA6a7A5d7eC7C7691576D557E1D2CDaBeca6C4A"
@@ -42,30 +52,46 @@ async function main() {
   );
 
   const univ2GaugeContractInstance = await univ2GaugeContractFactory.deploy(
-    "0xe3aAd64Bdc20770C12A0D09cBf26bE9c30587408",
-    "0xac595de42aA6c820A25bd2f8A0122912F532B816",
+    poolAddr,
+    registry.address,
     { gasPrice }
   );
 
   await univ2GaugeContractInstance.deployed();
 
-  const bribesInstance = await bribesContractFactory.deploy(
-    "0xac595de42aA6c820A25bd2f8A0122912F532B816",
-    { gasPrice }
-  );
+  const bribesInstance = await bribesContractFactory.deploy(registry.address, {
+    gasPrice,
+  });
   await bribesInstance.deployed();
 
   console.log("G", univ2GaugeContractInstance.address);
   console.log("B", bribesInstance.address);
 
+  let tx = await voter.toggleWhitelist(poolAddr, { gasPrice });
+  await tx.wait();
+  tx = await voter.toggleWhitelist(univ2GaugeContractInstance.address, {
+    gasPrice,
+  });
+  await tx.wait();
+  tx = await voter.toggleWhitelist(bribesInstance.address, {
+    gasPrice,
+  });
+  await tx.wait();
+
+  tx = await voter.registerGauge(
+    poolAddr,
+    bribesInstance.address,
+    univ2GaugeContractInstance.address,
+    { gasPrice }
+  );
+  await tx.wait();
+
   await verifyContract(hre, univ2GaugeContractInstance.address, [
-    "0xd09330f48cf6f41f70f708710a21e015b8b66781",
-    "0xac595de42aA6c820A25bd2f8A0122912F532B816",
+    poolAddr,
+    registry.address,
   ]);
 
-  await verifyContract(hre, bribesInstance.address, [
-    "0xac595de42aA6c820A25bd2f8A0122912F532B816",
-  ]);
+  await verifyContract(hre, bribesInstance.address, [registry.address]);
 
   // Mint fee to fee distributors.
   console.log(`Minting MAHA to Fee distributor`);

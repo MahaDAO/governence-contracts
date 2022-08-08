@@ -17,8 +17,8 @@ async function main() {
   //   "0x500e99A6FE5D37a83762A3Febd1447b52C62ee5E"
   // );
   const gauge = await ethers.getContractAt(
-    "BaseV1Bribes",
-    "0xA093166Ea0B2aD61C41eE345393247293C0900B6"
+    "BaseGaugeV2UniV3",
+    "0x26bb6Eb904C5ACFC89C82E56C3bAfCf93f4A63B7"
   );
   const amount = BigNumber.from(10).pow(18).mul(1e8);
   const amounte6 = BigNumber.from(10).pow(6).mul(1e8);
@@ -62,10 +62,10 @@ async function main() {
   // // await bribe.notifyRewardAmount(maha.address, amount);
   // await bribe.notifyRewardAmount(dai.address, amount);
 
-  await gauge.notifyRewardAmount(solid.address, amount);
   await gauge.notifyRewardAmount(maha.address, amount);
-  await gauge.notifyRewardAmount(dai.address, amount);
-  await gauge.notifyRewardAmount(usdc.address, amounte6);
+  // await gauge.notifyRewardAmount(solid.address, amount);
+  // await gauge.notifyRewardAmount(dai.address, amount);
+  // await gauge.notifyRewardAmount(usdc.address, amounte6);
 }
 
 main().catch((error) => {
