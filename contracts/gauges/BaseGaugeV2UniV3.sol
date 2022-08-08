@@ -31,7 +31,6 @@ contract BaseGaugeV2UniV3 is
 
     uint256 public totalRewardUnclaimed;
     uint160 public totalSecondsClaimedX128;
-    uint96 public numberOfStakes;
     uint256 public startTime;
     uint256 public endTime;
     uint256 public constant DURATION = 7 days; // rewards are released over 7 days
@@ -68,6 +67,18 @@ contract BaseGaugeV2UniV3 is
     /// @dev rewards[owner] => uint256
     /// @inheritdoc IUniswapV3Staker
     mapping(address => uint256) public override rewards;
+
+    /// @dev Mapping from owner to list of owned token IDs
+    mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
+
+    /// @dev Mapping from token ID to index of the owner tokens list
+    mapping(uint256 => uint256) private _ownedTokensIndex;
+
+    /// @dev Array with all token ids, used for enumeration
+    uint256[] private _allTokens;
+
+    /// @dev Mapping from token id to position in the allTokens array
+    mapping(uint256 => uint256) private _allTokensIndex;
 
     /// @param _factory the Uniswap V3 factory
     /// @param _nonfungiblePositionManager the NFT position manager contract address
@@ -142,11 +153,7 @@ contract BaseGaugeV2UniV3 is
         );
 
         totalSupply += uint256(_liquidity);
-        uint128 liquidity = uint128(
-            derivedLiquidity(_liquidity, deposits[tokenId].owner)
-        );
-
-        numberOfStakes++;
+        uint128 liquidity = uint128(derivedLiquidity(_liquidity, from));
 
         (, uint160 secondsPerLiquidityInsideX128, ) = _pool
             .snapshotCumulativesInside(tickLower, tickUpper);
@@ -167,21 +174,19 @@ contract BaseGaugeV2UniV3 is
             });
         }
 
+        _addTokenToAllTokensEnumeration(tokenId);
+        _addTokenToOwnerEnumeration(from, tokenId);
+
         emit TokenStaked(tokenId, _liquidity);
         return this.onERC721Received.selector;
     }
 
     /// @inheritdoc IUniswapV3Staker
-    function withdrawToken(
-        uint256 tokenId,
-        address to,
-        bytes memory data
-    ) external override {
+    function withdrawToken(uint256 tokenId) external override {
         // try to update rewards
         _updateReward(tokenId);
 
         totalSupply -= uint256(_stakes[tokenId].nonDerivedLiquidity);
-        numberOfStakes--;
 
         require(
             to != address(this),
@@ -195,13 +200,15 @@ contract BaseGaugeV2UniV3 is
         delete deposits[tokenId];
         delete _stakes[tokenId];
 
+        _removeTokenFromOwnerEnumeration(msg.sender, tokenId);
+        _removeTokenFromAllTokensEnumeration(tokenId);
+
         emit TokenUnstaked(tokenId);
 
         nonfungiblePositionManager.safeTransferFrom(
             address(this),
-            to,
-            tokenId,
-            data
+            msg.sender,
+            tokenId
         );
     }
 
@@ -279,20 +286,15 @@ contract BaseGaugeV2UniV3 is
         return totalRewardUnclaimed;
     }
 
-    function incentives()
-        external
-        view
-        override
-        returns (
-            uint256,
-            uint160,
-            uint96
-        )
-    {
-        return (totalRewardUnclaimed, totalSecondsClaimedX128, numberOfStakes);
+    function incentives() external view override returns (uint256, uint160) {
+        return (totalRewardUnclaimed, totalSecondsClaimedX128);
     }
 
-    function notifyRewardAmount(address token, uint256 amount) external override nonReentrant {
+    function notifyRewardAmount(address token, uint256 amount)
+        external
+        override
+        nonReentrant
+    {
         require(
             token == registry.maha(),
             "UniswapV3Staker::createIncentive: only maha allowed"
@@ -313,5 +315,80 @@ contract BaseGaugeV2UniV3 is
         );
 
         emit IncentiveCreated(pool, startTime, endTime, amount);
+    }
+
+    /**
+     * @dev Private function to add a token to this extension's ownership-tracking data structures.
+     * @param to address representing the new owner of the given token ID
+     * @param tokenId uint256 ID of the token to be added to the tokens list of the given address
+     */
+    function _addTokenToOwnerEnumeration(address to, uint256 tokenId) private {
+        uint256 length = ERC721.balanceOf(to);
+        _ownedTokens[to][length] = tokenId;
+        _ownedTokensIndex[tokenId] = length;
+    }
+
+    /**
+     * @dev Private function to add a token to this extension's token tracking data structures.
+     * @param tokenId uint256 ID of the token to be added to the tokens list
+     */
+    function _addTokenToAllTokensEnumeration(uint256 tokenId) private {
+        _allTokensIndex[tokenId] = _allTokens.length;
+        _allTokens.push(tokenId);
+    }
+
+    /**
+     * @dev Private function to remove a token from this extension's ownership-tracking data structures. Note that
+     * while the token is not assigned a new owner, the `_ownedTokensIndex` mapping is _not_ updated: this allows for
+     * gas optimizations e.g. when performing a transfer operation (avoiding double writes).
+     * This has O(1) time complexity, but alters the order of the _ownedTokens array.
+     * @param from address representing the previous owner of the given token ID
+     * @param tokenId uint256 ID of the token to be removed from the tokens list of the given address
+     */
+    function _removeTokenFromOwnerEnumeration(address from, uint256 tokenId)
+        private
+    {
+        // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
+        // then delete the last slot (swap and pop).
+
+        uint256 lastTokenIndex = ERC721.balanceOf(from) - 1;
+        uint256 tokenIndex = _ownedTokensIndex[tokenId];
+
+        // When the token to delete is the last token, the swap operation is unnecessary
+        if (tokenIndex != lastTokenIndex) {
+            uint256 lastTokenId = _ownedTokens[from][lastTokenIndex];
+
+            _ownedTokens[from][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
+            _ownedTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
+        }
+
+        // This also deletes the contents at the last position of the array
+        delete _ownedTokensIndex[tokenId];
+        delete _ownedTokens[from][lastTokenIndex];
+    }
+
+    /**
+     * @dev Private function to remove a token from this extension's token tracking data structures.
+     * This has O(1) time complexity, but alters the order of the _allTokens array.
+     * @param tokenId uint256 ID of the token to be removed from the tokens list
+     */
+    function _removeTokenFromAllTokensEnumeration(uint256 tokenId) private {
+        // To prevent a gap in the tokens array, we store the last token in the index of the token to delete, and
+        // then delete the last slot (swap and pop).
+
+        uint256 lastTokenIndex = _allTokens.length - 1;
+        uint256 tokenIndex = _allTokensIndex[tokenId];
+
+        // When the token to delete is the last token, the swap operation is unnecessary. However, since this occurs so
+        // rarely (when the last minted token is burnt) that we still do the swap here to avoid the gas cost of adding
+        // an 'if' statement (like in _removeTokenFromOwnerEnumeration)
+        uint256 lastTokenId = _allTokens[lastTokenIndex];
+
+        _allTokens[tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
+        _allTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
+
+        // This also deletes the contents at the last position of the array
+        delete _allTokensIndex[tokenId];
+        _allTokens.pop();
     }
 }

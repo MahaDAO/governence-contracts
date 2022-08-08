@@ -24,15 +24,10 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     /// @notice Represents a staking incentive
     /// @return totalRewardUnclaimed The amount of reward token not yet claimed by users
     /// @return totalSecondsClaimedX128 Total liquidity-seconds claimed, represented as a UQ32.128
-    /// @return numberOfStakes The count of deposits that are currently staked for the incentive
     function incentives()
         external
         view
-        returns (
-            uint256 totalRewardUnclaimed,
-            uint160 totalSecondsClaimedX128,
-            uint96 numberOfStakes
-        );
+        returns (uint256 totalRewardUnclaimed, uint160 totalSecondsClaimedX128);
 
     /// @notice Returns information about a deposited NFT
     /// @return owner The owner of the deposited NFT
@@ -46,6 +41,25 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
             int24 tickLower,
             int24 tickUpper
         );
+
+    /// @notice Returns information about a deposited NFT
+    /// @param depositOwner The owner of the deposited NFT
+    /// @return uint256 The current no of nfts deposited by owner.
+    function noOfDeposits(address depositOwner) external view returns (uint256);
+
+    /// @notice Returns information about a deposited NFT
+    /// @param depositOwner The owner of the deposited NFT
+    /// @param index The index of which you want to claim the position.
+    /// @return uint256 The current token id.
+    function tokenOfOwnerByIndex(address depositOwner, uint256 index)
+        external
+        view
+        returns (uint256);
+
+    /// @notice Returns the index position of tokenid in the tokenOfOwnerByIndex.
+    /// @param tokenId The token id to be queried
+    /// @return uint256 The index position in tokenOfOwnerByIndex
+    function tokenToOwnerIndex(uint256 tokenId) external view returns (uint256);
 
     /// @notice Returns information about a staked liquidity NFT
     /// @param tokenId The ID of the staked token
