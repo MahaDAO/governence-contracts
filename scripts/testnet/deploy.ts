@@ -6,6 +6,7 @@ async function main() {
   console.log(`Deploying governance to ${network.name}`);
 
   const outputFile: any = {};
+  const now = Math.floor(Date.now() / 1000);
   const [deployer] = await ethers.getSigners();
   const PROXY_ADMIN = "0xed74d7941EFb3aec09C02a2db41BCBf195c9216b";
   console.log(
@@ -145,7 +146,7 @@ async function main() {
   console.log(`Deploying MAHA fee distributor.`);
   const mahaFeeDistributorCI = await feeDistributorCF.deploy(
     mahaxCI.address,
-    Math.floor(Date.now() / 1000),
+    now,
     mahaCI.address,
     deployer.address,
     PROXY_ADMIN
@@ -156,7 +157,7 @@ async function main() {
   console.log(`Deploying ARTH fee distributor.`);
   const arthFeeDistributorCI = await feeDistributorCF.deploy(
     mahaxCI.address,
-    Math.floor(Date.now() / 1000),
+    now,
     arthCI.address,
     deployer.address,
     PROXY_ADMIN
@@ -167,7 +168,7 @@ async function main() {
   console.log(`Deploying USDC fee distributor.`);
   const usdcFeeDistributorCI = await feeDistributorCF.deploy(
     mahaxCI.address,
-    Math.floor(Date.now() / 1000),
+    now,
     usdcCI.address,
     deployer.address,
     PROXY_ADMIN
@@ -312,9 +313,15 @@ async function main() {
     "1000000000000000000",
   ]);
 
+  await verifyContract(hre, voterCI.address, [
+    registryCI.address,
+    emissionControllerCI.address,
+    deployer.address,
+  ]);
+
   await verifyContract(hre, mahaFeeDistributorCI.address, [
     mahaxCI.address,
-    Math.floor(Date.now() / 1000),
+    now,
     mahaCI.address,
     deployer.address,
     PROXY_ADMIN,
@@ -322,7 +329,7 @@ async function main() {
 
   await verifyContract(hre, arthFeeDistributorCI.address, [
     mahaxCI.address,
-    Math.floor(Date.now() / 1000),
+    now,
     arthCI.address,
     deployer.address,
     PROXY_ADMIN,
@@ -330,16 +337,10 @@ async function main() {
 
   await verifyContract(hre, usdcFeeDistributorCI.address, [
     mahaxCI.address,
-    Math.floor(Date.now() / 1000),
+    now,
     usdcCI.address,
     deployer.address,
     PROXY_ADMIN,
-  ]);
-
-  await verifyContract(hre, voterCI.address, [
-    registryCI.address,
-    emissionControllerCI.address,
-    deployer.address,
   ]);
 
   console.log(`Governance deployment on ${network.name} complete.`);

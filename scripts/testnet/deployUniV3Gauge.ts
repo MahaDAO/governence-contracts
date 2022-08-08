@@ -34,28 +34,20 @@ async function main() {
   );
   const poolAddr = "0x8bE3814F675f8CeCbd40ADC9B3B72f221Df4fA4E";
 
-  const mahaCI = await ethers.getContractAt(
-    "MockERC20",
-    "0xAaA6a7A5d7eC7C7691576D557E1D2CDaBeca6C4A"
-  );
-  const solidCI = await ethers.getContractAt(
-    "MockERC20",
-    "0xD09cb6c1aAb18239B7C0880BFcfaAbca461cBac3"
-  );
-  const daiCI = await ethers.getContractAt(
-    "MockERC20",
-    "0xbAE4E07480f16d82Bc13850C36631C21861E245b"
-  );
-  const usdcCI = await ethers.getContractAt(
-    "MockERC20",
-    "0x3e922459b8D5956E3c886aCA472688F811821F6b"
-  );
-
-  const univ3GaugeContractInstance = await univ3GaugeContractFactory.deploy(
-    poolAddr,
-    registry.address,
+  const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
+  const tokens = [
     "0x1F98431c8aD98523631AE4a59f267346ea31F984",
     "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+  ];
+
+  const fee = 10000;
+
+  const univ3GaugeContractInstance = await univ3GaugeContractFactory.deploy(
+    tokens[0],
+    tokens[1],
+    fee,
+    registry.address,
+    uniPositionManager,
     { gasPrice }
   );
 
@@ -69,9 +61,7 @@ async function main() {
   console.log("G", univ3GaugeContractInstance.address);
   console.log("B", bribesInstance.address);
 
-  let tx = await voter.toggleWhitelist(poolAddr, { gasPrice });
-  await tx.wait();
-  tx = await voter.toggleWhitelist(univ3GaugeContractInstance.address, {
+  let tx = await voter.toggleWhitelist(univ3GaugeContractInstance.address, {
     gasPrice,
   });
   await tx.wait();
@@ -89,41 +79,14 @@ async function main() {
   await tx.wait();
 
   await verifyContract(hre, univ3GaugeContractInstance.address, [
-    poolAddr,
+    tokens[0],
+    tokens[1],
+    fee,
     registry.address,
-    "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-    "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+    uniPositionManager,
   ]);
 
   await verifyContract(hre, bribesInstance.address, [registry.address]);
-
-  // Mint fee to fee distributors.
-  console.log(`Minting MAHA to Fee distributor`);
-  await mahaCI.mint(
-    deployer.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e8),
-    { gasPrice }
-  );
-  console.log(`Minting DAI to Fee distributor`);
-  await daiCI.mint(
-    deployer.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e8),
-    { gasPrice }
-  );
-  console.log(`Minting SOLID to Fee distributor`);
-  await solidCI.mint(
-    deployer.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e8),
-    { gasPrice }
-  );
-  console.log(`Minting USDC to Fee distributor`);
-  await usdcCI.mint(
-    deployer.address,
-    ethers.BigNumber.from(10).pow(6).mul(1e8),
-    { gasPrice }
-  );
-
-  console.log(`Governance deployment on ${network.name} complete.`);
 }
 
 main().catch((error) => {

@@ -80,10 +80,15 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         );
 
     /// @notice Returns amounts of reward tokens owed to a given address according to the last time all stakes were updated
-
     /// @param owner The owner for which the rewards owed are checked
     /// @return rewardsOwed The amount of the reward token claimable by the owner
     function rewards(address owner) external view returns (uint256 rewardsOwed);
+
+    /// @notice checks if the given LP token ids are within their given liquidaty range or not
+    function isIdsWithinRange(uint256[] memory tokenIds)
+        external
+        view
+        returns (bool[] memory);
 
     function left(address token) external view returns (uint256);
 

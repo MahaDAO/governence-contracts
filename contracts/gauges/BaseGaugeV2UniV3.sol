@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
-import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
-import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
+import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {RewardMath} from "../utils/RewardMath.sol";
 import {INonfungiblePositionManager} from "../interfaces/INonfungiblePositionManager.sol";
@@ -15,9 +15,9 @@ import {IRegistry} from "../interfaces/IRegistry.sol";
 import {NFTPositionInfo} from "../utils/NFTPositionInfo.sol";
 import {Multicall} from "../utils/Multicall.sol";
 import {TransferHelperExtended} from "../utils/TransferHelperExtended.sol";
+import {PoolAddress} from "../utils/PoolAddress.sol";
 import {IUniswapV3Staker} from "../interfaces/IUniswapV3Staker.sol";
 import {INFTStaker} from "../interfaces/INFTStaker.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title Uniswap V3 canonical staking interface
 contract BaseGaugeV2UniV3 is
@@ -82,18 +82,23 @@ contract BaseGaugeV2UniV3 is
     /// @dev Mapping from token id to position in the allTokens array
     mapping(uint256 => uint256) private _allTokensIndex;
 
-    /// @param _factory the Uniswap V3 factory
     /// @param _nonfungiblePositionManager the NFT position manager contract address
     constructor(
-        address _pool,
+        address token0,
+        address token1,
+        uint24 fee,
         address _registry,
-        IUniswapV3Factory _factory,
         INonfungiblePositionManager _nonfungiblePositionManager
     ) {
-        pool = IUniswapV3Pool(_pool);
+        pool = IUniswapV3Pool(
+            PoolAddress.computeAddress(
+                address(factory),
+                PoolAddress.PoolKey({token0: token0, token1: token1, fee: fee})
+            )
+        );
         registry = IRegistry(_registry);
-        factory = _factory;
         nonfungiblePositionManager = _nonfungiblePositionManager;
+        factory = IUniswapV3Factory(nonfungiblePositionManager.factory());
         startTime = block.timestamp;
     }
 
@@ -284,6 +289,35 @@ contract BaseGaugeV2UniV3 is
 
     function left(address token) external view override returns (uint256) {
         return totalRewardUnclaimed;
+    }
+
+    /// @inheritdoc IUniswapV3Staker
+    function isIdsWithinRange(uint256[] memory tokenIds)
+        external
+        view
+        override
+        returns (bool[] memory)
+    {
+        bool[] memory ret = new bool[](tokenIds.length);
+
+        for (uint256 index = 0; index < tokenIds.length; index++) {
+            uint256 tokenId = tokenIds[index];
+            (
+                IUniswapV3Pool _pool,
+                int24 tickLower,
+                int24 tickUpper,
+
+            ) = NFTPositionInfo.getPositionInfo(
+                    factory,
+                    nonfungiblePositionManager,
+                    tokenId
+                );
+
+            (, int24 tick, , , , , ) = _pool.slot0();
+            ret[index] = tickLower < tick && tick < tickUpper;
+        }
+
+        return ret;
     }
 
     function incentives() external view override returns (uint256, uint160) {
