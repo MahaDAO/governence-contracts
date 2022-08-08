@@ -18,7 +18,7 @@ async function main() {
   // );
   const gauge = await ethers.getContractAt(
     "BaseV1Bribes",
-    "0xA093166Ea0B2aD61C41eE345393247293C0900B6"
+    "0xeAE4878459A13524B18a7C26Cb5A834E06053c30"
   );
   const amount = BigNumber.from(10).pow(18).mul(1e8);
   const amounte6 = BigNumber.from(10).pow(6).mul(1e8);

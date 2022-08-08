@@ -110,7 +110,7 @@ async function main() {
   const startTime = Math.floor((Date.now() + 20 * 60 * 1000) / 1000);
   const emissionControllerCI = await emissionControllerCF.deploy(
     registryCI.address,
-    12 * 60 * 60, // 12 hr period.
+    1 * 60 * 60, // 1 hr period.
     startTime,
     "1000000000000000000",
     { gasPrice }

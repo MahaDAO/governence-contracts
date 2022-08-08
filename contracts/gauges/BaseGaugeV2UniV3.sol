@@ -69,6 +69,15 @@ contract BaseGaugeV2UniV3 is
     /// @inheritdoc IUniswapV3Staker
     mapping(address => uint256) public override rewards;
 
+    /// @inheritdoc IUniswapV3Staker
+    mapping (address => uint256) public override noOfDeposits;
+
+    /// @inheritdoc IUniswapV3Staker
+    mapping (address => mapping (uint256 => uint256)) public override tokenOfOwnerByIndex;
+
+    /// @inheritdoc IUniswapV3Staker
+    mapping (uint256 => uint256) public override tokenToOwnerIndex;
+
     /// @param _factory the Uniswap V3 factory
     /// @param _nonfungiblePositionManager the NFT position manager contract address
     constructor(
@@ -132,6 +141,11 @@ contract BaseGaugeV2UniV3 is
             tickUpper: tickUpper
         });
 
+        uint256 _currentCount = noOfDeposits[from];
+        tokenOfOwnerByIndex[from][_currentCount] = tokenId;
+        tokenToOwnerIndex[tokenId] = _currentCount;
+        noOfDeposits[from] += 1;
+
         require(
             _pool == pool,
             "UniswapV3Staker::stakeToken: token pool is not the right pool"
@@ -194,6 +208,26 @@ contract BaseGaugeV2UniV3 is
 
         delete deposits[tokenId];
         delete _stakes[tokenId];
+
+        address _from = msg.sender;
+        uint256 currentCount = noOfDeposits[_from] - 1;
+        uint256 currentIndex = tokenToOwnerIndex[tokenId];
+
+        if (currentCount == currentIndex) {
+            tokenOfOwnerByIndex[_from][currentCount] = 0;
+            tokenToOwnerIndex[tokenId] = 0;
+        } else {
+            uint256 lastTokenId = tokenOfOwnerByIndex[_from][currentCount];
+
+            tokenOfOwnerByIndex[_from][currentIndex] = lastTokenId;
+            tokenToOwnerIndex[lastTokenId] = currentIndex;
+
+            tokenOfOwnerByIndex[_from][currentCount] = 0;
+            tokenToOwnerIndex[tokenId] = 0;
+        }
+
+        // since we are checking that deposit owner is equal to msg.sender.
+        noOfDeposits[_from]--;
 
         emit TokenUnstaked(tokenId);
 
