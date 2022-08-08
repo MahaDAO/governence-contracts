@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import hre, { ethers, network } from "hardhat";
-
 import verifyContract from "../verifyContract";
 
 async function main() {
@@ -21,7 +20,6 @@ async function main() {
   // Get all smart contract factories.
   const mahaxCF = await ethers.getContractFactory(`MAHAXLocker`);
   const registryCF = await ethers.getContractFactory(`Registry`);
-  const mockTokenCF = await ethers.getContractFactory(`MockERC20`);
   const emissionControllerCF = await ethers.getContractFactory(
     `EmissionController`
   );
@@ -40,19 +38,15 @@ async function main() {
   // Get all the deployed smart contracts.
   const mahaCI = await ethers.getContractAt(
     "MockERC20",
-    "0xAaA6a7A5d7eC7C7691576D557E1D2CDaBeca6C4A"
+    "0x106E0c36aD45cEAce8a778fa7365a2ce0500C3a2"
   );
-  const solidCI = await ethers.getContractAt(
+  const arthCI = await ethers.getContractAt(
     "MockERC20",
-    "0xD09cb6c1aAb18239B7C0880BFcfaAbca461cBac3"
-  );
-  const daiCI = await ethers.getContractAt(
-    "MockERC20",
-    "0xbAE4E07480f16d82Bc13850C36631C21861E245b"
+    "0xbeab728fcc37de548620f17e9a521374f4a35c02"
   );
   const usdcCI = await ethers.getContractAt(
     "MockERC20",
-    "0x3e922459b8D5956E3c886aCA472688F811821F6b"
+    "0xc003235c028A18E55bacE946E91fAe95769348BB"
   );
 
   // Deploy all the smart contracts.
@@ -77,34 +71,43 @@ async function main() {
 
   console.log(`Deploying the registry`);
   const registryCI = await registryCF.deploy({ gasPrice });
+  console.log(`tx hash: `, registryCI.deployTransaction.hash);
   await registryCI.deployed();
 
+  console.log(`Deploying the governor`);
   const mahaxGovernorCI = await mahaxGovernorCF.deploy(
     registryCI.address,
     mahadaoTimelockControllerCI.address,
     { gasPrice }
   );
+  console.log(`tx hash: `, mahaxGovernorCI.deployTransaction.hash);
   await mahaxGovernorCI.deployed();
 
+  console.log(`Deploying the staker`);
   const mahaxStakerCI = await mahaxStakerCF.deploy(registryCI.address, {
     gasPrice,
   });
+  console.log(`tx hash: `, mahaxStakerCI.deployTransaction.hash);
   await mahaxStakerCI.deployed();
 
-  console.log(`Deploying MAHAX`);
+  console.log(`Deploying the locker`);
   const mahaxCI = await mahaxCF.deploy(
     registryCI.address,
     deployer.address,
     10000,
     { gasPrice }
   );
+  console.log(`tx hash: `, mahaxCI.deployTransaction.hash);
   await mahaxCI.deployed();
 
   console.log(`Deploying gauge and bribe factories`);
   const gaugeFactoryCI = await gaugeFactoryCF.deploy({ gasPrice });
   await gaugeFactoryCI.deployed();
+  console.log(`tx hash: `, gaugeFactoryCI.deployTransaction.hash);
+
   const bribesFactoryCI = await bribesFactoryCF.deploy({ gasPrice });
   await bribesFactoryCI.deployed();
+  console.log(`tx hash: `, bribesFactoryCI.deployTransaction.hash);
 
   console.log(`Deploying emission controller`);
   const startTime = Math.floor((Date.now() + 20 * 60 * 1000) / 1000);
@@ -116,13 +119,16 @@ async function main() {
     { gasPrice }
   );
   await emissionControllerCI.deployed();
+  console.log(`tx hash: `, emissionControllerCI.deployTransaction.hash);
 
+  console.log(`Deploying gauge voter`);
   const voterCI = await voterCF.deploy(
     registryCI.address,
     emissionControllerCI.address,
     { gasPrice }
   );
   await voterCI.deployed();
+  console.log(`tx hash: `, voterCI.deployTransaction.hash);
 
   console.log(`Setting contracts in Registry`);
   await registryCI.initialize(
@@ -145,26 +151,18 @@ async function main() {
     PROXY_ADMIN
   );
   await mahaFeeDistributorCI.deployed();
+  console.log(`tx hash: `, mahaFeeDistributorCI.deployTransaction.hash);
 
-  console.log(`Deploying DAI fee distributor.`);
-  const daiFeeDistributorCI = await feeDistributorCF.deploy(
+  console.log(`Deploying ARTH fee distributor.`);
+  const arthFeeDistributorCI = await feeDistributorCF.deploy(
     mahaxCI.address,
     Math.floor(Date.now() / 1000),
-    daiCI.address,
+    arthCI.address,
     deployer.address,
     PROXY_ADMIN
   );
-  await daiFeeDistributorCI.deployed();
-
-  console.log(`Deploying SOLID fee distributor.`);
-  const solidFeeDistributorCI = await feeDistributorCF.deploy(
-    mahaxCI.address,
-    Math.floor(Date.now() / 1000),
-    solidCI.address,
-    deployer.address,
-    PROXY_ADMIN
-  );
-  await solidFeeDistributorCI.deployed();
+  await arthFeeDistributorCI.deployed();
+  console.log(`tx hash: `, arthFeeDistributorCI.deployTransaction.hash);
 
   console.log(`Deploying USDC fee distributor.`);
   const usdcFeeDistributorCI = await feeDistributorCF.deploy(
@@ -175,44 +173,12 @@ async function main() {
     PROXY_ADMIN
   );
   await usdcFeeDistributorCI.deployed();
-
-  // Mint the default faucet.
-  console.log(`Minting MAHA to EmissionController`);
-  await mahaCI.mint(
-    emissionControllerCI.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e6),
-    { gasPrice }
-  );
-
-  console.log(`Minting MAHA to Deployer`);
-  await mahaCI.mint(
-    deployer.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e6),
-    { gasPrice }
-  );
-  console.log(`Minting DAI to Deployer`);
-  await daiCI.mint(
-    deployer.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e6),
-    { gasPrice }
-  );
-  console.log(`Minting SOLID to Deployer`);
-  await solidCI.mint(
-    deployer.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e6),
-    { gasPrice }
-  );
-  console.log(`Minting USDC to Deployer`);
-  await usdcCI.mint(
-    deployer.address,
-    ethers.BigNumber.from(10).pow(6).mul(1e6),
-    { gasPrice }
-  );
+  console.log(`tx hash: `, usdcFeeDistributorCI.deployTransaction.hash);
 
   // Create the output.json file.
-  outputFile.DAI = {
+  outputFile.ARTH = {
     abi: "MockERC20",
-    address: daiCI.address,
+    address: arthCI.address,
   };
   outputFile.MAHAXStaker = {
     abi: "MAHAXStaker",
@@ -230,19 +196,15 @@ async function main() {
     abi: "MockERC20",
     address: usdcCI.address,
   };
-  outputFile.SOLID = {
-    abi: "MockERC20",
-    address: solidCI.address,
-  };
   outputFile.MAHA = {
     abi: "MockERC20",
     address: mahaCI.address,
   };
-  outputFile.VotingEscrow = {
+  outputFile.MAHALocker = {
     abi: "MAHAX",
     address: mahaxCI.address,
   };
-  outputFile.Voter = {
+  outputFile.GaugeVoter = {
     abi: "BaseV2Voter",
     address: voterCI.address,
   };
@@ -266,18 +228,28 @@ async function main() {
     abi: "FeeDistributor",
     address: mahaFeeDistributorCI.address,
   };
-  outputFile.DAIFeeDistributor = {
+  outputFile.ARTHFeeDistributor = {
     abi: "FeeDistributor",
-    address: daiFeeDistributorCI.address,
-  };
-  outputFile.SOLIDFeeDistributor = {
-    abi: "FeeDistributor",
-    address: solidFeeDistributorCI.address,
+    address: arthFeeDistributorCI.address,
   };
   outputFile.USDCFeeDistributor = {
     abi: "FeeDistributor",
     address: usdcFeeDistributorCI.address,
   };
+
+  // Save the output file.
+  fs.writeFileSync(
+    `./output/${network.name}.json`,
+    JSON.stringify(outputFile, null, 4)
+  );
+
+  // Mint to the emissions controller.
+  console.log(`Minting MAHA to EmissionController`);
+  await mahaCI.mint(
+    emissionControllerCI.address,
+    ethers.BigNumber.from(10).pow(18).mul(1e6),
+    { gasPrice }
+  );
 
   // Mint fee to fee distributors.
   console.log(`Minting MAHA to Fee distributor`);
@@ -286,15 +258,9 @@ async function main() {
     ethers.BigNumber.from(10).pow(18).mul(1e6),
     { gasPrice }
   );
-  console.log(`Minting DAI to Fee distributor`);
-  await daiCI.mint(
-    daiFeeDistributorCI.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e6),
-    { gasPrice }
-  );
-  console.log(`Minting SOLID to Fee distributor`);
-  await solidCI.mint(
-    solidFeeDistributorCI.address,
+  console.log(`Minting ARTH to Fee distributor`);
+  await arthCI.mint(
+    arthFeeDistributorCI.address,
     ethers.BigNumber.from(10).pow(18).mul(1e6),
     { gasPrice }
   );
@@ -354,22 +320,15 @@ async function main() {
     PROXY_ADMIN,
   ]);
 
-  await verifyContract(hre, daiFeeDistributorCI.address, [
+  await verifyContract(hre, arthFeeDistributorCI.address, [
     mahaxCI.address,
     Math.floor(Date.now() / 1000),
-    daiCI.address,
+    arthCI.address,
     deployer.address,
     PROXY_ADMIN,
   ]);
 
-  await verifyContract(hre, solidFeeDistributorCI.address, [
-    mahaxCI.address,
-    Math.floor(Date.now() / 1000),
-    solidCI.address,
-    deployer.address,
-    PROXY_ADMIN,
-  ]);
-  await verifyContract(hre, solidFeeDistributorCI.address, [
+  await verifyContract(hre, usdcFeeDistributorCI.address, [
     mahaxCI.address,
     Math.floor(Date.now() / 1000),
     usdcCI.address,
@@ -382,12 +341,6 @@ async function main() {
     emissionControllerCI.address,
     deployer.address,
   ]);
-
-  // Save the output file.
-  fs.writeFileSync(
-    `./output/${network.name}.json`,
-    JSON.stringify(outputFile, null, 4)
-  );
 
   console.log(`Governance deployment on ${network.name} complete.`);
 }
