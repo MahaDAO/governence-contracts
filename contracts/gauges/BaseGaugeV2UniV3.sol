@@ -255,6 +255,8 @@ contract BaseGaugeV2UniV3 is
         emit RewardClaimed(to, reward);
     }
 
+    // todo make a for loop to iterate through all claim rewards
+
     function derivedLiquidity(uint256 liquidity, address account)
         public
         view
