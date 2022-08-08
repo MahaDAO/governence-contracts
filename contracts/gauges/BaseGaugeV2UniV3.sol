@@ -191,10 +191,6 @@ contract BaseGaugeV2UniV3 is
         totalSupply -= uint256(_stakes[tokenId].nonDerivedLiquidity);
 
         require(
-            to != address(this),
-            "UniswapV3Staker::withdrawToken: cannot withdraw to staker"
-        );
-        require(
             deposits[tokenId].owner == msg.sender,
             "UniswapV3Staker::withdrawToken: only owner can withdraw token"
         );
