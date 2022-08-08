@@ -26,18 +26,17 @@ async function main() {
   // Get all the deployed smart contracts.
   const voter = await ethers.getContractAt(
     "BaseV2Voter",
-    "0xDd1101865A1D0208993972d36Aa5500cB75dFF49"
+    "0x9A70a3e980852131EEEa6E656Bc90eA634269EfE"
   );
   const registry = await ethers.getContractAt(
     "Registry",
-    "0xC965e5C1938366751499ff481FcB932868F199E7"
+    "0xfA7e8C8D3503BE4006450e1cf75183C0cE728aFA"
   );
-  const poolAddr = "0x8bE3814F675f8CeCbd40ADC9B3B72f221Df4fA4E";
 
   const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
   const tokens = [
-    "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-    "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+    "0xbeab728fcc37de548620f17e9a521374f4a35c02", // arth
+    "0xc003235c028A18E55bacE946E91fAe95769348BB", // usdc
   ];
 
   const fee = 10000;
@@ -58,25 +57,20 @@ async function main() {
   });
   await bribesInstance.deployed();
 
-  console.log("G", univ3GaugeContractInstance.address);
-  console.log("B", bribesInstance.address);
+  console.log("univ3GaugeContractInstance", univ3GaugeContractInstance.address);
+  console.log("bribesInstance", bribesInstance.address);
 
-  let tx = await voter.toggleWhitelist(univ3GaugeContractInstance.address, {
+  const tx1 = await voter.toggleWhitelist(univ3GaugeContractInstance.address, {
     gasPrice,
   });
-  await tx.wait();
-  tx = await voter.toggleWhitelist(bribesInstance.address, {
+  console.log("tx gauge whitelist", tx1.hash);
+  await tx1.wait();
+
+  const tx2 = await voter.toggleWhitelist(bribesInstance.address, {
     gasPrice,
   });
-  await tx.wait();
-
-  tx = await voter.registerGauge(
-    poolAddr,
-    bribesInstance.address,
-    univ3GaugeContractInstance.address,
-    { gasPrice }
-  );
-  await tx.wait();
+  console.log("tx bribes whitelist", tx2.hash);
+  await tx2.wait();
 
   await verifyContract(hre, univ3GaugeContractInstance.address, [
     tokens[0],
