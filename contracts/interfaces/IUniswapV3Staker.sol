@@ -15,6 +15,26 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     /// @notice The Uniswap V3 Factory
     function factory() external view returns (IUniswapV3Factory);
 
+    /**
+     * @dev Returns the total amount of tokens stored by the contract.
+     */
+    function totalSupply() external view returns (uint256);
+
+    /**
+     * @dev Returns a token ID owned by `owner` at a given `index` of its token list.
+     * Use along with {balanceOf} to enumerate all of ``owner``'s tokens.
+     */
+    function tokenOfOwnerByIndex(address owner, uint256 index)
+        external
+        view
+        returns (uint256);
+
+    /**
+     * @dev Returns a token ID at a given `index` of all the tokens stored by the contract.
+     * Use along with {totalSupply} to enumerate all tokens.
+     */
+    function tokenByIndex(uint256 index) external view returns (uint256);
+
     /// @notice The nonfungible position manager with which this staking contract is compatible
     function nonfungiblePositionManager()
         external
@@ -45,21 +65,7 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     /// @notice Returns information about a deposited NFT
     /// @param depositOwner The owner of the deposited NFT
     /// @return uint256 The current no of nfts deposited by owner.
-    function noOfDeposits(address depositOwner) external view returns (uint256);
-
-    /// @notice Returns information about a deposited NFT
-    /// @param depositOwner The owner of the deposited NFT
-    /// @param index The index of which you want to claim the position.
-    /// @return uint256 The current token id.
-    function tokenOfOwnerByIndex(address depositOwner, uint256 index)
-        external
-        view
-        returns (uint256);
-
-    /// @notice Returns the index position of tokenid in the tokenOfOwnerByIndex.
-    /// @param tokenId The token id to be queried
-    /// @return uint256 The index position in tokenOfOwnerByIndex
-    function tokenToOwnerIndex(uint256 tokenId) external view returns (uint256);
+    function balanceOf(address depositOwner) external view returns (uint256);
 
     /// @notice Returns information about a staked liquidity NFT
     /// @param tokenId The ID of the staked token
@@ -86,14 +92,8 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     function notifyRewardAmount(address token, uint256 reward) external;
 
     /// @notice Withdraws a Uniswap V3 LP token `tokenId` from this contract to the recipient `to`
-    /// @param tokenId The unique identifier of an Uniswap V3 LP token
-    /// @param to The address where the LP token will be sent
-    /// @param data An optional data array that will be passed along to the `to` address via the NFT safeTransferFrom
-    function withdrawToken(
-        uint256 tokenId,
-        address to,
-        bytes memory data
-    ) external;
+    /// @param tokenId The ID of the token
+    function withdrawToken(uint256 tokenId) external;
 
     /// @notice Transfers `amountRequested` of accrued `rewardToken` rewards from the contract to the recipient `to`
     /// @param to The address where claimed rewards will be sent to

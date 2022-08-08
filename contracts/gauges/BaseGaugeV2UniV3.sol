@@ -62,7 +62,7 @@ contract BaseGaugeV2UniV3 is
     /// @dev stakes[tokenId] => Stake
     mapping(uint256 => Stake) private _stakes;
 
-    uint256 public totalSupply;
+    uint256 public totalLiquiditySupply;
 
     /// @dev rewards[owner] => uint256
     /// @inheritdoc IUniswapV3Staker
@@ -154,7 +154,7 @@ contract BaseGaugeV2UniV3 is
             "UniswapV3Staker::stakeToken: cannot stake token with 0 liquidity"
         );
 
-        totalSupply += uint256(_liquidity);
+        totalLiquiditySupply += uint256(_liquidity);
         uint128 liquidity = uint128(derivedLiquidity(_liquidity, from));
 
         (, uint160 secondsPerLiquidityInsideX128, ) = _pool
@@ -188,7 +188,7 @@ contract BaseGaugeV2UniV3 is
         // try to update rewards
         _updateReward(tokenId);
 
-        totalSupply -= uint256(_stakes[tokenId].nonDerivedLiquidity);
+        totalLiquiditySupply -= uint256(_stakes[tokenId].nonDerivedLiquidity);
 
         require(
             deposits[tokenId].owner == msg.sender,
@@ -273,7 +273,9 @@ contract BaseGaugeV2UniV3 is
 
         if (_supply > 0) {
             _adjusted = INFTStaker(registry.staker()).balanceOf(account);
-            _adjusted = (((totalSupply * _adjusted) / _supply) * 80) / 100;
+            _adjusted =
+                (((totalLiquiditySupply * _adjusted) / _supply) * 80) /
+                100;
         }
 
         // because of this we are able to max out the boost by 5x
@@ -313,6 +315,38 @@ contract BaseGaugeV2UniV3 is
         );
 
         emit IncentiveCreated(pool, startTime, endTime, amount);
+    }
+
+    function tokenOfOwnerByIndex(address owner, uint256 index)
+        public
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        require(
+            index < balanceOf[owner],
+            "ERC721Enumerable: owner index out of bounds"
+        );
+        return _ownedTokens[owner][index];
+    }
+
+    function totalSupply() public view virtual override returns (uint256) {
+        return _allTokens.length;
+    }
+
+    function tokenByIndex(uint256 index)
+        public
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        require(
+            index < totalSupply(),
+            "ERC721Enumerable: global index out of bounds"
+        );
+        return _allTokens[index];
     }
 
     /**
