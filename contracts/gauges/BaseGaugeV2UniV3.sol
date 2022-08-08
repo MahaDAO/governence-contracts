@@ -68,6 +68,8 @@ contract BaseGaugeV2UniV3 is
     /// @inheritdoc IUniswapV3Staker
     mapping(address => uint256) public override rewards;
 
+    mapping(address => uint256) public override balanceOf;
+
     /// @dev Mapping from owner to list of owned token IDs
     mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
 
@@ -323,7 +325,8 @@ contract BaseGaugeV2UniV3 is
      * @param tokenId uint256 ID of the token to be added to the tokens list of the given address
      */
     function _addTokenToOwnerEnumeration(address to, uint256 tokenId) private {
-        uint256 length = ERC721.balanceOf(to);
+        balanceOf[to] += 1;
+        uint256 length = balanceOf[to];
         _ownedTokens[to][length] = tokenId;
         _ownedTokensIndex[tokenId] = length;
     }
@@ -351,7 +354,8 @@ contract BaseGaugeV2UniV3 is
         // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
         // then delete the last slot (swap and pop).
 
-        uint256 lastTokenIndex = ERC721.balanceOf(from) - 1;
+        balanceOf[from] -= 1;
+        uint256 lastTokenIndex = balanceOf[from];
         uint256 tokenIndex = _ownedTokensIndex[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary
