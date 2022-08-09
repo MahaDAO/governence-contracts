@@ -41,38 +41,38 @@ async function main() {
 
   const fee = 10000;
 
-  const univ3GaugeContractInstance = await univ3GaugeContractFactory.deploy(
-    tokens[0],
-    tokens[1],
-    fee,
-    registry.address,
-    uniPositionManager,
-    { gasPrice }
-  );
+  // const univ3GaugeContractInstance = await univ3GaugeContractFactory.deploy(
+  //   tokens[0],
+  //   tokens[1],
+  //   fee,
+  //   registry.address,
+  //   uniPositionManager,
+  //   { gasPrice }
+  // );
 
-  await univ3GaugeContractInstance.deployed();
+  // await univ3GaugeContractInstance.deployed();
 
-  const bribesInstance = await bribesContractFactory.deploy(registry.address, {
-    gasPrice,
-  });
-  await bribesInstance.deployed();
+  // const bribesInstance = await bribesContractFactory.deploy(registry.address, {
+  //   gasPrice,
+  // });
+  // await bribesInstance.deployed();
 
-  console.log("univ3GaugeContractInstance", univ3GaugeContractInstance.address);
-  console.log("bribesInstance", bribesInstance.address);
+  // console.log("univ3GaugeContractInstance", univ3GaugeContractInstance.address);
+  // console.log("bribesInstance", bribesInstance.address);
 
-  const tx1 = await voter.toggleWhitelist(univ3GaugeContractInstance.address, {
-    gasPrice,
-  });
-  console.log("tx gauge whitelist", tx1.hash);
-  await tx1.wait();
+  // const tx1 = await voter.toggleWhitelist(univ3GaugeContractInstance.address, {
+  //   gasPrice,
+  // });
+  // console.log("tx gauge whitelist", tx1.hash);
+  // await tx1.wait();
 
-  const tx2 = await voter.toggleWhitelist(bribesInstance.address, {
-    gasPrice,
-  });
-  console.log("tx bribes whitelist", tx2.hash);
-  await tx2.wait();
+  // const tx2 = await voter.toggleWhitelist(bribesInstance.address, {
+  //   gasPrice,
+  // });
+  // console.log("tx bribes whitelist", tx2.hash);
+  // await tx2.wait();
 
-  await verifyContract(hre, univ3GaugeContractInstance.address, [
+  await verifyContract(hre, "0xf25B4BF77Fb284D565247D22B048ED0617f4E7e0", [
     tokens[0],
     tokens[1],
     fee,
@@ -80,7 +80,7 @@ async function main() {
     uniPositionManager,
   ]);
 
-  await verifyContract(hre, bribesInstance.address, [registry.address]);
+  // await verifyContract(hre, bribesInstance.address, [registry.address]);
 }
 
 main().catch((error) => {

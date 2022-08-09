@@ -90,15 +90,10 @@ contract BaseGaugeV2UniV3 is
         address _registry,
         INonfungiblePositionManager _nonfungiblePositionManager
     ) {
-        pool = IUniswapV3Pool(
-            PoolAddress.computeAddress(
-                address(factory),
-                PoolAddress.PoolKey({token0: token0, token1: token1, fee: fee})
-            )
-        );
         registry = IRegistry(_registry);
         nonfungiblePositionManager = _nonfungiblePositionManager;
         factory = IUniswapV3Factory(nonfungiblePositionManager.factory());
+        pool = IUniswapV3Pool(factory.getPool(token0, token1, fee));
         startTime = block.timestamp;
     }
 
