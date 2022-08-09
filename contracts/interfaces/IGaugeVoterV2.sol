@@ -27,6 +27,12 @@ interface IGaugeVoterV2 {
         address indexed bribe,
         address indexed pool
     );
+    event GaugeUpdated(
+        address indexed gauge,
+        address creator,
+        address indexed bribe,
+        address indexed pool
+    );
     event Voted(address indexed voter, address tokenId, int256 weight);
     event Abstained(address tokenId, int256 weight);
     event Deposit(address indexed lp, address indexed gauge, uint256 amount);

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 
-interface IRegistry is IAccessControl{
+interface IRegistry is IAccessControl {
     event MahaChanged(address indexed whom, address _old, address _new);
     event VoterChanged(address indexed whom, address _old, address _new);
     event LockerChanged(address indexed whom, address _old, address _new);
@@ -20,6 +20,17 @@ interface IRegistry is IAccessControl{
     function staker() external view returns (address);
 
     function governor() external view returns (address);
+
+    function getAllAddresses()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            address,
+            address
+        );
 
     function ensureNotPaused() external;
 

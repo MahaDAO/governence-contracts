@@ -18,7 +18,7 @@ async function main() {
   );
   await verifyContract(hre, voter.address, [DEPLOYED_REGISTRY, ZERO_ADDRESS]);
 
-  saveABI("GaugeVoter", "BaseV2Voter", voter.address);
+  // saveABI("GaugeVoter", "BaseV2Voter", voter.address);
   console.log(`Deployment on ${network.name} complete!`);
 }
 

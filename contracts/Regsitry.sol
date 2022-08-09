@@ -58,6 +58,21 @@ contract Registry is AccessControl, IRegistry {
         require(!paused, "protocol is paused");
     }
 
+    function getAllAddresses()
+        external
+        view
+        override
+        returns (
+            address,
+            address,
+            address,
+            address,
+            address
+        )
+    {
+        return (maha, gaugeVoter, locker, governor, staker);
+    }
+
     function setMAHA(address _new) external override onlyGovernance {
         emit MahaChanged(msg.sender, maha, _new);
         maha = _new;

@@ -205,6 +205,35 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         return _gauge;
     }
 
+    function updateGauge(
+        address _pool,
+        address _newbribe,
+        address _newgauge
+    ) external onlyOwner {
+        registry.ensureNotPaused(); // ensure protocol is active
+
+        require(gauges[_pool] != address(0x0), "gauge not registered");
+
+        // sanity checks
+        require(whitelist[_pool], "pool not whitelisted");
+        require(whitelist[_newbribe], "bribe factory not whitelisted");
+        require(whitelist[_newgauge], "gauge factory not whitelisted");
+
+        address oldgauge = gauges[_pool];
+
+        bribes[oldgauge] = address(0);
+        gauges[_pool] = _newgauge;
+        poolForGauge[oldgauge] = address(0);
+        isGauge[oldgauge] = false;
+
+        bribes[_newgauge] = _newbribe;
+        poolForGauge[_newgauge] = _pool;
+        isGauge[_newgauge] = true;
+
+        _updateFor(_newgauge);
+        emit GaugeUpdated(_newgauge, msg.sender, _newbribe, _pool);
+    }
+
     function attachStakerToGauge(address account) external override onlyGauge {
         attachments[account] = attachments[account] + 1;
         emit Attach(account, msg.sender);
