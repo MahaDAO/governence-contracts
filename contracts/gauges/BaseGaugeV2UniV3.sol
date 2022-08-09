@@ -33,7 +33,7 @@ contract BaseGaugeV2UniV3 is
     uint160 public totalSecondsClaimedX128;
     uint256 public startTime;
     uint256 public endTime;
-    uint256 public constant DURATION = 7 days; // rewards are released over 7 days
+    uint256 public constant DURATION = 2 hours; // rewards are released over 7 days
 
     /// @notice Represents the deposit of a liquidity NFT
     struct Deposit {
@@ -248,9 +248,26 @@ contract BaseGaugeV2UniV3 is
     }
 
     /// @inheritdoc IUniswapV3Staker
+    function claimRewards(uint256[] memory tokenIds, address to)
+        external
+        override
+        returns (uint256 reward)
+    {
+        for (uint256 index = 0; index < tokenIds.length; index++) {
+            reward += _claimReward(tokenIds[index], to);
+        }
+    }
+
     function claimReward(uint256 tokenId, address to)
         external
         override
+        returns (uint256 reward)
+    {
+        reward = _claimReward(tokenId, to);
+    }
+
+    function _claimReward(uint256 tokenId, address to)
+        internal
         returns (uint256 reward)
     {
         _updateReward(tokenId);

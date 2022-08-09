@@ -50,35 +50,43 @@ async function main() {
   //   { gasPrice }
   // );
 
-  // await univ3GaugeContractInstance.deployed();
+  // // await univ3GaugeContractInstance.deployed();
 
-  // const bribesInstance = await bribesContractFactory.deploy(registry.address, {
-  //   gasPrice,
-  // });
-  // await bribesInstance.deployed();
+  // // const bribesInstance = await bribesContractFactory.deploy(registry.address);
+  // // await bribesInstance.deployed();
 
-  // console.log("univ3GaugeContractInstance", univ3GaugeContractInstance.address);
-  // console.log("bribesInstance", bribesInstance.address);
+  // // console.log("univ3GaugeContractInstance", univ3GaugeContractInstance.address);
+  // // console.log("bribesInstance", bribesInstance.address);
 
-  // const tx1 = await voter.toggleWhitelist(univ3GaugeContractInstance.address, {
-  //   gasPrice,
-  // });
-  // console.log("tx gauge whitelist", tx1.hash);
-  // await tx1.wait();
+  // // const tx1 = await voter.toggleWhitelist(univ3GaugeContractInstance.address);
+  // // console.log("tx gauge whitelist", tx1.hash);
+  // // await tx1.wait();
 
-  // const tx2 = await voter.toggleWhitelist(bribesInstance.address, {
-  //   gasPrice,
-  // });
-  // console.log("tx bribes whitelist", tx2.hash);
-  // await tx2.wait();
+  // // const tx2 = await voter.toggleWhitelist(
+  // //   await univ3GaugeContractInstance.pool()
+  // // );
+  // // console.log("tx pool whitelist", tx2.hash);
+  // // await tx2.wait();
 
-  await verifyContract(hre, "0xf25B4BF77Fb284D565247D22B048ED0617f4E7e0", [
-    tokens[0],
-    tokens[1],
-    fee,
-    registry.address,
-    uniPositionManager,
-  ]);
+  // // const tx3 = await voter.toggleWhitelist(bribesInstance.address);
+  // // console.log("tx bribes whitelist", tx3.hash);
+  // // await tx3.wait();
+
+  const tx4 = await voter.registerGauge(
+    "0xe2e7e671ccb343e8fe1db0ec2968b0be4fcaeff9",
+    "0xF4eD5d0C3C977B57382fabBEa441A63FAaF843d3", // bribesInstance.address,
+    "0x65334D2A487702292A8E0Ea70faD35Cb3E820A3D" // univ3GaugeContractInstance.address
+  );
+  console.log("tx registerGauge", tx4.hash);
+  await tx4.wait();
+
+  // await verifyContract(hre, univ3GaugeContractInstance.address, [
+  //   tokens[0],
+  //   tokens[1],
+  //   fee,
+  //   registry.address,
+  //   uniPositionManager,
+  // ]);
 
   // await verifyContract(hre, bribesInstance.address, [registry.address]);
 }

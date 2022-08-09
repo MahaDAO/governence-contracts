@@ -100,11 +100,17 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     /// @param tokenId The ID of the token
     function withdrawToken(uint256 tokenId) external;
 
-    /// @notice Transfers `amountRequested` of accrued `rewardToken` rewards from the contract to the recipient `to`
     /// @param to The address where claimed rewards will be sent to
     /// @param tokenId The ID of the token
     /// @return reward The amount of reward tokens claimed
     function claimReward(uint256 tokenId, address to)
+        external
+        returns (uint256 reward);
+
+    /// @param to The address where claimed rewards will be sent to
+    /// @param tokenIds The IDs of the token
+    /// @return reward The amount of reward tokens claimed
+    function claimRewards(uint256[] memory tokenIds, address to)
         external
         returns (uint256 reward);
 
