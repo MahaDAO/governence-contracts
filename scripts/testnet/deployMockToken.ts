@@ -1,5 +1,5 @@
-import * as fs from "fs";
 import hre, { ethers, network } from "hardhat";
+import { saveABI } from "../utils";
 
 import verifyContract from "../verifyContract";
 
@@ -23,6 +23,7 @@ async function main() {
   console.log("tx sent", instance.deployTransaction.hash);
   await instance.deployed();
   await verifyContract(hre, instance.address, args);
+  await saveABI(args[1], "IERC20", instance.address);
   console.log(`mock token deployed on ${network.name} complete.`);
 }
 

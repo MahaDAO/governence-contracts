@@ -1,16 +1,18 @@
 import hre, { ethers, network } from "hardhat";
-import { getOutputAddress } from "../utils";
+import { getOutputAddress, saveABI } from "../utils";
 
 import verifyContract from "../verifyContract";
 
 async function main() {
   console.log(`Deploying governance to ${network.name}`);
 
+  const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
+  const tokenA = "ARTH";
+  const tokenB = "USDC";
+  const fee = 10000;
+
   const [deployer] = await ethers.getSigners();
-  const PROXY_ADMIN = "0xed74d7941EFb3aec09C02a2db41BCBf195c9216b";
-  console.log(
-    `Deployer address is ${deployer.address}, Proxy admin is ${PROXY_ADMIN}`
-  );
+  console.log(`Deployer address is ${deployer.address}`);
 
   const { provider } = ethers;
   const estimateGasPrice = await provider.getGasPrice();
@@ -18,10 +20,8 @@ async function main() {
   console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
 
   // Get all smart contract factories
-  const univ3GaugeContractFactory = await ethers.getContractFactory(
-    "BaseGaugeV2UniV3"
-  );
-  const bribesContractFactory = await ethers.getContractFactory("BaseV2Bribes");
+  const univ3GaugeCF = await ethers.getContractFactory("BaseGaugeV2UniV3");
+  const bribesCF = await ethers.getContractFactory("BaseV2Bribes");
 
   // Get all the deployed smart contracts.
   const voter = await ethers.getContractAt(
@@ -33,15 +33,12 @@ async function main() {
     await getOutputAddress("Registry")
   );
 
-  const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
-  const tokens = [
-    "0xbeab728fcc37de548620f17e9a521374f4a35c02", // arth
-    "0xc003235c028A18E55bacE946E91fAe95769348BB", // usdc
-  ];
+  const tokens = await Promise.all([
+    getOutputAddress(tokenA),
+    getOutputAddress(tokenB),
+  ]);
 
-  const fee = 10000;
-
-  const univ3GaugeContractInstance = await univ3GaugeContractFactory.deploy(
+  const univ3GaugeContractInstance = await univ3GaugeCF.deploy(
     tokens[0],
     tokens[1],
     fee,
@@ -52,7 +49,7 @@ async function main() {
 
   await univ3GaugeContractInstance.deployed();
 
-  const bribesInstance = await bribesContractFactory.deploy(registry.address);
+  const bribesInstance = await bribesCF.deploy(registry.address);
   await bribesInstance.deployed();
 
   console.log("univ3GaugeContractInstance", univ3GaugeContractInstance.address);
@@ -88,6 +85,16 @@ async function main() {
     uniPositionManager,
   ]);
 
+  await saveABI(
+    `${tokenA}${tokenB}-UniV3Gauge`,
+    "BaseGaugeV2UniV3",
+    univ3GaugeContractInstance.address
+  );
+  await saveABI(
+    `${tokenA}${tokenB}-UniV3Bribe`,
+    "BaseV2Bribes",
+    bribesInstance.address
+  );
   await verifyContract(hre, bribesInstance.address, [registry.address]);
 }
 
