@@ -8,7 +8,7 @@ async function main() {
 
   const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
   const tokenA = "ARTH";
-  const tokenB = "USDC";
+  const tokenB = "MAHA";
   const fee = 10000;
 
   const [deployer] = await ethers.getSigners();
@@ -97,6 +97,11 @@ async function main() {
     `${tokenA}${tokenB}-UniV3Bribe`,
     "BaseV2Bribes",
     bribesInstance.address
+  );
+  await saveABI(
+    `${tokenA}${tokenB}-UniV3-Pool`,
+    "IUniswapV3Pool",
+    await univ3GaugeContractInstance.pool()
   );
 
   await verifyContract(hre, univ3GaugeContractInstance.address, [

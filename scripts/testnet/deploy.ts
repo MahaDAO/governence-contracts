@@ -268,8 +268,6 @@ async function main() {
   await verifyContract(hre, bribesFactoryCI.address, []);
   await verifyContract(hre, emissionControllerCI.address, [
     registryCI.address,
-    12 * 60 * 60, // 12 hr period.
-    startTime,
     "1000000000000000000",
   ]);
 
