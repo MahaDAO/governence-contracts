@@ -10,6 +10,11 @@ interface IRegistry is IAccessControl {
     event LockerChanged(address indexed whom, address _old, address _new);
     event GovernorChanged(address indexed whom, address _old, address _new);
     event StakerChanged(address indexed whom, address _old, address _new);
+    event EmissionControllerChanged(
+        address indexed whom,
+        address _old,
+        address _new
+    );
 
     function maha() external view returns (address);
 
@@ -18,6 +23,8 @@ interface IRegistry is IAccessControl {
     function locker() external view returns (address);
 
     function staker() external view returns (address);
+
+    function emissionController() external view returns (address);
 
     function governor() external view returns (address);
 
@@ -35,6 +42,8 @@ interface IRegistry is IAccessControl {
     function ensureNotPaused() external;
 
     function setMAHA(address _new) external;
+
+    function setEmissionController(address _new) external;
 
     function setStaker(address _new) external;
 

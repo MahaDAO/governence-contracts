@@ -26,7 +26,6 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     IRegistry public immutable override registry;
 
     uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
-    IEmissionController public emissionController;
 
     uint256 public totalWeight; // total voting weight
 
@@ -52,9 +51,8 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         _;
     }
 
-    constructor(address _registry, address _emissionController) {
+    constructor(address _registry) {
         registry = IRegistry(_registry);
-        emissionController = IEmissionController(_emissionController);
     }
 
     function reset() external override {
@@ -171,13 +169,6 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         emit Whitelisted(msg.sender, what, whitelist[what]);
     }
 
-    function setEmissionController(address _emissionController)
-        external
-        onlyOwner
-    {
-        emissionController = IEmissionController(_emissionController);
-    }
-
     function registerGaugeBribe(
         address _pool,
         address _bribe,
@@ -253,7 +244,10 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     }
 
     function notifyRewardAmount(uint256 amount) external override {
-        _safeTransferFrom(registry.maha(), msg.sender, address(this), amount); // transfer the distro in
+        require(
+            msg.sender == registry.emissionController(),
+            "not emission controller"
+        );
         uint256 _ratio = (amount * 1e18) / totalWeight; // 1e18 adjustment is removed during claim
         if (_ratio > 0) {
             index += _ratio;
@@ -299,8 +293,10 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     }
 
     function _distribute(address _gauge) internal nonReentrant {
-        if (IEmissionController(emissionController).callable())
-            IEmissionController(emissionController).allocateEmission();
+        if (IEmissionController(registry.emissionController()).callable())
+            IEmissionController(registry.emissionController())
+                .allocateEmission();
+
         _updateFor(_gauge);
         uint256 _claimable = claimable[_gauge];
 

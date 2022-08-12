@@ -11,6 +11,7 @@ contract Registry is AccessControl, IRegistry {
     address public override gaugeVoter;
     address public override governor;
     address public override staker;
+    address public override emissionController;
     bool public paused;
 
     bool internal initialized;
@@ -24,6 +25,7 @@ contract Registry is AccessControl, IRegistry {
         address _locker,
         address _governor,
         address _staker,
+        address _emissionController,
         address _governance
     ) external {
         require(!initialized, "already initialized");
@@ -33,6 +35,7 @@ contract Registry is AccessControl, IRegistry {
         locker = _locker;
         governor = _governor;
         staker = _staker;
+        emissionController = _emissionController;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _governance);
         _setupRole(EMERGENCY_STOP_ROLE, _governance);
@@ -91,6 +94,15 @@ contract Registry is AccessControl, IRegistry {
     function setGovernor(address _new) external override onlyGovernance {
         emit GovernorChanged(msg.sender, governor, _new);
         governor = _new;
+    }
+
+    function setEmissionController(address _new)
+        external
+        override
+        onlyGovernance
+    {
+        emit EmissionControllerChanged(msg.sender, emissionController, _new);
+        emissionController = _new;
     }
 
     function setStaker(address _new) external override onlyGovernance {

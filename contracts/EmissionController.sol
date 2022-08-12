@@ -18,12 +18,9 @@ contract EmissionController is IEmissionController, Epoch {
 
     event RateUpdated(uint256 old, uint256 rate);
 
-    constructor(
-        address _registry,
-        uint256 _period,
-        uint256 _startTime,
-        uint256 _ratePerEpoch
-    ) Epoch(_period, _startTime, 0) {
+    constructor(address _registry, uint256 _ratePerEpoch)
+        Epoch(7 days, block.timestamp, 0)
+    {
         registry = IRegistry(_registry);
         ratePerEpoch = _ratePerEpoch;
     }
@@ -32,20 +29,24 @@ contract EmissionController is IEmissionController, Epoch {
         uint256 mahaBalance = IERC20(registry.maha()).balanceOf(address(this));
 
         // figure out how much tokens to send
-        uint256 tokenBalance = IERC20(registry.maha()).balanceOf(address(this));
         uint256 balanceToSend;
 
         // if a rate was not set, then we send everything in the contract
         if (ratePerEpoch == 0)
-            balanceToSend = tokenBalance;
+            balanceToSend = mahaBalance;
 
             // if a rate was set, then we send as much as we can
-        else balanceToSend = Math.min(tokenBalance, ratePerEpoch);
+        else balanceToSend = Math.min(mahaBalance, ratePerEpoch);
 
         if (balanceToSend > 0) {
             // send token and notify the gauge voter
-            IERC20(registry.maha()).approve(registry.gaugeVoter(), mahaBalance);
-            IGaugeVoter(registry.gaugeVoter()).notifyRewardAmount(mahaBalance);
+            IERC20(registry.maha()).transfer(
+                registry.gaugeVoter(),
+                balanceToSend
+            );
+            IGaugeVoter(registry.gaugeVoter()).notifyRewardAmount(
+                balanceToSend
+            );
         }
     }
 

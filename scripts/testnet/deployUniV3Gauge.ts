@@ -78,7 +78,7 @@ async function main() {
       const tx = await voter.toggleWhitelist(bribesInstance.address);
       console.log("tx bribes whitelist", tx.hash);
       await tx.wait();
-    }));
+    })());
 
   const tx4 = await voter.registerGaugeBribe(
     await univ3GaugeContractInstance.pool(),
@@ -87,14 +87,6 @@ async function main() {
   );
   console.log("tx registerGauge", tx4.hash);
   await tx4.wait();
-
-  await verifyContract(hre, univ3GaugeContractInstance.address, [
-    tokens[0],
-    tokens[1],
-    fee,
-    registry.address,
-    uniPositionManager,
-  ]);
 
   await saveABI(
     `${tokenA}${tokenB}-UniV3Gauge`,
@@ -106,6 +98,14 @@ async function main() {
     "BaseV2Bribes",
     bribesInstance.address
   );
+
+  await verifyContract(hre, univ3GaugeContractInstance.address, [
+    tokens[0],
+    tokens[1],
+    fee,
+    registry.address,
+    uniPositionManager,
+  ]);
   await verifyContract(hre, bribesInstance.address, [registry.address]);
 }
 
