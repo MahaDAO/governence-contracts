@@ -178,6 +178,7 @@ contract BaseGaugeV2UniV3 is
 
         _addTokenToAllTokensEnumeration(tokenId);
         _addTokenToOwnerEnumeration(from, tokenId);
+        balanceOf[to] += 1;
 
         emit TokenStaked(tokenId, _liquidity);
         return this.onERC721Received.selector;
@@ -200,6 +201,7 @@ contract BaseGaugeV2UniV3 is
 
         _removeTokenFromOwnerEnumeration(msg.sender, tokenId);
         _removeTokenFromAllTokensEnumeration(tokenId);
+        balanceOf[to] -= 1;
 
         emit TokenUnstaked(tokenId);
 
@@ -401,7 +403,6 @@ contract BaseGaugeV2UniV3 is
      * @param tokenId uint256 ID of the token to be added to the tokens list of the given address
      */
     function _addTokenToOwnerEnumeration(address to, uint256 tokenId) private {
-        balanceOf[to] += 1;
         uint256 length = balanceOf[to];
         _ownedTokens[to][length] = tokenId;
         _ownedTokensIndex[tokenId] = length;
@@ -430,7 +431,6 @@ contract BaseGaugeV2UniV3 is
         // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
         // then delete the last slot (swap and pop).
 
-        balanceOf[from] -= 1;
         uint256 lastTokenIndex = balanceOf[from];
         uint256 tokenIndex = _ownedTokensIndex[tokenId];
 
