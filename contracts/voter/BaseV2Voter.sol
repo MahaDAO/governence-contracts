@@ -178,7 +178,7 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         emissionController = IEmissionController(_emissionController);
     }
 
-    function registerGauge(
+    function registerGaugeBribe(
         address _pool,
         address _bribe,
         address _gauge
@@ -205,7 +205,7 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         return _gauge;
     }
 
-    function updateGauge(
+    function updateGaugeBribe(
         address _pool,
         address _newbribe,
         address _newgauge

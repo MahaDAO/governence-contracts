@@ -178,7 +178,7 @@ contract BaseGaugeV2UniV3 is
 
         _addTokenToAllTokensEnumeration(tokenId);
         _addTokenToOwnerEnumeration(from, tokenId);
-        balanceOf[to] += 1;
+        balanceOf[from] += 1;
 
         emit TokenStaked(tokenId, _liquidity);
         return this.onERC721Received.selector;
@@ -201,7 +201,7 @@ contract BaseGaugeV2UniV3 is
 
         _removeTokenFromOwnerEnumeration(msg.sender, tokenId);
         _removeTokenFromAllTokensEnumeration(tokenId);
-        balanceOf[to] -= 1;
+        balanceOf[msg.sender] -= 1;
 
         emit TokenUnstaked(tokenId);
 
