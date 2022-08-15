@@ -249,37 +249,38 @@ contract BaseGaugeV2UniV3 is
         rewards[deposit.owner] += reward;
     }
 
+    function _claimReward(uint256 tokenId, address to)
+        internal
+        returns (uint256)
+    {
+        _updateReward(tokenId);
+        uint256 reward = rewards[msg.sender];
+        rewards[msg.sender] -= reward;
+        TransferHelperExtended.safeTransfer(registry.maha(), to, reward);
+        emit RewardClaimed(to, reward);
+        return reward;
+    }
+
     /// @inheritdoc IUniswapV3Staker
     function claimRewards(uint256[] memory tokenIds, address to)
         external
         override
-        returns (uint256 reward)
+        returns (uint256)
     {
+        uint256 reward;
         for (uint256 index = 0; index < tokenIds.length; index++) {
             reward += _claimReward(tokenIds[index], to);
         }
+        return reward;
     }
 
     function claimReward(uint256 tokenId, address to)
         external
         override
-        returns (uint256 reward)
+        returns (uint256)
     {
-        reward = _claimReward(tokenId, to);
+        return _claimReward(tokenId, to);
     }
-
-    function _claimReward(uint256 tokenId, address to)
-        internal
-        returns (uint256 reward)
-    {
-        _updateReward(tokenId);
-        reward = rewards[msg.sender];
-        rewards[msg.sender] -= reward;
-        TransferHelperExtended.safeTransfer(registry.maha(), to, reward);
-        emit RewardClaimed(to, reward);
-    }
-
-    // todo make a for loop to iterate through all claim rewards
 
     function derivedLiquidity(uint256 liquidity, address account)
         public

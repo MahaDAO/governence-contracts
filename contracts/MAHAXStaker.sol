@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 import {Checkpoints} from "@openzeppelin/contracts/utils/Checkpoints.sol";
@@ -27,14 +27,17 @@ import {IRegistry, INFTStaker} from "./interfaces/INFTStaker.sol";
  *
  * @author Steven Enamakel <enamakel@mahadao.com>
  */
-contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
+contract MAHAXStaker is ReentrancyGuard, AccessControl, EIP712, INFTStaker {
     using Checkpoints for Checkpoints.History;
     using Counters for Counters.Counter;
 
     IRegistry public immutable override registry;
 
-    bytes32 private constant _DELEGATION_TYPEHASH =
+    bytes32 public constant DELEGATION_TYPEHASH =
         keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
+
+    bytes32 public constant KICK_FROM_STAKE_ROLE =
+        keccak256("KICK_FROM_STAKE_ROLE");
 
     mapping(address => address) private _delegation;
     mapping(address => Checkpoints.History) private _delegateCheckpoints;
@@ -48,8 +51,11 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
     mapping(uint256 => uint256) public stakedBalancesNFT; // nft => pool => votes
     mapping(address => uint256) public stakedBalances; // nft => pool => votes
 
-    constructor(address _registry) EIP712("MAHAXStaker", "1") {
+    constructor(address _registry, address _governance)
+        EIP712("MAHAXStaker", "1")
+    {
         registry = IRegistry(_registry);
+        _setupRole(DEFAULT_ADMIN_ROLE, _governance);
     }
 
     function stake(uint256 _tokenId) external override {
@@ -124,39 +130,17 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
         emit UnstakeNFT(msg.sender, _owner, _tokenId, _weight);
     }
 
-    function updateStake(uint256 _tokenId) external override {
-        registry.ensureNotPaused();
-
-        INFTLocker locker = INFTLocker(registry.locker());
-        address _owner = locker.ownerOf(_tokenId);
-        require(
-            locker.isApprovedOrOwner(msg.sender, _tokenId),
-            "not token owner"
-        );
-
-        // reset gauge votes
-        IGaugeVoterV2(registry.gaugeVoter()).resetFor(_owner);
-
-        uint256 _oldWeight = stakedBalancesNFT[_tokenId];
-        uint256 _newWeight = locker.balanceOfNFT(_tokenId);
-
-        stakedBalancesNFT[_tokenId] = _newWeight;
-        stakedBalances[_owner] =
-            (stakedBalances[_owner] + _newWeight) -
-            _oldWeight;
-        totalWeight = (totalWeight + _newWeight) - _oldWeight;
-
-        _transferVotingUnits(_owner, address(0), _oldWeight);
-        _transferVotingUnits(address(0), _owner, _newWeight);
-
-        emit RestakeNFT(msg.sender, _owner, _tokenId, _oldWeight, _newWeight);
-    }
-
-    function banFromStake(uint256 _tokenId) external onlyOwner {
+    /// @dev ban a NFT from stake; ideally should be used with NFTs that are staked but listed on opensea.
+    /// Should be called from a smart contract
+    function banFromStake(uint256 _tokenId) external {
+        _checkRole(KICK_FROM_STAKE_ROLE, msg.sender);
         _unstake(_tokenId);
     }
 
-    function toggleAttachmentCheck() external onlyOwner {
+    /// @dev in the unlikely event of some kind of issue with the gauge voter, we
+    /// disable the attachment check so that NFTs can safely by unstaked.
+    function toggleAttachmentCheck() external {
+        _checkRole(DEFAULT_ADMIN_ROLE, msg.sender);
         disableAttachmentCheck = !disableAttachmentCheck;
     }
 
@@ -303,7 +287,7 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
         address signer = ECDSA.recover(
             _hashTypedDataV4(
                 keccak256(
-                    abi.encode(_DELEGATION_TYPEHASH, delegatee, nonce, expiry)
+                    abi.encode(DELEGATION_TYPEHASH, delegatee, nonce, expiry)
                 )
             ),
             v,
