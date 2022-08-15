@@ -100,6 +100,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     constructor(
         address _registry,
         address _royaltyRcv,
+        address _renderingContract,
         uint96 _royaltyFeeNumerator
     ) {
         registry = IRegistry(_registry);
@@ -111,6 +112,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         _setupRole(MIGRATION_ROLE, msg.sender);
 
         _setDefaultRoyalty(_royaltyRcv, _royaltyFeeNumerator);
+        renderingContract = _renderingContract;
     }
 
     /// @dev Interface identification is specified in ERC-165.
