@@ -82,30 +82,10 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
 
     function _stakeFromLock(uint256 _tokenId) external override {
         require(msg.sender == registry.locker(), "not locker");
-        if (stakedBalancesNFT[_tokenId] == 0) _stake(_tokenId);
+        if (!_isStaked(_tokenId)) _stake(_tokenId);
         else {
-            INFTLocker locker = INFTLocker(registry.locker());
-            address _owner = locker.ownerOf(_tokenId);
-
-            uint256 _oldWeight = stakedBalancesNFT[_tokenId];
-            uint256 _newWeight = locker.balanceOfNFT(_tokenId);
-
-            stakedBalancesNFT[_tokenId] = _newWeight;
-            stakedBalances[_owner] =
-                (stakedBalances[_owner] + _newWeight) -
-                _oldWeight;
-            totalWeight = (totalWeight + _newWeight) - _oldWeight;
-
-            _transferVotingUnits(_owner, address(0), _oldWeight);
-            _transferVotingUnits(address(0), _owner, _newWeight);
-
-            emit RestakeNFT(
-                msg.sender,
-                _owner,
-                _tokenId,
-                _oldWeight,
-                _newWeight
-            );
+            _unstake(_tokenId);
+            _stake(_tokenId);
         }
     }
 
@@ -220,6 +200,10 @@ contract MAHAXStaker is ReentrancyGuard, Ownable, EIP712, INFTStaker {
         override
         returns (bool)
     {
+        return _isStaked(tokenId);
+    }
+
+    function _isStaked(uint256 tokenId) internal view virtual returns (bool) {
         return stakedBalancesNFT[tokenId] > 0;
     }
 

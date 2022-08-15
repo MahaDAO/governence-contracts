@@ -38,13 +38,6 @@ interface INFTStaker is IVotes {
         uint256 tokenId,
         uint256 amount
     );
-    event RestakeNFT(
-        address indexed who,
-        address indexed owner,
-        uint256 tokenId,
-        uint256 oldAmount,
-        uint256 newAmount
-    );
     event UnstakeNFT(
         address indexed who,
         address indexed owner,
