@@ -7,10 +7,7 @@ import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensi
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {TimelockController, GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import {GovernorVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import {GovernorVotesQuorumFraction} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
-
 import {IRegistry} from "./interfaces/IRegistry.sol";
-import {INFTLocker} from "./interfaces/INFTLocker.sol";
 
 /// @custom:security-contact security@mahadao.com
 contract MAHAXGovernor is
@@ -20,7 +17,7 @@ contract MAHAXGovernor is
     GovernorTimelockControl
 {
     IRegistry public immutable registry;
-    uint256 private _quorumNumerator;
+    uint256 private _quorum;
 
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
 
@@ -34,7 +31,7 @@ contract MAHAXGovernor is
         GovernorTimelockControl(_timelock)
     {
         registry = _registry;
-        _updateQuorum(60);
+        _updateQuorum(100000 * 1e18); // 100k MAHAX Quorum
     }
 
     // The following functions are overrides required by Solidity.
@@ -133,43 +130,25 @@ contract MAHAXGovernor is
     }
 
     /**
-     * @dev Returns the current quorum numerator. See {quorumDenominator}.
-     */
-    function quorumNumerator() public view virtual returns (uint256) {
-        return _quorumNumerator;
-    }
-
-    /**
-     * @dev Returns the quorum denominator. Defaults to 100, but may be overridden.
-     */
-    function quorumDenominator() public view virtual returns (uint256) {
-        return 100;
-    }
-
-    /**
      * @dev Returns the quorum for a block number, in terms of number of votes: `supply * numerator / denominator`.
      */
     function quorum(uint256 blockNumber)
         public
         view
-        virtual
         override
         returns (uint256)
     {
-        return
-            (INFTLocker(registry.locker()).totalSupplyAt(blockNumber) *
-                quorumNumerator()) / quorumDenominator();
+        return _quorum;
     }
 
     /**
-     * @dev Changes the quorum numerator.
+     * @dev Changes the quorum.
      *
      * Emits a {QuorumUpdated} event.
      *
      * Requirements:
      *
      * - Must be called through a governance proposal.
-     * - New numerator must be smaller or equal to the denominator.
      */
     function updateQuorum(uint256 newQuorum) external virtual onlyGovernance {
         _updateQuorum(newQuorum);
@@ -179,20 +158,10 @@ contract MAHAXGovernor is
      * @dev Changes the quorum numerator.
      *
      * Emits a {QuorumUpdated} event.
-     *
-     * Requirements:
-     *
-     * - New numerator must be smaller or equal to the denominator.
      */
     function _updateQuorum(uint256 newQuorum) internal virtual {
-        require(
-            newQuorum <= quorumDenominator(),
-            "GovernorVotesQuorumFraction: quorumNumerator over quorumDenominator"
-        );
-
-        uint256 oldQuorum = _quorumNumerator;
-        _quorumNumerator = newQuorum;
-
+        uint256 oldQuorum = _quorum;
+        _quorum = newQuorum;
         emit QuorumUpdated(oldQuorum, newQuorum);
     }
 }
