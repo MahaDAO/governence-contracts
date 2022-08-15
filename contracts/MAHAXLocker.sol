@@ -757,12 +757,9 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         emit Supply(supplyBefore, supplyBefore + _value);
     }
 
-    function merge(
-        uint256 _from,
-        uint256 _to,
-        bool _updateNFTstake
-    ) external override {
-        require(!_isStaked(_from), "staked");
+    function merge(uint256 _from, uint256 _to) external override {
+        require(!_isStaked(_from), "from staked");
+        require(!_isStaked(_to), "to staked");
 
         require(_from != _to, "same nft");
         require(_isApprovedOrOwner(msg.sender, _from), "from not approved");
@@ -785,7 +782,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             _locked1,
             DepositType.MERGE_TYPE,
             true,
-            _updateNFTstake
+            false
         );
     }
 
@@ -803,13 +800,14 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     ///      cannot extend their locktime and deposit for a brand new user
     /// @param _tokenId lock NFT
     /// @param _value Amount to add to user's lock
-    function depositFor(
-        uint256 _tokenId,
-        uint256 _value,
-        bool _updateNFTstake
-    ) external override nonReentrant {
+    function depositFor(uint256 _tokenId, uint256 _value)
+        external
+        override
+        nonReentrant
+    {
         LockedBalance memory _locked = locked[_tokenId];
 
+        require(!_isStaked(_tokenId), "staked");
         require(_value > 0, "value = 0"); // dev: need non-zero value
         require(_locked.amount > 0, "No existing lock found");
         require(_locked.end > block.timestamp, "Cannot add to expired lock.");
@@ -820,7 +818,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             _locked,
             DepositType.DEPOSIT_FOR_TYPE,
             true,
-            _updateNFTstake
+            false
         );
     }
 
@@ -950,8 +948,10 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         external
         nonReentrant
     {
-        assert(_isApprovedOrOwner(msg.sender, _tokenId));
-
+        require(
+            _isApprovedOrOwner(msg.sender, _tokenId),
+            "caller is not owner nor approved"
+        );
         LockedBalance memory _locked = locked[_tokenId];
 
         assert(_value > 0); // dev: need non-zero value
@@ -975,7 +975,10 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         external
         nonReentrant
     {
-        assert(_isApprovedOrOwner(msg.sender, _tokenId));
+        require(
+            _isApprovedOrOwner(msg.sender, _tokenId),
+            "caller is not owner nor approved"
+        );
 
         LockedBalance memory _locked = locked[_tokenId];
         uint256 unlockTime = ((block.timestamp + _lockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
@@ -1006,9 +1009,10 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     /// @notice Withdraw all tokens for `_tokenId`
     /// @dev Only possible if the lock has expired
     function withdraw(uint256 _tokenId) external nonReentrant {
-        registry.ensureNotPaused();
-
-        assert(_isApprovedOrOwner(msg.sender, _tokenId));
+        require(
+            _isApprovedOrOwner(msg.sender, _tokenId),
+            "caller is not owner nor approved"
+        );
         require(!_isStaked(_tokenId), "staked");
 
         LockedBalance memory _locked = locked[_tokenId];
