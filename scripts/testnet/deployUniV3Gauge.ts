@@ -8,7 +8,7 @@ async function main() {
 
   const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
   const tokenA = "ARTH";
-  const tokenB = "MAHA";
+  const tokenB = "USDC";
   const fee = 10000;
 
   const [deployer] = await ethers.getSigners();

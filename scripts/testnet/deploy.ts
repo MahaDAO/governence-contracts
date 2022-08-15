@@ -9,7 +9,8 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);
 
-  const merkleProof = "0x123";
+  const merkleProof =
+    "0x8d3c89f0fb1158b832e35caf7eb25c346f0d3e88a0a31b714724c682a2e827ea";
   const timelockDuration = 1 * 60 * 60;
 
   const { provider } = ethers;
@@ -101,17 +102,8 @@ async function main() {
     10000,
     { gasPrice }
   );
-  console.log(`tx hash: `, mahaxCI.deployTransaction.hash);
   await mahaxCI.deployed();
-
-  console.log(`deploying gauge and bribe factories`);
-  const gaugeFactoryCI = await gaugeFactoryCF.deploy({ gasPrice });
-  await gaugeFactoryCI.deployed();
-  console.log(`tx hash: `, gaugeFactoryCI.deployTransaction.hash);
-
-  const bribesFactoryCI = await bribesFactoryCF.deploy({ gasPrice });
-  await bribesFactoryCI.deployed();
-  console.log(`tx hash: `, bribesFactoryCI.deployTransaction.hash);
+  console.log(`tx hash: `, mahaxCI.deployTransaction.hash);
 
   console.log(`deploying merkle proof migrator`);
   const lockMigratorCI = await lockMigratorCF.deploy(
@@ -122,6 +114,15 @@ async function main() {
   );
   await lockMigratorCI.deployed();
   console.log(`tx hash: `, lockMigratorCI.deployTransaction.hash);
+
+  console.log(`deploying gauge and bribe factories`);
+  const gaugeFactoryCI = await gaugeFactoryCF.deploy({ gasPrice });
+  await gaugeFactoryCI.deployed();
+  console.log(`tx hash: `, gaugeFactoryCI.deployTransaction.hash);
+
+  const bribesFactoryCI = await bribesFactoryCF.deploy({ gasPrice });
+  await bribesFactoryCI.deployed();
+  console.log(`tx hash: `, bribesFactoryCI.deployTransaction.hash);
 
   console.log(`deploying emission controller`);
   const emissionControllerCI = await emissionControllerCF.deploy(

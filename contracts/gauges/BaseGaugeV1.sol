@@ -59,7 +59,7 @@ contract BaseGaugeV1 is IGaugeV1 {
     mapping(address => uint256) public rewardPerTokenNumCheckpoints;
 
     // simple re-entrancy check
-    uint internal _unlocked = 1;
+    uint256 internal _unlocked = 1;
     modifier lock() {
         require(_unlocked == 1, "reentrancy");
         _unlocked = 2;
@@ -571,10 +571,7 @@ contract BaseGaugeV1 is IGaugeV1 {
         withdrawToken(amount, tokenId);
     }
 
-    function withdrawToken(uint256 amount, uint256 tokenId)
-        public
-        lock
-    {
+    function withdrawToken(uint256 amount, uint256 tokenId) public lock {
         totalSupply -= amount;
         balanceOf[msg.sender] -= amount;
         _safeTransfer(stake, msg.sender, amount);

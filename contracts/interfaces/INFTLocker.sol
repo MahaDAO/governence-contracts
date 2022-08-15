@@ -19,21 +19,13 @@ interface INFTLocker is IERC721 {
 
     function totalSupplyAt(uint256 _block) external view returns (uint256);
 
-    function merge(
-        uint256 _from,
-        uint256 _to,
-        bool _updateNFTstake
-    ) external;
+    function merge(uint256 _from, uint256 _to) external;
 
     function blockNumber() external view returns (uint256);
 
     function checkpoint() external;
 
-    function depositFor(
-        uint256 _tokenId,
-        uint256 _value,
-        bool _updateNFTstake
-    ) external;
+    function depositFor(uint256 _tokenId, uint256 _value) external;
 
     function createLockFor(
         uint256 _value,
