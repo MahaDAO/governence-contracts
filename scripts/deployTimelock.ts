@@ -8,7 +8,7 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}.`);
 
-  const delay = 86400 * 7;
+  const delay = 86400 * 12;
   const timelockF = await ethers.getContractFactory(`TimelockController`);
 
   console.log(`Deploying TimelockController implementation...`);
