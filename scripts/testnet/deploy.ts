@@ -7,10 +7,10 @@ async function main() {
 
   const now = Math.floor(Date.now() / 1000);
   const [deployer] = await ethers.getSigners();
-  const PROXY_ADMIN = "0xed74d7941EFb3aec09C02a2db41BCBf195c9216b";
-  console.log(
-    `Deployer address is ${deployer.address}, Proxy admin is ${PROXY_ADMIN}`
-  );
+  console.log(`Deployer address is ${deployer.address}`);
+
+  const merkleProof = "0x123";
+  const timelockDuration = 1 * 60 * 60;
 
   const { provider } = ethers;
   const estimateGasPrice = await provider.getGasPrice();
@@ -32,6 +32,10 @@ async function main() {
   const timelockControllerCF = await ethers.getContractFactory(
     "TimelockController"
   );
+  const renderingContractCF = await ethers.getContractFactory(
+    "RenderingContract"
+  );
+  const lockMigratorCF = await ethers.getContractFactory("LockMigrator");
   const mahaxStakerCF = await ethers.getContractFactory("MAHAXStaker");
   const mahaxGovernorCF = await ethers.getContractFactory("MAHAXGovernor");
 
@@ -52,19 +56,9 @@ async function main() {
   // Deploy all the smart contracts.
   console.log(`deploying timelock controller`);
   const timelockControllerCI = await timelockControllerCF.deploy(
-    1 * 60 * 60,
-    [
-      deployer.address,
-      PROXY_ADMIN,
-      "0xF152dA370FA509f08685Fa37a09BA997E41Fb65b",
-      "0x0dd44846a3cc5b4D82DCD29D78d7291112608f0c",
-    ],
-    [
-      deployer.address,
-      PROXY_ADMIN,
-      "0xF152dA370FA509f08685Fa37a09BA997E41Fb65b",
-      "0x0dd44846a3cc5b4D82DCD29D78d7291112608f0c",
-    ],
+    timelockDuration,
+    [deployer.address],
+    [deployer.address],
     { gasPrice }
   );
   await timelockControllerCI.deployed();
@@ -73,6 +67,11 @@ async function main() {
   const registryCI = await registryCF.deploy({ gasPrice });
   console.log(`tx hash: `, registryCI.deployTransaction.hash);
   await registryCI.deployed();
+
+  console.log(`deploying rendering contract`);
+  const renderingContractCI = await renderingContractCF.deploy({ gasPrice });
+  console.log(`tx hash: `, renderingContractCI.deployTransaction.hash);
+  await renderingContractCI.deployed();
 
   console.log(`deploying governor`);
   const governorCI = await mahaxGovernorCF.deploy(
@@ -84,9 +83,13 @@ async function main() {
   await governorCI.deployed();
 
   console.log(`deploying staker`);
-  const mahaxStakerCI = await mahaxStakerCF.deploy(registryCI.address, {
-    gasPrice,
-  });
+  const mahaxStakerCI = await mahaxStakerCF.deploy(
+    registryCI.address,
+    timelockControllerCI.address,
+    {
+      gasPrice,
+    }
+  );
   console.log(`tx hash: `, mahaxStakerCI.deployTransaction.hash);
   await mahaxStakerCI.deployed();
 
@@ -94,6 +97,7 @@ async function main() {
   const mahaxCI = await mahaxCF.deploy(
     registryCI.address,
     deployer.address,
+    renderingContractCI.address,
     10000,
     { gasPrice }
   );
@@ -108,6 +112,16 @@ async function main() {
   const bribesFactoryCI = await bribesFactoryCF.deploy({ gasPrice });
   await bribesFactoryCI.deployed();
   console.log(`tx hash: `, bribesFactoryCI.deployTransaction.hash);
+
+  console.log(`deploying merkle proof migrator`);
+  const lockMigratorCI = await lockMigratorCF.deploy(
+    merkleProof,
+    mahaCI.address,
+    mahaxCI.address,
+    { gasPrice }
+  );
+  await lockMigratorCI.deployed();
+  console.log(`tx hash: `, lockMigratorCI.deployTransaction.hash);
 
   console.log(`deploying emission controller`);
   const emissionControllerCI = await emissionControllerCF.deploy(
@@ -142,7 +156,7 @@ async function main() {
     now,
     mahaCI.address,
     deployer.address,
-    PROXY_ADMIN
+    deployer.address
   );
   await mahaFeeDistributorCI.deployed();
   console.log(`tx hash: `, mahaFeeDistributorCI.deployTransaction.hash);
@@ -153,7 +167,7 @@ async function main() {
     now,
     arthCI.address,
     deployer.address,
-    PROXY_ADMIN
+    deployer.address
   );
   await arthFeeDistributorCI.deployed();
   console.log(`tx hash: `, arthFeeDistributorCI.deployTransaction.hash);
@@ -164,7 +178,7 @@ async function main() {
     now,
     usdcCI.address,
     deployer.address,
-    PROXY_ADMIN
+    deployer.address
   );
   await usdcFeeDistributorCI.deployed();
   console.log(`tx hash: `, usdcFeeDistributorCI.deployTransaction.hash);
@@ -187,6 +201,12 @@ async function main() {
     "EmissionController",
     "IEmissionController",
     emissionControllerCI.address
+  );
+  await saveABI("LockMigrator", "ILockMigrator", lockMigratorCI.address);
+  await saveABI(
+    "RenderingContract",
+    "RenderingContract",
+    renderingContractCI.address
   );
   await saveABI(
     "MAHAFeeDistributor",
@@ -234,19 +254,9 @@ async function main() {
 
   console.log(`Verifying contracts:\n`);
   await verifyContract(hre, timelockControllerCI.address, [
-    1 * 60 * 60,
-    [
-      deployer.address,
-      PROXY_ADMIN,
-      "0xF152dA370FA509f08685Fa37a09BA997E41Fb65b",
-      "0x0dd44846a3cc5b4D82DCD29D78d7291112608f0c",
-    ],
-    [
-      deployer.address,
-      PROXY_ADMIN,
-      "0xF152dA370FA509f08685Fa37a09BA997E41Fb65b",
-      "0x0dd44846a3cc5b4D82DCD29D78d7291112608f0c",
-    ],
+    timelockDuration,
+    [deployer.address],
+    [deployer.address],
   ]);
 
   await verifyContract(hre, registryCI.address, []);
@@ -256,11 +266,15 @@ async function main() {
     timelockControllerCI.address,
   ]);
 
-  await verifyContract(hre, mahaxStakerCI.address, [registryCI.address]);
+  await verifyContract(hre, mahaxStakerCI.address, [
+    registryCI.address,
+    timelockControllerCI.address,
+  ]);
 
   await verifyContract(hre, mahaxCI.address, [
     registryCI.address,
     deployer.address,
+    renderingContractCI.address,
     10000,
   ]);
 
@@ -270,6 +284,14 @@ async function main() {
     registryCI.address,
     "1000000000000000000",
   ]);
+
+  await verifyContract(hre, lockMigratorCI.address, [
+    merkleProof,
+    mahaCI.address,
+    mahaxCI.address,
+  ]);
+
+  await verifyContract(hre, renderingContractCI.address, []);
 
   await verifyContract(hre, voterCI.address, [
     registryCI.address,
@@ -281,24 +303,8 @@ async function main() {
     now,
     mahaCI.address,
     deployer.address,
-    PROXY_ADMIN,
+    deployer.address,
   ]);
-
-  // await verifyContract(hre, arthFeeDistributorCI.address, [
-  //   mahaxCI.address,
-  //   now,
-  //   arthCI.address,
-  //   deployer.address,
-  //   PROXY_ADMIN,
-  // ]);
-
-  // await verifyContract(hre, usdcFeeDistributorCI.address, [
-  //   mahaxCI.address,
-  //   now,
-  //   usdcCI.address,
-  //   deployer.address,
-  //   PROXY_ADMIN,
-  // ]);
 
   console.log(`Governance deployment on ${network.name} complete.`);
 }
