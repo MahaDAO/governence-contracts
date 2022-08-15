@@ -45,8 +45,7 @@ interface INFTLocker is IERC721 {
     function migrateTokenFor(
         uint256 _value,
         uint256 _lockDuration,
-        address _to,
-        bool _stakeNFT
+        address _to
     ) external returns (uint256);
 
     function createLock(

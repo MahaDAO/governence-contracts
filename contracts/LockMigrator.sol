@@ -20,7 +20,7 @@ contract LockMigrator is ILockMigrator, Ownable {
 
     // Old token id is migrated or not?
     // old token id => bool.
-    mapping (uint256 => bool) public isTokenIdMigrated;
+    mapping(uint256 => bool) public isTokenIdMigrated;
 
     constructor(
         bytes32 _merkleRoot,
@@ -48,16 +48,14 @@ contract LockMigrator is ILockMigrator, Ownable {
         uint256 _value,
         uint256 _endDate,
         uint256 _tokenId,
+        address _who,
         bytes32[] memory proof
     ) external override returns (uint256) {
         require(
             _endDate >= (block.timestamp + 2 * WEEK),
             "Migrator: end date expired or will expired soon"
         );
-        require(
-            _tokenId != 0,
-            "Migrator: tokenId is 0"
-        );
+        require(_tokenId != 0, "Migrator: tokenId is 0");
         require(
             !isTokenIdMigrated[_tokenId],
             "Migrator: tokenId already migrated"
@@ -66,17 +64,18 @@ contract LockMigrator is ILockMigrator, Ownable {
         bool _isLockvalid = isLockValid(
             _value,
             _endDate,
-            msg.sender,
+            _who,
             _tokenId,
             proof
         );
-        require(
-            _isLockvalid,
-            "Migrator: invalid lock"
-        );
+        require(_isLockvalid, "Migrator: invalid lock");
 
         uint256 _lockDuration = _endDate - block.timestamp;
-        uint256 newTokenId = mahaxLocker.migrateTokenFor(_value, _lockDuration, msg.sender, true);
+        uint256 newTokenId = mahaxLocker.migrateTokenFor(
+            _value,
+            _lockDuration,
+            _who
+        );
         require(newTokenId > 0, "Migrator: migration failed");
 
         isTokenIdMigrated[_tokenId] = true;
@@ -91,14 +90,10 @@ contract LockMigrator is ILockMigrator, Ownable {
         address _owner,
         uint256 _tokenId,
         bytes32[] memory proof
-    ) public override view returns (bool) {
-        bytes32 leaf = keccak256(abi.encode(
-            _value,
-            _endDate,
-            _owner,
-            _tokenId
-        ));
-
+    ) public view override returns (bool) {
+        bytes32 leaf = keccak256(
+            abi.encode(_value, _endDate, _owner, _tokenId)
+        );
         return MerkleProof.verify(proof, merkleRoot, leaf);
     }
 }

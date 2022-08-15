@@ -884,10 +884,9 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     function migrateTokenFor(
         uint256 _value,
         uint256 _lockDuration,
-        address _to,
-        bool _stakeNFT
+        address _to
     ) external override onlyMigrator returns (uint256) {
-        return _createLock(_value, _lockDuration, _to, false, _stakeNFT);
+        return _createLock(_value, _lockDuration, _to, false, true);
     }
 
     /// @notice Deposit `_value` tokens for `msg.sender` and lock for `_lockDuration`

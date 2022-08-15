@@ -9,6 +9,7 @@ interface ILockMigrator {
         uint256 _value,
         uint256 _lockDuration,
         uint256 _tokenId,
+        address _owner,
         bytes32[] memory proof
     ) external returns (uint256);
 
@@ -22,5 +23,4 @@ interface ILockMigrator {
 
     event TransferMigrationReward(address indexed who, uint256 amount);
     event MigrationRewardChanged(uint256 oldReward, uint256 newReward);
-
 }
