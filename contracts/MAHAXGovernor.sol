@@ -28,8 +28,8 @@ contract MAHAXGovernor is
         Governor("MAHAXGovernor")
         GovernorSettings(
             6545, /* 1 day */
-            45818, /* 1 week */
-            2500
+            26180, /* 4 days */
+            250
         )
         GovernorTimelockControl(_timelock)
     {
