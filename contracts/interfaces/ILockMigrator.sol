@@ -3,6 +3,8 @@
 pragma solidity ^0.8.0;
 
 interface ILockMigrator {
+    function setMigrationReward(uint256 reward) external;
+
     function migrateLock(
         uint256 _value,
         uint256 _lockDuration,
@@ -23,5 +25,10 @@ interface ILockMigrator {
         bytes32[] memory proof
     ) external view returns (bool);
 
-    event TransferMigrationReward(address indexed who, address indexed token, uint256 amount);
+    event MigrationRewardChanged(uint256 oldReward, uint256 newReward);
+    event TransferMigrationReward(
+        address indexed who,
+        address indexed token,
+        uint256 amount
+    );
 }

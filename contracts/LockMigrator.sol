@@ -5,12 +5,14 @@ pragma solidity ^0.8.0;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {INFTLocker} from "./interfaces/INFTLocker.sol";
 import {ILockMigrator} from "./interfaces/ILockMigrator.sol";
 
-contract LockMigrator is ILockMigrator, Ownable {
+contract LockMigrator is ILockMigrator, Ownable, ReentrancyGuard {
     bytes32 public merkleRoot;
+    uint256 public migrationReward;
 
     IERC20 public maha;
     IERC20 public scallop;
@@ -34,16 +36,9 @@ contract LockMigrator is ILockMigrator, Ownable {
         mahaxLocker = _mahaxLocker;
     }
 
-    function _sendMigrationReward(address who, uint256 mahaReward, uint256 scallopReward) internal {
-        if (mahaReward > 0) {
-            emit TransferMigrationReward(who, address(maha), mahaReward);
-            maha.transfer(who, mahaReward);
-        }
-
-        if (scallopReward > 0) {
-            emit TransferMigrationReward(who, address(scallop), mahaReward);
-            scallop.transfer(who, scallopReward);
-        }
+    function setMigrationReward(uint256 reward) external override onlyOwner {
+        emit MigrationRewardChanged(migrationReward, reward);
+        migrationReward = reward;
     }
 
     function migrateLock(
@@ -54,7 +49,7 @@ contract LockMigrator is ILockMigrator, Ownable {
         uint256 _mahaReward,
         uint256 _scallopReward,
         bytes32[] memory proof
-    ) external override returns (uint256) {
+    ) external override nonReentrant returns (uint256) {
         require(
             _endDate >= (block.timestamp + 2 * WEEK),
             "Migrator: end date expired or will expired soon"
@@ -85,7 +80,10 @@ contract LockMigrator is ILockMigrator, Ownable {
         require(newTokenId > 0, "Migrator: migration failed");
 
         isTokenIdMigrated[_tokenId] = true;
-        _sendMigrationReward(msg.sender, _mahaReward, _scallopReward);
+
+        if (_mahaReward > 0) maha.transfer(_who, _mahaReward);
+        if (_scallopReward > 0) scallop.transfer(_who, _scallopReward);
+        if (migrationReward > 0) maha.transfer(msg.sender, migrationReward);
 
         return newTokenId;
     }
@@ -100,7 +98,14 @@ contract LockMigrator is ILockMigrator, Ownable {
         bytes32[] memory proof
     ) public view override returns (bool) {
         bytes32 leaf = keccak256(
-            abi.encode(_value, _endDate, _owner, _tokenId, _mahaReward, _scallopReward)
+            abi.encode(
+                _value,
+                _endDate,
+                _owner,
+                _tokenId,
+                _mahaReward,
+                _scallopReward
+            )
         );
         return MerkleProof.verify(proof, merkleRoot, leaf);
     }
