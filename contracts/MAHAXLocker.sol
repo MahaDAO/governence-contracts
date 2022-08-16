@@ -964,7 +964,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             _locked,
             DepositType.INCREASE_LOCK_AMOUNT,
             true,
-            false
+            _isStaked(_tokenId)
         );
     }
 
@@ -1001,7 +1001,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             _locked,
             DepositType.INCREASE_UNLOCK_TIME,
             false,
-            false
+            _isStaked(_tokenId)
         );
     }
 

@@ -11,7 +11,7 @@ async function main() {
 
   const merkleProof =
     "0x8d3c89f0fb1158b832e35caf7eb25c346f0d3e88a0a31b714724c682a2e827ea";
-  const timelockDuration = 1 * 60 * 60;
+  const timelockDuration = 5 * 60; // 5 min
 
   const { provider } = ethers;
   const estimateGasPrice = await provider.getGasPrice();
@@ -78,6 +78,10 @@ async function main() {
   const governorCI = await mahaxGovernorCF.deploy(
     registryCI.address,
     timelockControllerCI.address,
+    100,
+    1000,
+    ethers.BigNumber.from(10).pow(18).mul(250),
+    ethers.BigNumber.from(10).pow(18).mul(1000), // 1000 maha quorum
     { gasPrice }
   );
   console.log(`tx hash: `, governorCI.deployTransaction.hash);
@@ -265,6 +269,10 @@ async function main() {
   await verifyContract(hre, governorCI.address, [
     registryCI.address,
     timelockControllerCI.address,
+    100,
+    1000,
+    ethers.BigNumber.from(10).pow(18).mul(250),
+    ethers.BigNumber.from(10).pow(18).mul(1000),
   ]);
 
   await verifyContract(hre, mahaxStakerCI.address, [
