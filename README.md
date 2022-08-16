@@ -1,6 +1,6 @@
 # MahaDAO Governance Contracts
 
-This repository contains the smart-contracts that are responsible for MahaDAO's governance. This includes voting, staking, gauges and bribes.
+This repository contains the smart-contracts that are responsible for MahaDAO's governance. This includes voting, staking, gauges and pool incentives.
 
 - [Registry.sol](./contracts/Registry.sol): This contract holds the addresses of all the deployed contracts and is referenced by the various components. [Etherscan](https://etherscan.io/address/0x270Cb299Bd822A856c0599235b3ABdd1B42afe85)
 - [MAHAXLocker.sol](./contracts/MAHAXLocker.sol): This contract locks MAHA and mints a NFT for every lock. [Etherscan](https://etherscan.io/address/0x2dd0b4BcD086DC603e864A898c9125d2c22F00D4)
