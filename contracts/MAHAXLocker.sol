@@ -990,8 +990,8 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             "Voting lock can be 4 years max"
         );
         require(
-            unlockTime <= _locked.start + MAXTIME,
-            "Voting lock can be 4 years max"
+            unlockTime <= _locked.start + (MAXTIME * 2),
+            "Voting lock can be 8 years max from the start"
         );
 
         _depositFor(
@@ -1286,7 +1286,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         emit Transfer(owner, address(0), _tokenId);
     }
 
-    function isStaked(uint256 _tokenId) external view returns (bool) {
+    function isStaked(uint256 _tokenId) external view override returns (bool) {
         return _isStaked(_tokenId);
     }
 
