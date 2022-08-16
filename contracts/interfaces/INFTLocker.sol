@@ -11,6 +11,8 @@ interface INFTLocker is IERC721 {
 
     function balanceOfNFT(uint256) external view returns (uint256);
 
+    function isStaked(uint256) external view returns (bool);
+
     function totalSupplyWithoutDecay() external view returns (uint256);
 
     function isApprovedOrOwner(address, uint256) external view returns (bool);
