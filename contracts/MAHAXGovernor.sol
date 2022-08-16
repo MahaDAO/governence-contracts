@@ -21,17 +21,24 @@ contract MAHAXGovernor is
 
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
 
-    constructor(IRegistry _registry, TimelockController _timelock)
+    constructor(
+        IRegistry _registry,
+        TimelockController _timelock,
+        uint256 initialVotingDelay,
+        uint256 initialVotingPeriod,
+        uint256 initialProposalThreshold,
+        uint256 quorum
+    )
         Governor("MAHAXGovernor")
         GovernorSettings(
-            6545, /* 1 day */
-            26180, /* 4 days */
-            250 * 1e18 /* 250 mahax */
+            initialVotingDelay,
+            initialVotingPeriod,
+            initialProposalThreshold
         )
         GovernorTimelockControl(_timelock)
     {
         registry = _registry;
-        _updateQuorum(100000 * 1e18); // 100k MAHAX Quorum
+        _updateQuorum(quorum);
     }
 
     // The following functions are overrides required by Solidity.
