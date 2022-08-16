@@ -1,0 +1,1 @@
+This folder consists of a list of contracts that allow a user to kick a staked NFT from a lock if it has been listed on a marketplace like Opensea but has been staked (in most cases to manipulate the floor price)
