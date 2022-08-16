@@ -990,8 +990,8 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             "Voting lock can be 4 years max"
         );
         require(
-            unlockTime <= _locked.start + (MAXTIME * 2),
-            "Voting lock can be 8 years max from the start"
+            unlockTime <= _locked.start + MAXTIME,
+            "Voting lock can be 4 years max"
         );
 
         _depositFor(
