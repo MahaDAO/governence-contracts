@@ -14,6 +14,7 @@ interface VotingEscrow:
     def userPointHistory(nft_id: uint256, loc: uint256) -> Point: view
     def pointHistory(loc: uint256) -> Point: view
     def checkpoint(): nonpayable
+    def isStaked(nft_id: uint256) -> bool: view
     def ownerOf(nft_id: uint256) -> address: view
 
 
@@ -227,6 +228,8 @@ def checkpoint_total_supply():
 
 @internal
 def _claim(nft_id: uint256, ve: address, _last_token_time: uint256) -> uint256:
+    assert VotingEscrow(ve).isStaked(nft_id), "nft not staked"
+
     # Minimal user_epoch is 0 (if user had no point)
     user_epoch: uint256 = 0
     to_distribute: uint256 = 0
