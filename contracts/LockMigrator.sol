@@ -11,9 +11,9 @@ import {ILockMigrator} from "./interfaces/ILockMigrator.sol";
 
 contract LockMigrator is ILockMigrator, Ownable {
     bytes32 public merkleRoot;
-    uint256 public migrationReward;
 
     IERC20 public maha;
+    IERC20 public scallop;
     INFTLocker public mahaxLocker;
 
     uint256 internal constant WEEK = 1 weeks;
@@ -25,23 +25,25 @@ contract LockMigrator is ILockMigrator, Ownable {
     constructor(
         bytes32 _merkleRoot,
         IERC20 _maha,
+        IERC20 _scallop,
         INFTLocker _mahaxLocker
     ) {
         merkleRoot = _merkleRoot;
         maha = _maha;
+        scallop = _scallop;
         mahaxLocker = _mahaxLocker;
     }
 
-    function _sendMigrationReward(address who) internal {
-        if (migrationReward > 0) {
-            maha.transfer(who, migrationReward);
-            emit TransferMigrationReward(who, migrationReward);
+    function _sendMigrationReward(address who, uint256 mahaReward, uint256 scallopReward) internal {
+        if (mahaReward > 0) {
+            emit TransferMigrationReward(who, address(maha), mahaReward);
+            maha.transfer(who, mahaReward);
         }
-    }
 
-    function setMigrationReward(uint256 reward) external override onlyOwner {
-        emit MigrationRewardChanged(migrationReward, reward);
-        migrationReward = reward;
+        if (scallopReward > 0) {
+            emit TransferMigrationReward(who, address(scallop), mahaReward);
+            scallop.transfer(who, scallopReward);
+        }
     }
 
     function migrateLock(
@@ -49,6 +51,8 @@ contract LockMigrator is ILockMigrator, Ownable {
         uint256 _endDate,
         uint256 _tokenId,
         address _who,
+        uint256 _mahaReward,
+        uint256 _scallopReward,
         bytes32[] memory proof
     ) external override returns (uint256) {
         require(
@@ -66,6 +70,8 @@ contract LockMigrator is ILockMigrator, Ownable {
             _endDate,
             _who,
             _tokenId,
+            _mahaReward,
+            _scallopReward,
             proof
         );
         require(_isLockvalid, "Migrator: invalid lock");
@@ -79,7 +85,7 @@ contract LockMigrator is ILockMigrator, Ownable {
         require(newTokenId > 0, "Migrator: migration failed");
 
         isTokenIdMigrated[_tokenId] = true;
-        _sendMigrationReward(msg.sender);
+        _sendMigrationReward(msg.sender, _mahaReward, _scallopReward);
 
         return newTokenId;
     }
@@ -89,10 +95,12 @@ contract LockMigrator is ILockMigrator, Ownable {
         uint256 _endDate,
         address _owner,
         uint256 _tokenId,
+        uint256 _mahaReward,
+        uint256 _scallopReward,
         bytes32[] memory proof
     ) public view override returns (bool) {
         bytes32 leaf = keccak256(
-            abi.encode(_value, _endDate, _owner, _tokenId)
+            abi.encode(_value, _endDate, _owner, _tokenId, _mahaReward, _scallopReward)
         );
         return MerkleProof.verify(proof, merkleRoot, leaf);
     }
