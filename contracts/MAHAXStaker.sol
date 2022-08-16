@@ -111,6 +111,9 @@ contract MAHAXStaker is ReentrancyGuard, AccessControl, EIP712, INFTStaker {
         totalWeight += _weight;
 
         emit StakeNFT(msg.sender, _owner, _tokenId, _weight);
+
+        // if the user is staking for the first time; set the delegate to himself by default.
+        if (_delegation[_owner] == address(0)) _delegate(_owner, _owner);
     }
 
     function _unstake(uint256 _tokenId) internal {
@@ -260,7 +263,6 @@ contract MAHAXStaker is ReentrancyGuard, AccessControl, EIP712, INFTStaker {
         override
         returns (address)
     {
-        if (_delegation[account] == address(0)) return account;
         return _delegation[account];
     }
 
