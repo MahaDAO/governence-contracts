@@ -302,6 +302,26 @@ contract BaseGaugeV2UniV3 is
         return Math.min((_derived + _adjusted), liquidity);
     }
 
+    function boostedFactor(uint256 tokenId, address who)
+        public
+        view
+        returns (
+            uint256 original,
+            uint256 boosted,
+            uint256 factor
+        )
+    {
+        (, , , uint128 _liquidity) = NFTPositionInfo.getPositionInfo(
+            factory,
+            nonfungiblePositionManager,
+            tokenId
+        );
+
+        original = (_liquidity * 20) / 100;
+        boosted = derivedLiquidity(_liquidity, who);
+        factor = (original * 1e18) / boosted;
+    }
+
     function left(address token) external view override returns (uint256) {
         return totalRewardUnclaimed;
     }
