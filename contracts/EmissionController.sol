@@ -38,16 +38,11 @@ contract EmissionController is IEmissionController, Epoch {
             // if a rate was set, then we send as much as we can
         else balanceToSend = Math.min(mahaBalance, ratePerEpoch);
 
-        if (balanceToSend > 0) {
-            // send token and notify the gauge voter
-            IERC20(registry.maha()).transfer(
-                registry.gaugeVoter(),
-                balanceToSend
-            );
-            IGaugeVoter(registry.gaugeVoter()).notifyRewardAmount(
-                balanceToSend
-            );
-        }
+        require(balanceToSend > 0, "no maha to send");
+
+        // approve token and notify the gauge voter
+        IERC20(registry.maha()).approve(registry.gaugeVoter(), balanceToSend);
+        IGaugeVoter(registry.gaugeVoter()).notifyRewardAmount(balanceToSend);
     }
 
     function updateRate(uint256 epochRate) external onlyOwner {
