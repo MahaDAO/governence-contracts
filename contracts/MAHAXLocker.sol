@@ -43,6 +43,8 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     int128 internal constant iMAXTIME = 4 * 365 * 86400;
     uint256 internal constant MULTIPLIER = 1 ether;
 
+    uint256 public inBootstrapMode = true;
+
     ITokenURIGenerator public renderingContract;
 
     uint256 public supply;
@@ -1269,6 +1271,20 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         }
         // Now dt contains info on how far are we beyond point
         return _supplyAt(point, point.ts + dt);
+    }
+
+    /// @dev A refund code that triggers a refund of maha; only used for the bootstrapping period of the DAO
+    function emergencyRefund(address to) external onlyGovernance {
+        require(inBootstrapMode, "not in bootstrap mode");
+        IERC20(registry.maha()).transfer(
+            to,
+            IERC20(registry.maha()).balanceOf(address(this))
+        );
+    }
+
+    /// @dev stop the bootstrap mode that allows governance to take all the maha out
+    function stopBootstrapMode() external onlyGovernance {
+        inBootstrapMode = false;
     }
 
     function _burn(uint256 _tokenId) internal {
