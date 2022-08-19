@@ -41,7 +41,7 @@ contract EmissionController is IEmissionController, Epoch {
         require(balanceToSend > 0, "no maha to send");
 
         // approve token and notify the gauge voter
-        IERC20(registry.maha()).approve(registry.gaugeVoter(), balanceToSend);
+        IERC20(registry.maha()).transfer(registry.gaugeVoter(), balanceToSend);
         IGaugeVoter(registry.gaugeVoter()).notifyRewardAmount(balanceToSend);
     }
 

@@ -26,7 +26,7 @@ async function main() {
 
   await verifyContract(hre, impl.address, [registry.address, _ratePerEpoch]);
 
-  saveABI("EmissionController", "EmissionController", impl.address);
+  saveABI("EmissionController", "IEmissionController", impl.address);
   console.log(`Deployment on ${network.name} complete!`);
 }
 
