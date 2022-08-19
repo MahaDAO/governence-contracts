@@ -53,7 +53,7 @@ async function main() {
     [registryCI.address, timelockControllerCI.address]
   );
 
-  const mahaxCI = await deployOrLoadAndVerify("MAHALocker", "MAHAXLocker", [
+  const mahaxCI = await deployOrLoadAndVerify("MAHAXLocker", "MAHAXLocker", [
     registryCI.address,
     deployer.address,
     renderingContractCI.address,
