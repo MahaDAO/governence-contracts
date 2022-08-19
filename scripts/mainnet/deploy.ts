@@ -53,7 +53,7 @@ async function main() {
     [registryCI.address, timelockControllerCI.address]
   );
 
-  const mahaxCI = await deployOrLoadAndVerify("MAHAXLocker", "MAHAXLocker", [
+  const mahaxCI = await deployOrLoadAndVerify("MAHALocker", "MAHAXLocker", [
     registryCI.address,
     deployer.address,
     renderingContractCI.address,
@@ -80,48 +80,6 @@ async function main() {
     emissionControllerCI.address,
     deployer.address
   );
-
-  console.log(`Verifying contracts:\n`);
-  await verifyContract(hre, timelockControllerCI.address, [
-    timelockDuration,
-    [deployer.address],
-    [deployer.address],
-  ]);
-
-  await verifyContract(hre, registryCI.address, []);
-
-  await verifyContract(hre, governorCI.address, [
-    registryCI.address,
-    timelockControllerCI.address,
-    100,
-    1000,
-    ethers.BigNumber.from(10).pow(18).mul(250),
-    ethers.BigNumber.from(10).pow(18).mul(1000),
-  ]);
-
-  await verifyContract(hre, mahaxStakerCI.address, [
-    registryCI.address,
-    timelockControllerCI.address,
-  ]);
-
-  await verifyContract(hre, mahaxCI.address, [
-    registryCI.address,
-    deployer.address,
-    renderingContractCI.address,
-    10000,
-  ]);
-
-  await verifyContract(hre, emissionControllerCI.address, [
-    registryCI.address,
-    "1000000000000000000",
-  ]);
-
-  await verifyContract(hre, renderingContractCI.address, []);
-
-  await verifyContract(hre, voterCI.address, [
-    registryCI.address,
-    deployer.address,
-  ]);
 
   console.log(`Governance deployment on ${network.name} complete.`);
 }

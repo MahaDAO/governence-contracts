@@ -78,9 +78,15 @@ export const deployOrLoad = async (
     return await ethers.getContractAt(contractName, addr);
   }
 
-  console.log(`deploying ${key}`);
+  const { provider } = ethers;
+  const estimateGasPrice = await provider.getGasPrice();
+  const gasPrice = estimateGasPrice.mul(5).div(4);
+
+  console.log(
+    `deploying ${key} at ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`
+  );
   const factory = await ethers.getContractFactory(contractName);
-  const instance = await factory.deploy(...args);
+  const instance = await factory.deploy(...args, { gasPrice });
   await instance.deployed();
   console.log(
     `${instance.address} -> tx hash: ${instance.deployTransaction.hash}`
