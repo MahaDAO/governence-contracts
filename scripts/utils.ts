@@ -73,18 +73,16 @@ export const deployOrLoad = async (
     return await ethers.getContractAt(contractName, addr);
   }
 
-  process.exit();
+  console.log(`deploying ${key}`);
+  const factory = await ethers.getContractFactory(contractName);
+  const instance = await factory.deploy(...args);
+  await instance.deployed();
+  console.log(
+    `${instance.address} -> tx hash: ${instance.deployTransaction.hash}`
+  );
 
-  // console.log(`deploying ${key}`);
-  // const factory = await ethers.getContractFactory(contractName);
-  // const instance = await factory.deploy(...args);
-  // await instance.deployed();
-  // console.log(
-  //   `${instance.address} -> tx hash: ${instance.deployTransaction.hash}`
-  // );
-
-  // await saveABI(key, contractName, instance.address, false);
-  // return instance;
+  await saveABI(key, contractName, instance.address, false);
+  return instance;
 };
 
 export const deployOrLoadAndVerify = async (
@@ -100,7 +98,7 @@ export const deployOrLoadAndVerify = async (
     const data = fs.readFileSync(filename).toString();
     const outputFile = JSON.parse(data);
 
-    if (!outputFile[key].isVerified) {
+    if (!outputFile[key].verified) {
       await wait(delay);
       await verifyContract(hre, instance.address, args);
       await saveABI(key, contractName, instance.address, true);
