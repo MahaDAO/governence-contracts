@@ -43,7 +43,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     int128 internal constant iMAXTIME = 4 * 365 * 86400;
     uint256 internal constant MULTIPLIER = 1 ether;
 
-    uint256 public inBootstrapMode = true;
+    bool public inBootstrapMode = true;
 
     ITokenURIGenerator public renderingContract;
 
