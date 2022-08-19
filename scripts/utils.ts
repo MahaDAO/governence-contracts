@@ -49,7 +49,7 @@ export const saveABI = (
   console.log(`saved ${key}:${address} into ${network.name}.json`);
 };
 
-export const getOutputAddress = (key: string) => {
+export const getOutput = () => {
   const filename = `./output/${network.name}.json`;
 
   let outputFile: any = {};
@@ -58,6 +58,11 @@ export const getOutputAddress = (key: string) => {
     outputFile = data === "" ? {} : JSON.parse(data);
   }
 
+  return outputFile;
+};
+
+export const getOutputAddress = (key: string) => {
+  const outputFile = getOutput();
   if (!outputFile[key]) return;
   return outputFile[key].address;
 };
@@ -93,16 +98,11 @@ export const deployOrLoadAndVerify = async (
 ) => {
   const instance = await deployOrLoad(key, contractName, args);
 
-  const filename = `./output/${network.name}.json`;
-  if (fs.existsSync(filename)) {
-    const data = fs.readFileSync(filename).toString();
-    const outputFile = JSON.parse(data);
-
-    if (!outputFile[key].verified) {
-      await wait(delay);
-      await verifyContract(hre, instance.address, args);
-      await saveABI(key, contractName, instance.address, true);
-    }
+  const outputFile = getOutput();
+  if (!outputFile[key].verified) {
+    await wait(delay);
+    await verifyContract(hre, instance.address, args);
+    await saveABI(key, contractName, instance.address, true);
   }
 
   return instance;
