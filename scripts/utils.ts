@@ -83,7 +83,7 @@ export const deployOrLoad = async (
   const gasPrice = estimateGasPrice.mul(5).div(4);
 
   console.log(
-    `deploying ${key} at ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`
+    `\ndeploying ${key} at ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`
   );
   const factory = await ethers.getContractFactory(contractName);
   const instance = await factory.deploy(...args, { gasPrice });

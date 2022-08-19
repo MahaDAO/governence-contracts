@@ -1,6 +1,5 @@
-import hre, { ethers, network } from "hardhat";
+import { ethers, network } from "hardhat";
 import { deployOrLoadAndVerify, getOutputAddress } from "../utils";
-import verifyContract from "../verifyContract";
 
 async function main() {
   console.log(`deploying governance to ${network.name}`);

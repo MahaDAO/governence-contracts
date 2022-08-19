@@ -1,27 +1,16 @@
-import hre, { ethers, network } from "hardhat";
-import { getOutputAddress, saveABI } from "../utils";
-
-import verifyContract from "../verifyContract";
+import { ethers, network } from "hardhat";
+import { deployOrLoadAndVerify, getOutputAddress, saveABI } from "../utils";
 
 async function main() {
   console.log(`Deploying governance to ${network.name}`);
 
   const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
   const tokenA = "ARTH";
-  const tokenB = "USDC";
+  const tokenB = "MAHA";
   const fee = 10000;
 
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);
-
-  const { provider } = ethers;
-  const estimateGasPrice = await provider.getGasPrice();
-  const gasPrice = estimateGasPrice.mul(3).div(2);
-  console.log(`Gas Price: ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`);
-
-  // Get all smart contract factories
-  const univ3GaugeCF = await ethers.getContractFactory("BaseGaugeV2UniV3");
-  const bribesCF = await ethers.getContractFactory("BaseV2Bribes");
 
   // Get all the deployed smart contracts.
   const voter = await ethers.getContractAt(
@@ -38,19 +27,17 @@ async function main() {
     getOutputAddress(tokenB),
   ]);
 
-  const univ3GaugeContractInstance = await univ3GaugeCF.deploy(
-    tokens[0],
-    tokens[1],
-    fee,
-    registry.address,
-    uniPositionManager,
-    { gasPrice }
+  const univ3GaugeContractInstance = await deployOrLoadAndVerify(
+    `${tokenA}${tokenB}-UniV3Gauge`,
+    "BaseGaugeV2UniV3",
+    [tokens[0], tokens[1], fee, registry.address, uniPositionManager]
   );
 
-  await univ3GaugeContractInstance.deployed();
-
-  const bribesInstance = await bribesCF.deploy(registry.address);
-  await bribesInstance.deployed();
+  const bribesInstance = await deployOrLoadAndVerify(
+    `${tokenA}${tokenB}-UniV3Bribe`,
+    "BaseV2Bribes",
+    [registry.address]
+  );
 
   console.log("univ3GaugeContractInstance", univ3GaugeContractInstance.address);
   console.log("bribesInstance", bribesInstance.address);
@@ -89,29 +76,11 @@ async function main() {
   await tx4.wait();
 
   await saveABI(
-    `${tokenA}${tokenB}-UniV3Gauge`,
-    "BaseGaugeV2UniV3",
-    univ3GaugeContractInstance.address
-  );
-  await saveABI(
-    `${tokenA}${tokenB}-UniV3Bribe`,
-    "BaseV2Bribes",
-    bribesInstance.address
-  );
-  await saveABI(
     `${tokenA}${tokenB}-UniV3-Pool`,
     "IUniswapV3Pool",
-    await univ3GaugeContractInstance.pool()
+    await univ3GaugeContractInstance.pool(),
+    true
   );
-
-  await verifyContract(hre, univ3GaugeContractInstance.address, [
-    tokens[0],
-    tokens[1],
-    fee,
-    registry.address,
-    uniPositionManager,
-  ]);
-  await verifyContract(hre, bribesInstance.address, [registry.address]);
 }
 
 main().catch((error) => {
