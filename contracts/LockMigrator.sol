@@ -6,11 +6,12 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 
 import {INFTLocker} from "./interfaces/INFTLocker.sol";
 import {ILockMigrator} from "./interfaces/ILockMigrator.sol";
 
-contract LockMigrator is ILockMigrator, Ownable, ReentrancyGuard {
+contract LockMigrator is ILockMigrator, Ownable, Pausable, ReentrancyGuard {
     bytes32 public merkleRoot;
     uint256 public migrationReward;
 
@@ -23,6 +24,8 @@ contract LockMigrator is ILockMigrator, Ownable, ReentrancyGuard {
     // Old token id is migrated or not?
     // old token id => bool.
     mapping(uint256 => bool) public isTokenIdMigrated;
+    mapping(uint256 => bool) public isTokenIdBanned;
+    mapping(address => bool) public isAddressBanned;
 
     constructor(
         bytes32 _merkleRoot,
@@ -41,7 +44,7 @@ contract LockMigrator is ILockMigrator, Ownable, ReentrancyGuard {
         migrationReward = reward;
     }
 
-    function migrateLock(
+    function _migrateLock(
         uint256 _value,
         uint256 _endDate,
         uint256 _tokenId,
@@ -49,16 +52,12 @@ contract LockMigrator is ILockMigrator, Ownable, ReentrancyGuard {
         uint256 _mahaReward,
         uint256 _scallopReward,
         bytes32[] memory proof
-    ) external override nonReentrant returns (uint256) {
-        require(
-            _endDate >= (block.timestamp + 2 * WEEK),
-            "Migrator: end date expired or will expired soon"
-        );
-        require(_tokenId != 0, "Migrator: tokenId is 0");
-        require(
-            !isTokenIdMigrated[_tokenId],
-            "Migrator: tokenId already migrated"
-        );
+    ) internal nonReentrant whenNotPaused returns (uint256) {
+        require(_endDate >= (block.timestamp + 2 * WEEK), "end date expired");
+        require(_tokenId != 0, "tokenId is 0");
+        require(!isTokenIdMigrated[_tokenId], "tokenId already migrated");
+        require(!isTokenIdBanned[_tokenId], "tokenId banned");
+        require(!isAddressBanned[_who], "owner banned");
 
         bool _isLockvalid = isLockValid(
             _value,
@@ -88,6 +87,49 @@ contract LockMigrator is ILockMigrator, Ownable, ReentrancyGuard {
         return newTokenId;
     }
 
+    function migrateLock(
+        uint256 _value,
+        uint256 _endDate,
+        uint256 _tokenId,
+        address _who,
+        uint256 _mahaReward,
+        uint256 _scallopReward,
+        bytes32[] memory _proof
+    ) external override nonReentrant whenNotPaused returns (uint256) {
+        return
+            _migrateLock(
+                _value,
+                _endDate,
+                _tokenId,
+                _who,
+                _mahaReward,
+                _scallopReward,
+                _proof
+            );
+    }
+
+    function migrateLocks(
+        uint256[] memory _value,
+        uint256[] memory _endDate,
+        uint256[] memory _tokenId,
+        address[] memory _who,
+        uint256[] memory _mahaReward,
+        uint256[] memory _scallopReward,
+        bytes32[][] memory proof
+    ) external {
+        for (uint256 index = 0; index < _value.length; index++) {
+            _migrateLock(
+                _value[index],
+                _endDate[index],
+                _tokenId[index],
+                _who[index],
+                _mahaReward[index],
+                _scallopReward[index],
+                proof[index]
+            );
+        }
+    }
+
     function isLockValid(
         uint256 _value,
         uint256 _endDate,
@@ -108,5 +150,22 @@ contract LockMigrator is ILockMigrator, Ownable, ReentrancyGuard {
             )
         );
         return MerkleProof.verify(proof, merkleRoot, leaf);
+    }
+
+    function refundMAHA() external onlyOwner {
+        maha.transfer(msg.sender, maha.balanceOf(address(this)));
+    }
+
+    function toggleBanID(uint256 id) external onlyOwner {
+        isTokenIdBanned[id] = !isTokenIdBanned[id];
+    }
+
+    function togglePause() external onlyOwner {
+        if (paused()) _unpause();
+        else _pause();
+    }
+
+    function toggleBanOwner(address _who) external onlyOwner {
+        isAddressBanned[_who] = !isAddressBanned[_who];
     }
 }
