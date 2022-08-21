@@ -13,7 +13,7 @@ import {ILockMigrator} from "./interfaces/ILockMigrator.sol";
 
 contract LockMigrator is ILockMigrator, Ownable, Pausable, ReentrancyGuard {
     bytes32 public merkleRoot;
-    uint256 public migrationReward;
+    uint256 public migrationReward = 10 * 1e18;
 
     IERC20 public maha;
     IERC20 public scallop;
@@ -21,8 +21,6 @@ contract LockMigrator is ILockMigrator, Ownable, Pausable, ReentrancyGuard {
 
     uint256 internal constant WEEK = 1 weeks;
 
-    // Old token id is migrated or not?
-    // old token id => bool.
     mapping(uint256 => bool) public isTokenIdMigrated;
     mapping(uint256 => bool) public isTokenIdBanned;
     mapping(address => bool) public isAddressBanned;
@@ -95,7 +93,7 @@ contract LockMigrator is ILockMigrator, Ownable, Pausable, ReentrancyGuard {
         uint256 _mahaReward,
         uint256 _scallopReward,
         bytes32[] memory _proof
-    ) external override nonReentrant whenNotPaused returns (uint256) {
+    ) external override returns (uint256) {
         return
             _migrateLock(
                 _value,
@@ -152,8 +150,9 @@ contract LockMigrator is ILockMigrator, Ownable, Pausable, ReentrancyGuard {
         return MerkleProof.verify(proof, merkleRoot, leaf);
     }
 
-    function refundMAHA() external onlyOwner {
+    function refund() external onlyOwner {
         maha.transfer(msg.sender, maha.balanceOf(address(this)));
+        scallop.transfer(msg.sender, scallop.balanceOf(address(this)));
     }
 
     function toggleBanID(uint256 id) external onlyOwner {
