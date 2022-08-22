@@ -1,6 +1,6 @@
 {
   "name": "governance-contracts",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "MahaDAO Governance Contracts ============================",
   "main": "index.js",
   "directories": {
