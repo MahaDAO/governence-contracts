@@ -56,7 +56,7 @@ async function main() {
     registryCI.address,
     deployer.address,
     renderingContractCI.address,
-    10000,
+    1000,
   ]);
 
   const emissionControllerCI = await deployOrLoadAndVerify(
