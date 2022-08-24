@@ -1,6 +1,6 @@
 import hre, { ethers, network } from "hardhat";
-import verifyContract from "./verifyContract";
-import { saveABI } from "./utils";
+import verifyContract from "../verifyContract";
+import { saveABI } from "../utils";
 
 async function main() {
   console.log(`Deploying to ${network.name}...`);
@@ -22,7 +22,7 @@ async function main() {
   );
   await verifyContract(hre, timelock.address, [delay, [], []]);
 
-  saveABI("TimelockController", "TimelockController", timelock.address);
+  saveABI("TimelockController", "TimelockController", timelock.address, true);
   console.log(`Deployment on ${network.name} complete!`);
 }
 

@@ -31,7 +31,7 @@ export const saveABI = (
   address: string,
   verified: boolean
 ) => {
-  const filename = `./output/${network.name}.json`;
+  const filename = `./deployments/${network.name}.json`;
 
   let outputFile: any = {};
   if (fs.existsSync(filename)) {
@@ -50,7 +50,7 @@ export const saveABI = (
 };
 
 export const getOutput = () => {
-  const filename = `./output/${network.name}.json`;
+  const filename = `./deployments/${network.name}.json`;
 
   let outputFile: any = {};
   if (fs.existsSync(filename)) {

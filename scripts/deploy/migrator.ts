@@ -1,6 +1,6 @@
 import { BigNumber } from "ethers";
 import { ethers, network } from "hardhat";
-import { deployOrLoadAndVerify, getOutputAddress } from "./utils";
+import { deployOrLoadAndVerify, getOutputAddress } from "../utils";
 
 async function main() {
   console.log(`Deploying migrator to ${network.name}`);

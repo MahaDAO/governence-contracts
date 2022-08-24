@@ -1,0 +1,22 @@
+{
+  "ARTH": {
+    "abi": "IERC20",
+    "address": "<paste_address_here>"
+  },
+  "USDC": {
+    "abi": "IERC20",
+    "address": "<paste_address_here>"
+  },
+  "SCLP": {
+    "abi": "IERC20",
+    "address": "<paste_address_here>"
+  },
+  "MAHA": {
+    "abi": "IERC20",
+    "address": "<paste_address_here>"
+  },
+  "WETH": {
+    "abi": "IWETH",
+    "address": "<paste_address_here>"
+  }
+}

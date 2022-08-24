@@ -61,12 +61,12 @@ const config: HardhatUserConfig & any = {
   },
   networks: {
     ropsten: {
-      url: process.env.ROPSTEN_URL || "",
+      url: `https://ropsten.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     ethereum: {
-      url: process.env.ETHEREUM_URL || "",
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },

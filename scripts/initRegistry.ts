@@ -18,6 +18,7 @@ async function main() {
     "0x2dd0b4BcD086DC603e864A898c9125d2c22F00D4", // address _locker,
     "0x8b02998366f7437f6c4138f4b543ea5c000cd608", // address _governor,
     "0x438B06e4F4EB8F4F93Db6258a5E8A6547F3f23cC", // address _staker,
+    "0x438B06e4F4EB8F4F93Db6258a5E8A6547F3f23cC",
     deployer.address // address _governance
   );
   console.log(`initialized Registry ${tx.hash}`);

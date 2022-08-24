@@ -1,0 +1,103 @@
+{
+  "ARTH": {
+    "abi": "MockERC20",
+    "address": "0xbeab728fcc37de548620f17e9a521374f4a35c02"
+  },
+  "USDC": {
+    "abi": "MockERC20",
+    "address": "0xc003235c028A18E55bacE946E91fAe95769348BB"
+  },
+  "MAHA": {
+    "abi": "MockERC20",
+    "address": "0x106E0c36aD45cEAce8a778fa7365a2ce0500C3a2"
+  },
+  "WETH": {
+    "abi": "IWETH",
+    "address": "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6"
+  },
+  "UniswapNFTManager": {
+    "abi": "IUniswapNFTManager",
+    "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+  },
+  "MAHAXStaker": {
+    "abi": "MAHAXStaker",
+    "address": "0x43AA3e64092aAd813c7A17cA942e23d3609996dc"
+  },
+  "TimelockController": {
+    "abi": "TimelockController",
+    "address": "0x0cD574c7018FDED33da08c470f63925119a85346"
+  },
+  "MAHAXGovernor": {
+    "abi": "MAHAXGovernor",
+    "address": "0x314EC613416654346EBdD6c5059233f0553cA3a4"
+  },
+  "MAHAXLocker": {
+    "abi": "MAHAXLocker",
+    "address": "0x2711954Fa2675496d5741dA6965fA079BCDE0679"
+  },
+  "GaugeVoter": {
+    "abi": "BaseV2Voter",
+    "address": "0x88c7F878520FA0A97A41a098f1c23979A5ddC327"
+  },
+  "Registry": {
+    "abi": "IRegistry",
+    "address": "0x5cd8A5ddA1a86F1b70e046DE06CD91d0A2261178"
+  },
+  "GaugeFactory": {
+    "abi": "IGaugeFactory",
+    "address": "0x4405D508B7e0D9caC7e0A31Ea61432c12E3658A7"
+  },
+  "BribesFactory": {
+    "abi": "IBribeFactory",
+    "address": "0x0fBd92eA11e23D959E1489A9Abb84ae2E4778D31"
+  },
+  "EmissionController": {
+    "abi": "IEmissionController",
+    "address": "0xE390d0f60dFEd983E68d2a4B86a86e89ea208BC3"
+  },
+  "MAHAFeeDistributor": {
+    "abi": "FeeDistributor",
+    "address": "0xc953285D64A3c8DF09f3167ee250605984778B53"
+  },
+  "ARTHFeeDistributor": {
+    "abi": "FeeDistributor",
+    "address": "0x115318B43f88f0CE19F61b4292C646997DD9D0bC"
+  },
+  "USDCFeeDistributor": {
+    "abi": "FeeDistributor",
+    "address": "0x44247faAC3000fcc2BC0336738BF7F243ECcCeF5"
+  },
+  "ARTHMAHA-UniV3Gauge": {
+    "abi": "BaseGaugeV2UniV3",
+    "address": "0x736a089Ad405f1C35394Ad15004f5359938f771e"
+  },
+  "ARTHMAHA-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "address": "0xBBf618A5AEEaDB2B8801C1cDF4504EF5B5a48eeC"
+  },
+  "ARTHMAHA-UniV3-Pool": {
+    "abi": "IUniswapV3Pool",
+    "address": "0x1C4e4d8a4Ab69d6c8671C3eA908efb8449d1252B"
+  },
+  "ARTHUSDC-UniV3Gauge": {
+    "abi": "BaseGaugeV2UniV3",
+    "address": "0x0eD9931c374230BC4199b18D2903c97e2db2faa2"
+  },
+  "ARTHUSDC-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "address": "0xFf1361cf1BcD9edADa0507a0a9Ba351134f01CD6"
+  },
+  "ARTHUSDC-UniV3-Pool": {
+    "abi": "IUniswapV3Pool",
+    "address": "0xE2e7e671ccB343E8Fe1Db0Ec2968b0bE4FCAefF9"
+  },
+  "RenderingContract": {
+    "abi": "RenderingContract",
+    "address": "0x5e00673986E7BDCa5a3F444F724456F9510f49Ea"
+  },
+  "LockMigrator": {
+    "abi": "LockMigrator",
+    "verified": true,
+    "address": "0x25E1d1751C3ED5D27baaf9Ac6b3DA536042b07EB"
+  }
+}
