@@ -39,20 +39,24 @@ The registry maintains the a reference to the following contracts:
 
 ## MAHAXLocker.sol
 
-This contract locks MAHA and mints a NFT for every lock.
+This contract (also called as the locker) locks MAHA and mints a NFT for every lock.
 
-Upon interacting with the locks (minting, burning, extending the lock or increasing the maha), a call to the `MAHAXStaker` contract is made, allowing a user to stake or update his stake in the same transaction itself. Furthermore, the locker also checks the `MAHAXStaker` to see if the NFT is also staked as well.
+Upon interacting with the locks (minting, burning, extending the lock or increasing the maha), a call to the `MAHAXStaker` contract is made, allowing a user to stake or update his stake in the same transaction itself.
 
-If a NFT is staked, then a user:
+Furthermore, the locker also checks the `MAHAXStaker` to see if the NFT is also staked as well. If a NFT is staked, then a user:
 
 - Cannot transfer the NFT
 - Cannot withdraw the underlying MAHA
 - Cannot merge the NFT with another one
 
+The locker contract has an `emergencyRefund()` which refunds all the maha the contract, back to the caller. This function can only be called by governance and can be disabled for good by calling the `stopBootstrapMode()` function which triggers a flag that disables the `emergencyRefund()` function. In the unlikely event that there is a flaw in the locker's business logic, this function can be called as part of the migration process to a new governance implementation. The moment there is enough confidence in the contract's business logic, the `stopBootstrapMode()` can be called by the community and the `emergencyRefund()` will become disabled permanently.
+
+Considering a modular approach, in an unlikely event that other smart contract within the governance fails to function, the locker should still be able to mint, burn and allow users to withdraw their MAHA without any issues.
+
 [MAHAXLocker.sol](./contracts/MAHAXLocker.sol) - [Etherscan](https://etherscan.io/address/0xbdD8F4dAF71C2cB16ccE7e54BB81ef3cfcF5AAcb)
 
 ## MAHAXStaker.sol
 
-This contract's main purpose is to stake NFTs, calculating voting power and allow for delegation to happen.
+This contract's main purpose is to stake NFTs, calculating voting power and allow for delegation to happen. It has functions to unstake and stake which can get called by a user and also a function called `_stakeFromLock(..)` which is called by the `MAHAXLocker.sol` whenever (for example) it decides to stake a NFT in the same transaction as minitng a NFT.
 
 [MAHAXStaker.sol](./contracts/MAHAXStaker.sol) - [Etherscan](https://etherscan.io/address/0x608917F8392634428Ec71C6766F3eC3f5cc8f421)
