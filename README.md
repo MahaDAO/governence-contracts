@@ -51,8 +51,8 @@ Furthermore, the locker also checks the `MAHAXStaker` contract to understand if 
 
 ### Calculating MAHAX
 
-Every user that locks their `MAHA` gets a balance assigned to them. This balance represents their voting and it decays over time (from a max period of 4 years).
-The locker returns this balance by calling the `balanceOf(...)` function which calculates using a linear function that takes into account current time, lock duration and lock amount.
+Every user that locks their `MAHA` gets a balance assigned to them. This balance represents their voting power and it decays over time (from a max period of `4 years`).
+The balance is retrived by calling the `balanceOf(...)` function which calculates using a linear function that takes into account current time, lock duration and lock amount.
 
 The maximum duration a user can lock for is `4 years`. There is no upper limit for the amount of `MAHA` that can be lcoked however there is a minimum amount of `100 MAHAX` that a NFT needs to maintain. This can be changed at any time by the governance. Lock expiry times are rounded off by the week and the minimum lock time can be `1 week`.
 
@@ -64,15 +64,17 @@ NFTs can be staked onto the `MAHAXStaker` contract which allows the NFT holder t
 
 ### Emergency Refund
 
-The locker contract contains an `emergencyRefund()` which is used to refund all the `MAHA` in the contract in the unlikely event of an emergency. This function can only be called by governance and can be disabled for good by calling the `stopBootstrapMode()` function which triggers a flag that disables the `emergencyRefund()` function. In the unlikely event that there is a flaw in the locker's business logic, this function can be called as part of the migration process to a new governance implementation. The moment there is enough confidence in the contract's business logic, the `stopBootstrapMode()` can be called by the community and the `emergencyRefund()` will become disabled permanently.
+The locker contract contains an `emergencyRefund()` which is used to refund all the `MAHA` in the contract in the unlikely event of an emergency. This function can only be called by governance and can be disabled for good by calling the `stopBootstrapMode()` function which triggers a flag that disables the `emergencyRefund()` function. In the unlikely event that there is a flaw in the locker's business logic, this function can be called as part of the migration process to a new governance implementation.
 
-Considering a modular approach, in an unlikely event that other smart contracts within the governance fails to function, the locker contract should still be able to mint, burn and allow users to withdraw their `MAHA` without any issues.
+The moment there is enough confidence in the contract's business logic, the `stopBootstrapMode()` can be called by the community and the `emergencyRefund()` will become disabled permanently.
+
+Considering a modular approach, in an unlikely event that other smart contracts within the governance fails to function, the locker contract should still be able to allow users to withdraw their `MAHA` once their lock expires without any issues.
 
 [MAHAXLocker.sol](./contracts/MAHAXLocker.sol) - [Etherscan](https://etherscan.io/address/0xbdD8F4dAF71C2cB16ccE7e54BB81ef3cfcF5AAcb)
 
 ## MAHAXStaker.sol
 
-The main purpose of this contract (also called as the staker contract) is to stake NFTs, calculating voting power and allow for delegation to happen. It has functions to unstake and stake which can get called by a user and also a function called `_stakeFromLock(..)` which is called by the `MAHAXLocker.sol` whenever (for example) it decides to stake a NFT in the same transaction as minitng a NFT.
+The main purpose of this contract (also called as the staker contract) is to stake NFTs, calculating voting power and to allow for delegation. It has functions to `unstake(...)` and `stake(...)` which can get called by a NFT holder and also a function called `_stakeFromLock(..)` which is called by the `MAHAXLocker.sol` whenever (for example) it decides to stake a NFT in the same transaction as minitng a NFT.
 
 When a NFT is staked, the staker contract captures the user's `MAHAX` balance (or voting power) and records it in the contract. On blockexplorers such as Etherscan, this can be seen as `MAHAXvp` (short for `MAHAX Voting Power`).
 
