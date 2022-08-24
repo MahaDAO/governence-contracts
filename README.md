@@ -29,10 +29,30 @@ The governance contracts was built keeping in mind security and upgradability fo
 
 ## Registry.sol
 
-This contract maintains the registry of all contract addresses. It used to allow for an easy way of upgrading the various components of the govenrance. In the event there is a bug or one of the contract needs to be upgraded, an update to the `Registry` will update the reference for all the other currently deployed contracts.
+This contract maintains the registry of all contract addresses. It used to allow for an easy way of upgrading the various components of the govenrance. In the unlikely event there is a bug or one of the contract needs to be upgraded, an update to the `Registry` will update the reference for all the other currently deployed contracts.
 
 The contracts contains functionality to pause governance by an address that has the `EMERGENCY_STOP_ROLE` role. This is used in the unlikely event that governance itself has been compromised and the protocol needs to wind down.
 
 The registry maintains the a reference to the following contracts:
 
-[Source Code](./contracts/Regsitry.sol) - [Etherscan](https://etherscan.io/address/0x2684861ba9dada685a11c4e9e5aed8630f08afe0)
+[Registry.sol](./contracts/Regsitry.sol) - [Etherscan](https://etherscan.io/address/0x2684861ba9dada685a11c4e9e5aed8630f08afe0)
+
+## MAHAXLocker.sol
+
+This contract locks MAHA and mints a NFT for every lock.
+
+Upon interacting with the locks (minting, burning, extending the lock or increasing the maha), a call to the `MAHAXStaker` contract is made, allowing a user to stake or update his stake in the same transaction itself. Furthermore, the locker also checks the `MAHAXStaker` to see if the NFT is also staked as well.
+
+If a NFT is staked, then a user:
+
+- Cannot transfer the NFT
+- Cannot withdraw the underlying MAHA
+- Cannot merge the NFT with another one
+
+[MAHAXLocker.sol](./contracts/MAHAXLocker.sol) - [Etherscan](https://etherscan.io/address/0xbdD8F4dAF71C2cB16ccE7e54BB81ef3cfcF5AAcb)
+
+## MAHAXStaker.sol
+
+This contract's main purpose is to stake NFTs, calculating voting power and allow for delegation to happen.
+
+[MAHAXStaker.sol](./contracts/MAHAXStaker.sol) - [Etherscan](https://etherscan.io/address/0x608917F8392634428Ec71C6766F3eC3f5cc8f421)
