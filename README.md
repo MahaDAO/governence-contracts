@@ -54,9 +54,7 @@ Furthermore, the locker also checks the `MAHAXStaker` contract to understand if 
 Every user that locks their `MAHA` gets a balance assigned to them. This balance represents their voting and it decays over time (from a max period of 4 years).
 The locker returns this balance by calling the `balanceOf(...)` function which calculates using a linear function that takes into account current time, lock duration and lock amount.
 
-The maximum duration a user can lock for is 4 years. There is no minimum amount that a lock needs to have. Lock times are rounded off by the week.
-
-When creating a lock, there is a minimum amount of `100 MAHAX` that a NFT needs to maintain. This can be changed at any time by the governance.
+The maximum duration a user can lock for is `4 years`. There is no upper limit for the amount of `MAHA` that can be lcoked however there is a minimum amount of `100 MAHAX` that a NFT needs to maintain. This can be changed at any time by the governance. Lock expiry times are rounded off by the week and the minimum lock time can be `1 week`.
 
 ### NFTs and Staking
 
