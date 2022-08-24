@@ -47,7 +47,7 @@ Furthermore, the locker also checks the `MAHAXStaker` contract to understand if 
 
 - Cannot transfer the NFT
 - Cannot withdraw the underlying `MAHA`
-- Cannot merge the NFT with another one
+- Cannot merge the NFT with another NFT
 
 ### Calculating MAHAX
 
@@ -72,6 +72,22 @@ Considering a modular approach, in an unlikely event that other smart contracts 
 
 ## MAHAXStaker.sol
 
-This contract's main purpose is to stake NFTs, calculating voting power and allow for delegation to happen. It has functions to unstake and stake which can get called by a user and also a function called `_stakeFromLock(..)` which is called by the `MAHAXLocker.sol` whenever (for example) it decides to stake a NFT in the same transaction as minitng a NFT.
+The main purpose of this contract (also called as the staker contract) is to stake NFTs, calculating voting power and allow for delegation to happen. It has functions to unstake and stake which can get called by a user and also a function called `_stakeFromLock(..)` which is called by the `MAHAXLocker.sol` whenever (for example) it decides to stake a NFT in the same transaction as minitng a NFT.
+
+When a NFT is staked, the staker contract captures the user's `MAHAX` balance (or voting power) and records it in the contract. On blockexplorers such as Etherscan, this can be seen as `MAHAXvp` (short for `MAHAX Voting Power`).
+
+Whenever a NFT is staked or unstaked, the voting power balance gets updated with whatever is the latest value coming from the locker contract.
+
+### Attachments
+
+A user can unstake his NFT at anytime from the staker contract but needs to make sure that the NFT is not attached to any liquidity position within a gauge (called as `attachments`). This is done so that users who have their liquidity staked and are boosting their yield don't unstake their NFT and share it across to other users who'd like to 'share' the boost.
+
+If in the unlikely event that the `attachment` calculation becomes prone to errors, governance can always trigger the `toggleAttachmentCheck()` which disables this check. This keeps the staking contract semi-independent of the activity from the `BaseV2Voter.sol` contract.
+
+### Delegation
+
+The staker contract also supports delegation. Which means that if you staked your NFTs and recieve some voting power, then that voting power can get delegated to another user without giving the ownership of the underlying NFT.
+
+Delegated voting power can be queried using the `getVotes(...)` function and delegation can be assigned using the `delegate(...)` function.
 
 [MAHAXStaker.sol](./contracts/MAHAXStaker.sol) - [Etherscan](https://etherscan.io/address/0x608917F8392634428Ec71C6766F3eC3f5cc8f421)
