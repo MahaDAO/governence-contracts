@@ -33,8 +33,6 @@ This contract maintains the registry of all contract addresses. It used to allow
 
 The contracts contains functionality to pause governance by an address that has the `EMERGENCY_STOP_ROLE` role. This is used in the unlikely event that governance itself has been compromised and the protocol needs to wind down.
 
-The registry maintains the a reference to the following contracts:
-
 [Registry.sol](./contracts/Regsitry.sol) - [Etherscan](https://etherscan.io/address/0x2684861ba9dada685a11c4e9e5aed8630f08afe0)
 
 ## MAHAXLocker.sol
