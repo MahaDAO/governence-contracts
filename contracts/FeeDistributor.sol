@@ -6,10 +6,10 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
+// import {console} from "hardhat/console.sol";
 import {INFTLocker} from "./interfaces/INFTLocker.sol";
 
-contract FeeDistributorV2 is Ownable, ReentrancyGuard {
+contract FeeDistributor is Ownable, ReentrancyGuard {
     uint256 public constant WEEK = 7 * 86400;
     uint256 public constant TOKEN_CHECKPOINT_DEADLINE = 86400;
 
@@ -28,7 +28,7 @@ contract FeeDistributorV2 is Ownable, ReentrancyGuard {
     uint256[1000000000000000] public veSupply; // VE total supply at week bounds
 
     bool public isKilled;
-    bool public canCheckpointToken;
+    bool public canCheckpointToken = true;
 
     event ToggleAllowCheckpointToken(bool toggleFlag);
     event CheckpointToken(uint256 time, uint256 tokens);
@@ -53,6 +53,7 @@ contract FeeDistributorV2 is Ownable, ReentrancyGuard {
     }
 
     function _checkpointToken() internal {
+        // console.log("_checkpointToken(...)");
         uint256 tokenBalance = token.balanceOf(address(this));
         uint256 toDistribute = tokenBalance - tokenLastBalance;
         tokenLastBalance = tokenBalance;
@@ -85,6 +86,7 @@ contract FeeDistributorV2 is Ownable, ReentrancyGuard {
             t = nextWeek;
             thisWeek = nextWeek;
         }
+
         emit CheckpointToken(block.timestamp, toDistribute);
     }
 
@@ -144,6 +146,7 @@ contract FeeDistributorV2 is Ownable, ReentrancyGuard {
     }
 
     function _checkpointTotalSupply() internal {
+        // console.log("_checkpointTotalSupply(...)");
         uint256 t = timeCursor;
         uint256 roundedTimestamp = (block.timestamp / WEEK) * WEEK;
 
@@ -175,15 +178,20 @@ contract FeeDistributorV2 is Ownable, ReentrancyGuard {
     {
         require(locker.isStaked(nftId), "nft not staked");
 
+        // console.log("inside claim");
+
         uint256 userEpoch = 0;
         uint256 toDistribute = 0;
 
         uint256 maxUserEpoch = locker.userPointEpoch(nftId);
         uint256 _startTime = startTime;
 
+        // console.log("if maxUserEpoch = 0", maxUserEpoch);
         if (maxUserEpoch == 0) return 0;
 
         uint256 weekCursor = timeCursorOf[nftId];
+        // console.log("weekCursor     =", weekCursor);
+
         if (weekCursor == 0)
             userEpoch = _findTimestampUserEpoch(
                 nftId,
@@ -199,8 +207,19 @@ contract FeeDistributorV2 is Ownable, ReentrancyGuard {
             userEpoch
         );
 
+        // console.log("userEpoch      =", userEpoch);
+        // console.log("weekCursor     =", weekCursor);
+
         if (weekCursor == 0)
             weekCursor = ((userPoint.ts + WEEK - 1) / WEEK) * WEEK;
+
+        // console.log("weekCursor     =", weekCursor);
+        // console.log("_lastTokenTime =", _lastTokenTime);
+        // console.log("_startTime     =", _startTime);
+        // console.log(
+        //     "weekCursor >= _lastTokenTime",
+        //     weekCursor >= _lastTokenTime
+        // );
 
         if (weekCursor >= _lastTokenTime) return 0;
 
