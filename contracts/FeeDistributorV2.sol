@@ -157,8 +157,8 @@ contract FeeDistributorV2 is Ownable, ReentrancyGuard {
 
                 int128 dt = 0;
 
-                if (t > pt.ts) dt = int128(t - pt.ts);
-                veSupply[t] = Math.max(uint256(pt.bias - pt.slope * dt), 0);
+                if (t > pt.ts) dt = int128(uint128(t - pt.ts));
+                veSupply[t] = Math.max(uint128(pt.bias - pt.slope * dt), 0);
             }
         }
 
@@ -219,9 +219,10 @@ contract FeeDistributorV2 is Ownable, ReentrancyGuard {
                     userPoint = INFTLocker.Point(0, 0, 0, 0);
                 else userPoint = locker.userPointHistory(nftId, userEpoch);
             } else {
-                int128 dt = int128(weekCursor - oldUserPoint.ts);
-                uint256 balanceOf = uint256(
-                    Math.max(oldUserPoint.bias - dt * oldUserPoint.slope, 0)
+                int128 dt = int128(uint128(weekCursor - oldUserPoint.ts));
+                uint256 balanceOf = Math.max(
+                    uint128(oldUserPoint.bias - dt * oldUserPoint.slope),
+                    0
                 );
 
                 if (balanceOf == 0 && userEpoch > maxUserEpoch) break;
