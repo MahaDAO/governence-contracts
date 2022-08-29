@@ -13,6 +13,17 @@ interface INFTLocker is IERC721 {
 
     function isStaked(uint256) external view returns (bool);
 
+    function epoch() external view returns (uint256);
+
+    function userPointEpoch(uint256) external view returns (uint256);
+
+    function userPointHistory(uint256, uint256)
+        external
+        view
+        returns (Point memory);
+
+    function pointHistory(uint256) external view returns (Point memory);
+
     function totalSupplyWithoutDecay() external view returns (uint256);
 
     function isApprovedOrOwner(address, uint256) external view returns (bool);

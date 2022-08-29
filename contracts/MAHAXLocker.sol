@@ -52,11 +52,11 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
 
     mapping(uint256 => uint256) public ownershipChange;
 
-    uint256 public epoch;
-    mapping(uint256 => Point) public pointHistory; // epoch -> unsigned point
-    mapping(uint256 => Point[1000000000]) public userPointHistory; // user -> Point[userEpoch]
+    uint256 public override epoch;
+    mapping(uint256 => Point) internal _pointHistory; // epoch -> unsigned point
+    mapping(uint256 => Point[1000000000]) internal _userPointHistory; // user -> Point[userEpoch]
 
-    mapping(uint256 => uint256) public userPointEpoch;
+    mapping(uint256 => uint256) public override userPointEpoch;
     mapping(uint256 => int128) public slopeChanges; // time -> signed slope change
 
     string public constant name = "Locked MAHA NFT";
@@ -107,8 +107,8 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     ) {
         registry = IRegistry(_registry);
 
-        pointHistory[0].blk = block.number;
-        pointHistory[0].ts = block.timestamp;
+        _pointHistory[0].blk = block.number;
+        _pointHistory[0].ts = block.timestamp;
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(MIGRATION_ROLE, msg.sender);
@@ -141,12 +141,30 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         return supply;
     }
 
+    function pointHistory(uint256 val)
+        external
+        view
+        override
+        returns (Point memory)
+    {
+        return _pointHistory[val];
+    }
+
+    function userPointHistory(uint256 val, uint256 loc)
+        external
+        view
+        override
+        returns (Point memory)
+    {
+        return _userPointHistory[val][loc];
+    }
+
     /// @notice Get the most recently recorded rate of voting power decrease for `_tokenId`
     /// @param _tokenId token of the NFT
     /// @return Value of the slope
     function getLastUserSlope(uint256 _tokenId) external view returns (int128) {
         uint256 uepoch = userPointEpoch[_tokenId];
-        return userPointHistory[_tokenId][uepoch].slope;
+        return _userPointHistory[_tokenId][uepoch].slope;
     }
 
     /// @notice Get the timestamp for checkpoint `_idx` for `_tokenId`
@@ -158,7 +176,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         view
         returns (uint256)
     {
-        return userPointHistory[_tokenId][_idx].ts;
+        return _userPointHistory[_tokenId][_idx].ts;
     }
 
     /// @notice Get timestamp when `_tokenId`'s lock finishes
@@ -584,7 +602,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             blk: block.number
         });
         if (_epoch > 0) {
-            lastPoint = pointHistory[_epoch];
+            lastPoint = _pointHistory[_epoch];
         }
         uint256 lastCheckpoint = lastPoint.ts;
         // initialLastPoint is used for extrapolation to calculate block number
@@ -636,13 +654,13 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
                     lastPoint.blk = block.number;
                     break;
                 } else {
-                    pointHistory[_epoch] = lastPoint;
+                    _pointHistory[_epoch] = lastPoint;
                 }
             }
         }
 
         epoch = _epoch;
-        // Now pointHistory is filled until t=now
+        // Now _pointHistory is filled until t=now
 
         if (_tokenId != 0) {
             // If last point was in this block, the slope change has been applied already
@@ -658,7 +676,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         }
 
         // Record the changed point into history
-        pointHistory[_epoch] = lastPoint;
+        _pointHistory[_epoch] = lastPoint;
 
         if (_tokenId != 0) {
             // Schedule the slope changes (slope is going down)
@@ -686,7 +704,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
             userPointEpoch[_tokenId] = userEpoch;
             uNew.ts = block.timestamp;
             uNew.blk = block.number;
-            userPointHistory[_tokenId][userEpoch] = uNew;
+            _userPointHistory[_tokenId][userEpoch] = uNew;
         }
     }
 
@@ -1074,7 +1092,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
                 break;
             }
             uint256 _mid = (_min + _max + 1) / 2;
-            if (pointHistory[_mid].blk <= _block) {
+            if (_pointHistory[_mid].blk <= _block) {
                 _min = _mid;
             } else {
                 _max = _mid - 1;
@@ -1097,7 +1115,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         if (_epoch == 0) {
             return 0;
         } else {
-            Point memory lastPoint = userPointHistory[_tokenId][_epoch];
+            Point memory lastPoint = _userPointHistory[_tokenId][_epoch];
             lastPoint.bias -=
                 lastPoint.slope *
                 int128(int256(_t) - int256(lastPoint.ts));
@@ -1149,22 +1167,22 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
                 break;
             }
             uint256 _mid = (_min + _max + 1) / 2;
-            if (userPointHistory[_tokenId][_mid].blk <= _block) {
+            if (_userPointHistory[_tokenId][_mid].blk <= _block) {
                 _min = _mid;
             } else {
                 _max = _mid - 1;
             }
         }
 
-        Point memory upoint = userPointHistory[_tokenId][_min];
+        Point memory upoint = _userPointHistory[_tokenId][_min];
 
         uint256 maxEpoch = epoch;
         uint256 _epoch = _findBlockEpoch(_block, maxEpoch);
-        Point memory point0 = pointHistory[_epoch];
+        Point memory point0 = _pointHistory[_epoch];
         uint256 dBlock = 0;
         uint256 dT = 0;
         if (_epoch < maxEpoch) {
-            Point memory point1 = pointHistory[_epoch + 1];
+            Point memory point1 = _pointHistory[_epoch + 1];
             dBlock = point1.blk - point0.blk;
             dT = point1.ts - point0.ts;
         } else {
@@ -1232,7 +1250,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     /// @return Total voting power
     function totalSupplyAtT(uint256 t) public view returns (uint256) {
         uint256 _epoch = epoch;
-        Point memory lastPoint = pointHistory[_epoch];
+        Point memory lastPoint = _pointHistory[_epoch];
         return _supplyAt(lastPoint, t);
     }
 
@@ -1253,10 +1271,10 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
         uint256 _epoch = epoch;
         uint256 targetEpoch = _findBlockEpoch(_block, _epoch);
 
-        Point memory point = pointHistory[targetEpoch];
+        Point memory point = _pointHistory[targetEpoch];
         uint256 dt = 0;
         if (targetEpoch < _epoch) {
-            Point memory pointNext = pointHistory[targetEpoch + 1];
+            Point memory pointNext = _pointHistory[targetEpoch + 1];
             if (point.blk != pointNext.blk) {
                 dt =
                     ((_block - point.blk) * (pointNext.ts - point.ts)) /

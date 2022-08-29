@@ -49,8 +49,8 @@ export const saveABI = (
   console.log(`saved ${key}:${address} into ${network.name}.json`);
 };
 
-export const getOutput = () => {
-  const filename = `./deployments/${network.name}.json`;
+export const getOutput = (_network?: string) => {
+  const filename = `./deployments/${_network || network.name}.json`;
 
   let outputFile: any = {};
   if (fs.existsSync(filename)) {
@@ -61,8 +61,8 @@ export const getOutput = () => {
   return outputFile;
 };
 
-export const getOutputAddress = (key: string) => {
-  const outputFile = getOutput();
+export const getOutputAddress = (key: string, _network?: string) => {
+  const outputFile = getOutput(_network);
   if (!outputFile[key]) return;
   return outputFile[key].address;
 };
