@@ -7,9 +7,10 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 // import {console} from "hardhat/console.sol";
-import {INFTLocker} from "./interfaces/INFTLocker.sol";
+import {INFTLocker} from "../interfaces/INFTLocker.sol";
+import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 
-contract FeeDistributor is Ownable, ReentrancyGuard {
+contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
     uint256 public constant WEEK = 7 * 86400;
     uint256 public constant TOKEN_CHECKPOINT_DEADLINE = 86400;
 
@@ -29,15 +30,6 @@ contract FeeDistributor is Ownable, ReentrancyGuard {
 
     bool public isKilled;
     bool public canCheckpointToken = true;
-
-    event ToggleAllowCheckpointToken(bool toggleFlag);
-    event CheckpointToken(uint256 time, uint256 tokens);
-    event Claimed(
-        uint256 nftId,
-        uint256 amount,
-        uint256 claimEpoch,
-        uint256 maxEpoch
-    );
 
     constructor(
         address _votingEscrow,
@@ -90,7 +82,7 @@ contract FeeDistributor is Ownable, ReentrancyGuard {
         emit CheckpointToken(block.timestamp, toDistribute);
     }
 
-    function checkpointToken() external {
+    function checkpointToken() external override {
         require(
             msg.sender == owner() ||
                 (canCheckpointToken &&
@@ -168,7 +160,7 @@ contract FeeDistributor is Ownable, ReentrancyGuard {
         timeCursor = t;
     }
 
-    function checkpointTotalSupply() external {
+    function checkpointTotalSupply() external override {
         _checkpointTotalSupply();
     }
 
@@ -262,7 +254,12 @@ contract FeeDistributor is Ownable, ReentrancyGuard {
         return toDistribute;
     }
 
-    function claim(uint256 nftId) external nonReentrant returns (uint256) {
+    function claim(uint256 nftId)
+        external
+        override
+        nonReentrant
+        returns (uint256)
+    {
         require(!isKilled, "killed");
 
         if (block.timestamp >= timeCursor) _checkpointTotalSupply();
@@ -292,6 +289,7 @@ contract FeeDistributor is Ownable, ReentrancyGuard {
 
     function claimMany(uint256[] memory nftIds)
         external
+        override
         nonReentrant
         returns (bool)
     {

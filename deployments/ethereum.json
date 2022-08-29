@@ -94,11 +94,6 @@
     "verified": true,
     "address": "0xb180B2e4821e99a69d19f0845D2cc572eA412481"
   },
-  "MAHAFeeDistributor": {
-    "abi": "FeeDistributor",
-    "verified": true,
-    "address": "0x65BF731ca55aC8880ceE4AF264dA8b37D2Df3579"
-  },
   "ARTHFeeDistributor": {
     "abi": "FeeDistributor",
     "verified": true,
@@ -109,9 +104,19 @@
     "verified": true,
     "address": "0xf677550Fc231990A0A6762FF37196CAFf00b6075"
   },
+  "MAHAFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": true,
+    "address": "0x9B5cf0beE733d3625E5fb693c34F8Bb86fBEf2B6"
+  },
   "SCLPFeeDistributor": {
     "abi": "FeeDistributor",
     "verified": true,
-    "address": "0xe172ca3F63aA0D3DB31a7E495C8eA594cA851291"
+    "address": "0x08777b62740f121B88F7CF7fCA728101BEa14162"
+  },
+  "MultiFeeDistributor": {
+    "abi": "MultiFeeDistributor",
+    "verified": true,
+    "address": "0xc1f0CEf73A3137D52E4d082023018A1d479d7848"
   }
 }

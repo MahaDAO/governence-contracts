@@ -24,33 +24,27 @@ async function main() {
     mahaxCI.address,
     now,
     mahaCI.address,
-    deployer.address,
-    deployer.address,
   ]);
 
   await deployOrLoadAndVerify("ARTHFeeDistributor", "FeeDistributor", [
     mahaxCI.address,
     now,
     arthCI.address,
-    deployer.address,
-    deployer.address,
   ]);
 
   await deployOrLoadAndVerify("WETHFeeDistributor", "FeeDistributor", [
     mahaxCI.address,
     now,
     wehtCI.address,
-    deployer.address,
-    deployer.address,
   ]);
 
   await deployOrLoadAndVerify("SCLPFeeDistributor", "FeeDistributor", [
     mahaxCI.address,
     now,
     sclpCI.address,
-    deployer.address,
-    deployer.address,
   ]);
+
+  await deployOrLoadAndVerify("MultiFeeDistributor", "MultiFeeDistributor", []);
 }
 
 main().catch((error) => {
