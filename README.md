@@ -9,7 +9,7 @@ This repository contains the smart-contracts that are responsible for MahaDAO's 
 - BaseV2Voter.sol: This contract is responsible for tracking votes for every address. [Etherscan](https://etherscan.io/address/0xFbbe448D38231c298E9A2251bc0c567543e2ccA6)
 - LockMigrator.sol: A migrator contract with permissions to mint NFTs that match a merkle proof. [Etherescan](https://etherscan.io/address/0xb180B2e4821e99a69d19f0845D2cc572eA412481)
 
-## Deployment Instructions
+# Deployment Instructions
 
 For deployment to mainnet run the following script.
 
@@ -98,7 +98,7 @@ The governor contract is responsible for handling votes, creating proposals and 
 
 - A `4 day` voting period
 - A `1 day` voting delay
-- A `100,000` MAHAX quorum
+- A `100,000 MAHAX` quorum
 - A `250 MAHAX` proposal threshold
 - A `12 day` timelock
 
