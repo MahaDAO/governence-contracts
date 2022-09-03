@@ -6,8 +6,8 @@ async function main() {
 
   const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
   const tokenA = "ARTH";
-  const tokenB = "MAHA";
-  const fee = 10000;
+  const tokenB = "WETH";
+  const fee = 3000;
 
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);
@@ -42,38 +42,38 @@ async function main() {
   console.log("univ3GaugeContractInstance", univ3GaugeContractInstance.address);
   console.log("bribesInstance", bribesInstance.address);
 
-  !(await voter.whitelist(univ3GaugeContractInstance.address)) &&
-    (await (async () => {
-      const tx = await voter.toggleWhitelist(
-        univ3GaugeContractInstance.address
-      );
-      console.log("tx gauge whitelist", tx.hash);
-      await tx.wait();
-    })());
+  // !(await voter.whitelist(univ3GaugeContractInstance.address)) &&
+  //   (await (async () => {
+  //     const tx = await voter.toggleWhitelist(
+  //       univ3GaugeContractInstance.address
+  //     );
+  //     console.log("tx gauge whitelist", tx.hash);
+  //     await tx.wait();
+  //   })());
 
-  !(await voter.whitelist(await univ3GaugeContractInstance.pool())) &&
-    (await (async () => {
-      const tx = await voter.toggleWhitelist(
-        await univ3GaugeContractInstance.pool()
-      );
-      console.log("tx pool whitelist", tx.hash);
-      await tx.wait();
-    })());
+  // !(await voter.whitelist(await univ3GaugeContractInstance.pool())) &&
+  //   (await (async () => {
+  //     const tx = await voter.toggleWhitelist(
+  //       await univ3GaugeContractInstance.pool()
+  //     );
+  //     console.log("tx pool whitelist", tx.hash);
+  //     await tx.wait();
+  //   })());
 
-  !(await voter.whitelist(bribesInstance.address)) &&
-    (await (async () => {
-      const tx = await voter.toggleWhitelist(bribesInstance.address);
-      console.log("tx bribes whitelist", tx.hash);
-      await tx.wait();
-    })());
+  // !(await voter.whitelist(bribesInstance.address)) &&
+  //   (await (async () => {
+  //     const tx = await voter.toggleWhitelist(bribesInstance.address);
+  //     console.log("tx bribes whitelist", tx.hash);
+  //     await tx.wait();
+  //   })());
 
-  const tx4 = await voter.registerGaugeBribe(
-    await univ3GaugeContractInstance.pool(),
-    bribesInstance.address,
-    univ3GaugeContractInstance.address
-  );
-  console.log("tx registerGauge", tx4.hash);
-  await tx4.wait();
+  // const tx4 = await voter.registerGaugeBribe(
+  //   await univ3GaugeContractInstance.pool(),
+  //   bribesInstance.address,
+  //   univ3GaugeContractInstance.address
+  // );
+  // console.log("tx registerGauge", tx4.hash);
+  // await tx4.wait();
 
   await saveABI(
     `${tokenA}${tokenB}-UniV3-Pool`,

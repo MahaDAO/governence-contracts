@@ -118,5 +118,20 @@
     "abi": "MultiFeeDistributor",
     "verified": true,
     "address": "0xc1f0CEf73A3137D52E4d082023018A1d479d7848"
+  },
+  "ARTHWETH-UniV3Gauge": {
+    "abi": "BaseGaugeV2UniV3",
+    "verified": true,
+    "address": "0xf64AD0bbEa29D54159264d8a077BF0590bA05564"
+  },
+  "ARTHWETH-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0xCe017c8e3807678AdfDA61613be6114afE95590f"
+  },
+  "ARTHWETH-UniV3-Pool": {
+    "abi": "IUniswapV3Pool",
+    "verified": true,
+    "address": "0xfD6c2A0674796D0452534846f4c90923352C716b"
   }
 }

@@ -23,7 +23,7 @@ contract MAHAXVetoGovernor is
         uint256 _initialVotingDelay,
         uint256 _initialVotingPeriod,
         uint256 _initialProposalThreshold,
-        uint256 _quorum
+        uint256 __quorum
     )
         Governor("MAHAXVetoGovernor")
         GovernorSettings(
@@ -33,7 +33,7 @@ contract MAHAXVetoGovernor is
         )
     {
         registry = _registry;
-        _updateQuorum(_quorum);
+        _updateQuorum(__quorum);
     }
 
     /**
