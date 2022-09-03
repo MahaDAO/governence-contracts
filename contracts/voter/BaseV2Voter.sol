@@ -314,7 +314,7 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         _distribute(_gauge);
     }
 
-    function distribute() external {
+    function distribute() external override {
         distribute(0, pools.length);
     }
 
@@ -324,7 +324,7 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
         }
     }
 
-    function distribute(address[] memory _gauges) external {
+    function distribute(address[] memory _gauges) external override {
         for (uint256 x = 0; x < _gauges.length; x++) {
             _distribute(_gauges[x]);
         }

@@ -11,6 +11,10 @@ interface IGaugeVoterV2 {
 
     function distribute(address _gauge) external;
 
+    function distribute() external;
+
+    function distribute(address[] memory _gauges) external;
+
     function reset() external;
 
     function resetFor(address _who) external;
