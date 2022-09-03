@@ -92,8 +92,13 @@ contract BaseGaugeV2UniV3 is
     ) {
         registry = IRegistry(_registry);
         nonfungiblePositionManager = _nonfungiblePositionManager;
+
         factory = IUniswapV3Factory(nonfungiblePositionManager.factory());
-        pool = IUniswapV3Pool(factory.getPool(token0, token1, fee));
+        address _pool = factory.getPool(token0, token1, fee);
+        require(_pool != address(0), "pool doesn't exist");
+
+        pool = IUniswapV3Pool(_pool);
+
         startTime = block.timestamp;
     }
 
