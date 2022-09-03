@@ -91,3 +91,26 @@ The staker contract also supports delegation. Which means that if you staked you
 Delegated voting power can be queried using the `getVotes(...)` function and delegation can be assigned using the `delegate(...)` function.
 
 [MAHAXStaker.sol](./contracts/MAHAXStaker.sol) - [Etherscan](https://etherscan.io/address/0x608917F8392634428Ec71C6766F3eC3f5cc8f421)
+
+## MAHAXGovernor.sol
+
+The governor contract is responsible for handling votes, creating proposals and executing them via the timelock. It operates using the following parameters.
+
+- A 4 day voting period
+- A 1 day voting delay
+- A 100,000 MAHAX quorum
+- A 250 MAHAX proposal threshold
+- A 12 day timelock
+
+[MAHAXGovernor.sol](./contracts/MAHAXGovernor.sol) - [Etherscan](https://etherscan.io/address/0xffec018583152ab5f056c5323f1f68b701bf1bc5)
+
+## MAHAXVetoGovernor.sol
+
+The governor contract is a special governor responsible mainly for vetoing proposals that are already in the timelock. It operates using the following parameters
+
+- A 4 day voting period
+- No voting delay (Proposal go live for a vote once they are created)
+- A 200,000 MAHAX quorum
+- A 1,000 MAHAX proposal threshold
+
+[MAHAXVetoGovernor.sol](./contracts/MAHAXVetoGovernor.sol)

@@ -18,18 +18,12 @@ contract MAHAXVetoGovernor is
 
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
 
-    constructor(
-        IRegistry _registry,
-        uint256 _initialVotingDelay,
-        uint256 _initialVotingPeriod,
-        uint256 _initialProposalThreshold,
-        uint256 __quorum
-    )
+    constructor(IRegistry _registry, uint256 __quorum)
         Governor("MAHAXVetoGovernor")
         GovernorSettings(
-            _initialVotingDelay,
-            _initialVotingPeriod,
-            _initialProposalThreshold
+            1, /* 1 block; basically no delays */
+            26182, /* 4 days */
+            1000e18
         )
     {
         registry = _registry;
