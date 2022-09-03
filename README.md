@@ -2,12 +2,12 @@
 
 This repository contains the smart-contracts that are responsible for MahaDAO's governance. This includes voting, staking, gauges and pool incentives.
 
-- [Registry.sol](./contracts/Registry.sol): This contract holds the addresses of all the deployed contracts and is referenced by the various components. [Etherscan](https://etherscan.io/address/0x2684861ba9dada685a11c4e9e5aed8630f08afe0)
-- [MAHAXLocker.sol](./contracts/MAHAXLocker.sol): This contract locks `MAHA` and mints a NFT for every lock. [Etherscan](https://etherscan.io/address/0xbdD8F4dAF71C2cB16ccE7e54BB81ef3cfcF5AAcb)
-- [MAHAXStaker.sol](./contracts/MAHAXStaker.sol): This contract tracks votes for every address whenever a user stakes his/her NFT. [Etherscan](https://etherscan.io/address/0x608917F8392634428Ec71C6766F3eC3f5cc8f421)
-- [MAHAXGovernor.sol](./contracts/MAHAXGovernor.sol): Openzepplin's governor contract that creates and executes proposals. [Etherscan](https://etherscan.io/address/0xffec018583152ab5f056c5323f1f68b701bf1bc5)
-- [BaseV2Voter.sol](./contracts/voter/BaseV2Voter.sol): This contract is responsible for tracking votes for every address. [Etherscan](https://etherscan.io/address/0xFbbe448D38231c298E9A2251bc0c567543e2ccA6)
-- [LockMigrator.sol](./contracts/LockMigrator.sol): A migrator contract with permissions to mint NFTs that match a merkle proof. [Etherescan](https://etherscan.io/address/0xb180B2e4821e99a69d19f0845D2cc572eA412481)
+- [Registry.sol](#registrysol): This contract holds the addresses of all the deployed contracts and is referenced by the various components. [Etherscan](https://etherscan.io/address/0x2684861ba9dada685a11c4e9e5aed8630f08afe0)
+- [MAHAXLocker.sol](#mahaxlockersol): This contract locks `MAHA` and mints a NFT for every lock. [Etherscan](https://etherscan.io/address/0xbdD8F4dAF71C2cB16ccE7e54BB81ef3cfcF5AAcb)
+- [MAHAXStaker.sol](#mahaxstakersol): This contract tracks votes for every address whenever a user stakes his/her NFT. [Etherscan](https://etherscan.io/address/0x608917F8392634428Ec71C6766F3eC3f5cc8f421)
+- [MAHAXGovernor.sol](#mahaxgovernorsol): Openzepplin's governor contract that creates and executes proposals. [Etherscan](https://etherscan.io/address/0xffec018583152ab5f056c5323f1f68b701bf1bc5)
+- BaseV2Voter.sol: This contract is responsible for tracking votes for every address. [Etherscan](https://etherscan.io/address/0xFbbe448D38231c298E9A2251bc0c567543e2ccA6)
+- LockMigrator.sol: A migrator contract with permissions to mint NFTs that match a merkle proof. [Etherescan](https://etherscan.io/address/0xb180B2e4821e99a69d19f0845D2cc572eA412481)
 
 ## Deployment Instructions
 
@@ -33,7 +33,7 @@ This contract maintains the registry of all contract addresses. It used to allow
 
 The contracts contains functionality to pause governance by an address that has the `EMERGENCY_STOP_ROLE` role. This is used in the unlikely event that governance itself has been compromised and the protocol needs to wind down.
 
-[Registry.sol](./contracts/Regsitry.sol) - [Etherscan](https://etherscan.io/address/0x2684861ba9dada685a11c4e9e5aed8630f08afe0)
+[Source Code](./contracts/Regsitry.sol) - [Etherscan](https://etherscan.io/address/0x2684861ba9dada685a11c4e9e5aed8630f08afe0)
 
 ## MAHAXLocker.sol
 
@@ -68,7 +68,7 @@ The moment there is enough confidence in the contract's business logic, the `sto
 
 Considering a modular approach, in an unlikely event that other smart contracts within the governance fails to function, the locker contract should still be able to allow users to withdraw their `MAHA` once their lock expires without any issues.
 
-[MAHAXLocker.sol](./contracts/MAHAXLocker.sol) - [Etherscan](https://etherscan.io/address/0xbdD8F4dAF71C2cB16ccE7e54BB81ef3cfcF5AAcb)
+[Source Code](./contracts/MAHAXLocker.sol) - [Etherscan](https://etherscan.io/address/0xbdD8F4dAF71C2cB16ccE7e54BB81ef3cfcF5AAcb)
 
 ## MAHAXStaker.sol
 
@@ -90,7 +90,7 @@ The staker contract also supports delegation. Which means that if you staked you
 
 Delegated voting power can be queried using the `getVotes(...)` function and delegation can be assigned using the `delegate(...)` function.
 
-[MAHAXStaker.sol](./contracts/MAHAXStaker.sol) - [Etherscan](https://etherscan.io/address/0x608917F8392634428Ec71C6766F3eC3f5cc8f421)
+[Source Code](./contracts/MAHAXStaker.sol) - [Etherscan](https://etherscan.io/address/0x608917F8392634428Ec71C6766F3eC3f5cc8f421)
 
 ## MAHAXGovernor.sol
 
@@ -102,7 +102,7 @@ The governor contract is responsible for handling votes, creating proposals and 
 - A `250 MAHAX` proposal threshold
 - A `12 day` timelock
 
-[MAHAXGovernor.sol](./contracts/MAHAXGovernor.sol) - [Etherscan](https://etherscan.io/address/0xffec018583152ab5f056c5323f1f68b701bf1bc5)
+[Source Code](./contracts/MAHAXGovernor.sol) - [Etherscan](https://etherscan.io/address/0xffec018583152ab5f056c5323f1f68b701bf1bc5)
 
 ## MAHAXVetoGovernor.sol
 
@@ -113,4 +113,4 @@ The governor contract is a special governor responsible mainly for vetoing propo
 - A `200,000 MAHAX` quorum
 - A `1,000 MAHAX` proposal threshold
 
-[MAHAXVetoGovernor.sol](./contracts/MAHAXVetoGovernor.sol)
+[Source Code](./contracts/MAHAXVetoGovernor.sol)
