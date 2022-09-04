@@ -33,7 +33,9 @@ contract BaseGaugeV2UniV3 is
     uint160 public totalSecondsClaimedX128;
     uint256 public startTime;
     uint256 public endTime;
-    uint256 public constant DURATION = 2 hours; // rewards are released over 7 days
+    bool public inEmergency;
+    address public timelock;
+    uint256 public constant DURATION = 7 days; // rewards are released over 7 days
 
     /// @notice Represents the deposit of a liquidity NFT
     struct Deposit {
@@ -88,6 +90,7 @@ contract BaseGaugeV2UniV3 is
         address token1,
         uint24 fee,
         address _registry,
+        address _timelock,
         INonfungiblePositionManager _nonfungiblePositionManager
     ) {
         registry = IRegistry(_registry);
@@ -98,6 +101,7 @@ contract BaseGaugeV2UniV3 is
         require(_pool != address(0), "pool doesn't exist");
 
         pool = IUniswapV3Pool(_pool);
+        timelock = _timelock;
 
         startTime = block.timestamp;
     }
@@ -128,6 +132,7 @@ contract BaseGaugeV2UniV3 is
         uint256 tokenId,
         bytes calldata data
     ) external override returns (bytes4) {
+        require(!inEmergency, "in emergency mode");
         require(
             msg.sender == address(nonfungiblePositionManager),
             "UniswapV3Staker::onERC721Received: not a univ3 nft"
@@ -191,6 +196,9 @@ contract BaseGaugeV2UniV3 is
 
     /// @inheritdoc IUniswapV3Staker
     function withdrawToken(uint256 tokenId) external override {
+        require(!inEmergency, "in emergency mode");
+        require(!deposits, "in emergency mode");
+
         // try to update rewards
         _updateReward(tokenId);
 
@@ -214,6 +222,47 @@ contract BaseGaugeV2UniV3 is
             address(this),
             msg.sender,
             tokenId
+        );
+    }
+
+    function withdrawViaEmergency(uint256 tokenId) external override {
+        require(inEmergency, "not in emergency mode");
+        require(
+            deposits[tokenId].owner == msg.sender,
+            "UniswapV3Staker::withdrawToken: only owner can withdraw token"
+        );
+
+        (, uint128 liquidity) = stakes(tokenId);
+        require(
+            liquidity != 0,
+            "UniswapV3Staker::unstakeToken: stake does not exist"
+        );
+
+        delete deposits[tokenId];
+        delete _stakes[tokenId];
+
+        _removeTokenFromOwnerEnumeration(msg.sender, tokenId);
+        _removeTokenFromAllTokensEnumeration(tokenId);
+        balanceOf[msg.sender] -= 1;
+
+        emit TokenUnstaked(tokenId);
+
+        nonfungiblePositionManager.safeTransferFrom(
+            address(this),
+            msg.sender,
+            tokenId
+        );
+    }
+
+    function enableEmergencyMode() external override {
+        require(msg.sender == timelock);
+        require(!inEmergency, "already in emergency mode");
+
+        inEmergency = true;
+        TransferHelperExtended.safeTransfer(
+            registry.maha(),
+            msg.sender,
+            IERC20(registry.maha()).balanceOf(address(this))
         );
     }
 
@@ -258,6 +307,8 @@ contract BaseGaugeV2UniV3 is
         internal
         returns (uint256)
     {
+        require(!inEmergency, "in emergency mode");
+
         _updateReward(tokenId);
         uint256 reward = rewards[msg.sender];
         rewards[msg.sender] -= reward;
