@@ -25,7 +25,7 @@ contract StakingRewardsKeeper is Epoch, KeeperCompatibleInterface {
         uint256[] memory _tokenRates,
         IERC20 _maha,
         uint256 _mahaRewardPerEpoch
-    ) {
+    ) Epoch(86400 * 7, block.timestamp, 0) {
         distributors = _distributors;
         tokens = _tokens;
         maha = _maha;

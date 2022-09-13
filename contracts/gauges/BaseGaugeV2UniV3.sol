@@ -197,7 +197,6 @@ contract BaseGaugeV2UniV3 is
     /// @inheritdoc IUniswapV3Staker
     function withdrawToken(uint256 tokenId) external override {
         require(!inEmergency, "in emergency mode");
-        require(!deposits, "in emergency mode");
 
         // try to update rewards
         _updateReward(tokenId);
@@ -225,7 +224,7 @@ contract BaseGaugeV2UniV3 is
         );
     }
 
-    function withdrawViaEmergency(uint256 tokenId) external override {
+    function withdrawViaEmergency(uint256 tokenId) external {
         require(inEmergency, "not in emergency mode");
         require(
             deposits[tokenId].owner == msg.sender,
@@ -254,8 +253,8 @@ contract BaseGaugeV2UniV3 is
         );
     }
 
-    function enableEmergencyMode() external override {
-        require(msg.sender == timelock);
+    function enableEmergencyMode() external {
+        require(msg.sender == timelock, "not timelock");
         require(!inEmergency, "already in emergency mode");
 
         inEmergency = true;
