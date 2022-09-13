@@ -24,11 +24,6 @@
     "verified": true,
     "address": "0xd9333e02a4d85611d0f0498b858b2ae3c29de6fb"
   },
-  "MAHAXGovernor": {
-    "abi": "MAHAXGovernor",
-    "verified": true,
-    "address": "0xffec018583152ab5f056c5323f1f68b701bf1bc5"
-  },
   "Registry": {
     "abi": "Registry",
     "verified": true,
@@ -133,5 +128,10 @@
     "abi": "IUniswapV3Pool",
     "verified": true,
     "address": "0xfD6c2A0674796D0452534846f4c90923352C716b"
+  },
+  "MAHAXGovernor": {
+    "abi": "MAHAXGovernor",
+    "verified": true,
+    "address": "0x90fbe384A03baDa9d439f83E453a50e982cE36F3"
   }
 }
