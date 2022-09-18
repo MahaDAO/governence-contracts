@@ -133,5 +133,10 @@
     "abi": "MAHAXGovernor",
     "verified": true,
     "address": "0x90fbe384A03baDa9d439f83E453a50e982cE36F3"
+  },
+  "MAHAXVetoGovernor": {
+    "abi": "MAHAXVetoGovernor",
+    "verified": true,
+    "address": "0x9A7E7b4c2abe3255deC67E3BF2e6b24b46223111"
   }
 }

@@ -110,7 +110,7 @@ The governor contract is a special governor responsible mainly for vetoing propo
 
 - A `4 day` voting period
 - No voting delay (Proposal go live for a vote once they are created)
-- A `200,000 MAHAX` quorum
+- A `150,000 MAHAX` quorum
 - A `1,000 MAHAX` proposal threshold
 
 [Source Code](./contracts/MAHAXVetoGovernor.sol)
