@@ -155,6 +155,8 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
                 if (t > pt.ts) dt = int128(uint128(t - pt.ts));
                 veSupply[t] = Math.max(uint128(pt.bias - pt.slope * dt), 0);
             }
+
+            t += WEEK;
         }
 
         timeCursor = t;
