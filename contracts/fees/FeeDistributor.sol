@@ -3,14 +3,22 @@
 pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-// import {console} from "hardhat/console.sol";
-import {INFTLocker} from "../interfaces/INFTLocker.sol";
-import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 
-contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
+import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
+import {INFTLocker} from "../interfaces/INFTLocker.sol";
+
+import {console} from "hardhat/console.sol";
+
+contract FeeDistributor is
+    Ownable,
+    IFeeDistributor,
+    ReentrancyGuard,
+    Initializable
+{
     uint256 public constant WEEK = 7 * 86400;
     uint256 public constant TOKEN_CHECKPOINT_DEADLINE = 86400;
 
@@ -44,27 +52,37 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
         locker = INFTLocker(_votingEscrow);
     }
 
-    function _checkpointToken() internal {
+    function initRewards(uint256 amount) external initializer {
+        token.transferFrom(msg.sender, address(this), amount);
+
+        uint256 thisWeek = (block.timestamp / WEEK) * WEEK;
+
+        _checkpointToken(thisWeek - WEEK);
+        _checkpointTotalSupply(thisWeek - WEEK);
+        _checkpointTotalSupply(thisWeek);
+    }
+
+    function _checkpointToken(uint256 timestamp) internal {
         // console.log("_checkpointToken(...)");
         uint256 tokenBalance = token.balanceOf(address(this));
         uint256 toDistribute = tokenBalance - tokenLastBalance;
         tokenLastBalance = tokenBalance;
 
         uint256 t = lastTokenTime;
-        uint256 sinceLast = block.timestamp - t;
-        lastTokenTime = block.timestamp;
+        uint256 sinceLast = timestamp - t;
+        lastTokenTime = timestamp;
 
         uint256 thisWeek = (t / WEEK) * WEEK;
         uint256 nextWeek = 0;
 
         for (uint256 index = 0; index < 20; index++) {
             nextWeek = thisWeek + WEEK;
-            if (block.timestamp < nextWeek) {
-                if (sinceLast == 0 && block.timestamp == t)
+            if (timestamp < nextWeek) {
+                if (sinceLast == 0 && timestamp == t)
                     tokensPerWeek[thisWeek] += toDistribute;
                 else
                     tokensPerWeek[thisWeek] +=
-                        (toDistribute * (block.timestamp - t)) /
+                        (toDistribute * (timestamp - t)) /
                         sinceLast;
                 break;
             } else {
@@ -79,7 +97,7 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
             thisWeek = nextWeek;
         }
 
-        emit CheckpointToken(block.timestamp, toDistribute);
+        emit CheckpointToken(timestamp, toDistribute);
     }
 
     function checkpointToken() external override {
@@ -90,7 +108,7 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
                         lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)),
             "not owner or not allowed"
         );
-        _checkpointToken();
+        _checkpointToken(block.timestamp);
     }
 
     function _findTimestampEpoch(uint256 _timestamp)
@@ -137,10 +155,10 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
         return min;
     }
 
-    function _checkpointTotalSupply() internal {
+    function _checkpointTotalSupply(uint256 timestamp) internal {
         // console.log("_checkpointTotalSupply(...)");
         uint256 t = timeCursor;
-        uint256 roundedTimestamp = (block.timestamp / WEEK) * WEEK;
+        uint256 roundedTimestamp = (timestamp / WEEK) * WEEK;
 
         locker.checkpoint();
 
@@ -154,6 +172,12 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
 
                 if (t > pt.ts) dt = int128(uint128(t - pt.ts));
                 veSupply[t] = Math.max(uint128(pt.bias - pt.slope * dt), 0);
+
+                // console.log("_checkpointTotalSupply(...) t", t);
+                // console.log(
+                //     "_checkpointTotalSupply(...) veSupply t",
+                //     veSupply[t]
+                // );
             }
 
             t += WEEK;
@@ -163,7 +187,7 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
     }
 
     function checkpointTotalSupply() external override {
-        _checkpointTotalSupply();
+        _checkpointTotalSupply(block.timestamp);
     }
 
     function _claim(uint256 nftId, uint256 _lastTokenTime)
@@ -238,6 +262,9 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
                     0
                 );
 
+                // console.log("weekCursor", weekCursor);
+                // console.log("veSupply[weekCursor]", veSupply[weekCursor]);
+
                 if (balanceOf == 0 && userEpoch > maxUserEpoch) break;
                 if (balanceOf > 0)
                     toDistribute +=
@@ -264,7 +291,8 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
     {
         require(!isKilled, "killed");
 
-        if (block.timestamp >= timeCursor) _checkpointTotalSupply();
+        if (block.timestamp >= timeCursor)
+            _checkpointTotalSupply(block.timestamp);
 
         uint256 _lastTokenTime = lastTokenTime;
 
@@ -272,7 +300,7 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
             canCheckpointToken &&
             (block.timestamp > lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)
         ) {
-            _checkpointToken();
+            _checkpointToken(block.timestamp);
             _lastTokenTime = block.timestamp;
         }
 
@@ -296,7 +324,8 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
         returns (bool)
     {
         require(!isKilled, "killed");
-        if (block.timestamp >= timeCursor) _checkpointTotalSupply();
+        if (block.timestamp >= timeCursor)
+            _checkpointTotalSupply(block.timestamp);
 
         uint256 _lastTokenTime = lastTokenTime;
 
@@ -304,7 +333,7 @@ contract FeeDistributor is Ownable, IFeeDistributor, ReentrancyGuard {
             canCheckpointToken &&
             (block.timestamp > lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)
         ) {
-            _checkpointToken();
+            _checkpointToken(block.timestamp);
             _lastTokenTime = block.timestamp;
         }
 

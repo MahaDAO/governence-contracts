@@ -37,6 +37,16 @@ contract StakingRewardsKeeper is Epoch, KeeperCompatibleInterface {
         mahaRewardPerEpoch = reward;
     }
 
+    function addDistributor(
+        address _distributor,
+        address _token,
+        uint256 _tokenRate
+    ) external onlyOwner {
+        distributors.push(IFeeDistributor(_distributor));
+        tokens.push(IERC20(_token));
+        tokenRates.push(_tokenRate);
+    }
+
     function checkUpkeep(bytes calldata _checkData)
         external
         view
@@ -52,12 +62,23 @@ contract StakingRewardsKeeper is Epoch, KeeperCompatibleInterface {
         checkEpoch
     {
         for (uint256 index = 0; index < distributors.length; index++) {
-            tokens[index].transfer(
-                address(distributors[index]),
-                tokenRates[index]
-            );
+            uint256 amt = tokenRates[index] == 0
+                ? tokens[index].balanceOf(address(this))
+                : tokenRates[index];
 
-            // distributors[index].checkpointToken(); // ? should we checkpoint the token as well?
+            tokens[index].transfer(address(distributors[index]), amt);
+        }
+
+        // give out maha rewards for upgrading the epoch
+        if (performData.length > 0) {
+            uint256 flag = abi.decode(performData, (uint256));
+            if (flag >= 1) {
+                require(
+                    maha.balanceOf(address(this)) >= mahaRewardPerEpoch,
+                    "not enough maha for rewards"
+                );
+                maha.transfer(msg.sender, mahaRewardPerEpoch);
+            }
         }
     }
 
