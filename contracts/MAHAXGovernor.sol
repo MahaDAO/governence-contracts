@@ -7,12 +7,14 @@ import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensi
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {TimelockController, GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import {GovernorVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import {GovernorPreventLateQuorum} from "@openzeppelin/contracts/governance/extensions/GovernorPreventLateQuorum.sol";
 import {IRegistry} from "./interfaces/IRegistry.sol";
 
 /// @custom:security-contact security@mahadao.com
 contract MAHAXGovernor is
     Governor,
     GovernorSettings,
+    GovernorPreventLateQuorum,
     GovernorCountingSimple,
     GovernorTimelockControl
 {
@@ -24,10 +26,11 @@ contract MAHAXGovernor is
     constructor(
         IRegistry _registry,
         TimelockController _timelock,
+        uint64 initialVoteExtension,
         uint256 initialVotingDelay,
         uint256 initialVotingPeriod,
         uint256 initialProposalThreshold,
-        uint256 quorum
+        uint256 initialQuorum
     )
         Governor("MAHAXGovernor")
         GovernorSettings(
@@ -35,10 +38,11 @@ contract MAHAXGovernor is
             initialVotingPeriod,
             initialProposalThreshold
         )
+        GovernorPreventLateQuorum(initialVoteExtension)
         GovernorTimelockControl(_timelock)
     {
         registry = _registry;
-        _updateQuorum(quorum);
+        _updateQuorum(initialQuorum);
     }
 
     // The following functions are overrides required by Solidity.
@@ -72,6 +76,15 @@ contract MAHAXGovernor is
         return super.votingPeriod();
     }
 
+    function proposalDeadline(uint256 proposalId)
+        public
+        view
+        override(IGovernor, Governor, GovernorPreventLateQuorum)
+        returns (uint256)
+    {
+        return super.proposalDeadline(proposalId);
+    }
+
     function state(uint256 proposalId)
         public
         view
@@ -86,7 +99,7 @@ contract MAHAXGovernor is
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) public override(Governor, IGovernor) returns (uint256) {
+    ) public override(IGovernor, Governor) returns (uint256) {
         return super.propose(targets, values, calldatas, description);
     }
 
@@ -97,6 +110,21 @@ contract MAHAXGovernor is
         returns (uint256)
     {
         return super.proposalThreshold();
+    }
+
+    function _castVote(
+        uint256 proposalId,
+        address account,
+        uint8 support,
+        string memory reason,
+        bytes memory params
+    )
+        internal
+        virtual
+        override(Governor, GovernorPreventLateQuorum)
+        returns (uint256)
+    {
+        return super._castVote(proposalId, account, support, reason, params);
     }
 
     function _execute(

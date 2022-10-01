@@ -20,6 +20,7 @@ async function main() {
   await deployOrLoadAndVerify("MAHAXGovernor", "MAHAXGovernor", [
     registry,
     timelock,
+    6545, // 1 day voting extension
     6545, // 1 day voting delay
     26182, // 4 day
     ethers.BigNumber.from(10).pow(18).mul(250), // 250 mahax
