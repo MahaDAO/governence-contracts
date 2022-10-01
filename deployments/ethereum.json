@@ -112,21 +112,11 @@
   "MAHAXGovernor": {
     "abi": "MAHAXGovernor",
     "verified": true,
-    "address": "0x90fbe384A03baDa9d439f83E453a50e982cE36F3"
+    "address": "0x0fBd92eA11e23D959E1489A9Abb84ae2E4778D31"
   },
   "MAHAXVetoGovernor": {
     "abi": "MAHAXVetoGovernor",
     "verified": true,
     "address": "0x9A7E7b4c2abe3255deC67E3BF2e6b24b46223111"
-  },
-  "MAHAFeeDistributor": {
-    "abi": "FeeDistributor",
-    "verified": true,
-    "address": "0x81E8943A0e768947671D41C95Bb1250529053274"
-  },
-  "SCLPFeeDistributor": {
-    "abi": "FeeDistributor",
-    "verified": true,
-    "address": "0xE120aaAdb0c749a93B537753BeE4538113d8179c"
   }
 }

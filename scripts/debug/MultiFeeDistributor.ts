@@ -56,8 +56,8 @@ async function main() {
 
   console.log("distributor at", inst.address);
 
-  // // console.log("token", await inst.token());
-  // // console.log("startTime", (await inst.callStatic.startTime()).toString());
+  // console.log("token", await inst.token());
+  // console.log("startTime", (await inst.callStatic.startTime()).toString());
   // console.log("timeCursor", (await inst.timeCursor()).toString());
 
   console.log(

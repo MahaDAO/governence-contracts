@@ -29,7 +29,7 @@ async function main() {
     [mahaxCI.address, start, mahaCI.address]
   );
 
-  // await mahaCI.approve(mahaFeeI.address, e18.mul(100000));
+  await mahaCI.approve(mahaFeeI.address, e18.mul(100000));
 
   // await deployOrLoadAndVerify("ARTHFeeDistributor", "FeeDistributor", [
   //   mahaxCI.address,
@@ -49,10 +49,18 @@ async function main() {
     [mahaxCI.address, start, sclpCI.address]
   );
 
-  // await sclpCI.approve(sclpFeeI.address, e18.mul(100000));
+  await sclpCI.approve(sclpFeeI.address, e18.mul(100000));
 
-  // mahaFeeI.initRewards(await mahaCI.balanceOf(deployer.address));
-  sclpFeeI.initRewards(await sclpCI.balanceOf(deployer.address));
+  // await mahaFeeI.initRewards(await mahaCI.balanceOf(deployer.address));
+  // await sclpFeeI.initRewards(await sclpCI.balanceOf(deployer.address));
+
+  // await deployOrLoadAndVerify("StakingRewardsKeeper", "StakingRewardsKeeper", [
+  //   [mahaFeeI.address, sclpFeeI.address], // IFeeDistributor[] memory _distributors,
+  //   [mahaCI.address, sclpCI.address], // IERC20[] memory _tokens,
+  //   [e18.mul(1000), e18.mul(9615)], // uint256[] memory _tokenRates,
+  //   mahaCI.address, // IERC20 _maha,
+  //   e18.mul(10), // uint256 _mahaRewardPerEpoch
+  // ]);
 
   await deployOrLoadAndVerify("MultiFeeDistributor", "MultiFeeDistributor", []);
 }
