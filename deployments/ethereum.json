@@ -133,5 +133,9 @@
     "abi": "StakingRewardsKeeper",
     "verified": true,
     "address": "0x6BB8197048C3dF68d74140Fe03cBF9936de74c1B"
+  },
+  "UniswapNFTManager": {
+    "abi": "IUniswapNFTManager",
+    "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
   }
 }
