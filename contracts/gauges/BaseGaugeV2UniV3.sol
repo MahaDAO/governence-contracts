@@ -33,6 +33,7 @@ contract BaseGaugeV2UniV3 is
     uint160 public totalSecondsClaimedX128;
     uint256 public startTime;
     uint256 public endTime;
+    uint256 public maxBoostRequirement;
     bool public inEmergency;
     address public timelock;
     uint256 public constant DURATION = 7 days; // rewards are released over 7 days
@@ -343,18 +344,13 @@ contract BaseGaugeV2UniV3 is
         returns (uint256)
     {
         uint256 _derived = (liquidity * 20) / 100;
-        uint256 _adjusted = 0;
-        uint256 _supply = IERC20(registry.locker()).totalSupply();
+        uint256 stake = INFTStaker(registry.staker()).balanceOf(account);
 
-        if (_supply > 0) {
-            _adjusted = INFTStaker(registry.staker()).balanceOf(account);
-            _adjusted =
-                (((totalLiquiditySupply * _adjusted) / _supply) * 80) /
-                100;
-        }
+        uint256 _adjusted = ((liquidity * stake * 80) / maxBoostRequirement) /
+            100;
 
         // because of this we are able to max out the boost by 5x
-        return Math.min((_derived + _adjusted), liquidity);
+        return Math.min(_derived + _adjusted, liquidity);
     }
 
     function boostedFactor(uint256 tokenId, address who)

@@ -124,18 +124,18 @@
     "verified": true,
     "address": "0x00b1d6c3838aEe6bDf508B2d23178Abdb23863d3"
   },
+  "UniswapNFTManager": {
+    "abi": "IUniswapNFTManager",
+    "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+  },
   "SCLPFeeDistributor": {
     "abi": "FeeDistributor",
     "verified": true,
-    "address": "0x0f3D7cD574B8910c17a4c3f5192c7cc394F878Ee"
+    "address": "0xf58ab48D0B8b92376e0FF7C40edeAf965bC2f1D6"
   },
   "StakingRewardsKeeper": {
     "abi": "StakingRewardsKeeper",
     "verified": true,
-    "address": "0x6BB8197048C3dF68d74140Fe03cBF9936de74c1B"
-  },
-  "UniswapNFTManager": {
-    "abi": "IUniswapNFTManager",
-    "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+    "address": "0xE7aa53E40ecB0239E1f4eB8C2b7A3e3caDc9A954"
   }
 }
