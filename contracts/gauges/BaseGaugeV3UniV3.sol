@@ -35,24 +35,29 @@ contract StakingRewardsV2 is ReentrancyGuard {
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
     uint256 public maxBoostRequirement;
-
-    /// @notice all the NFT deposits
-    mapping(uint256 => Deposit) public deposits;
-
-    /// @notice is the contrac in emergency mode? if so then allow for NFTs to be withdrawn without much checks.
-    bool public inEmergency;
-
     mapping(uint256 => uint256) public userRewardPerTokenPaid;
-
-    /// @notice [nft token id => reward count] rewards
-    mapping(uint256 => uint256) public rewards;
 
     uint256 private _totalSupply;
 
+    /// @dev all the NFT deposits
+    mapping(uint256 => Deposit) public deposits;
+
+    /// @dev is the contract in emergency mode? if so then allow for NFTs to be withdrawn without much checks.
+    bool public inEmergency;
+
+    /// @dev [nft token id => reward count] rewards
+    mapping(uint256 => uint256) public rewards;
+
+    /// @dev the uniswap v3 factory
     IUniswapV3Factory public factory;
+
+    /// @dev the uniswap v3 nft position manager
     INonfungiblePositionManager public nonfungiblePositionManager;
+
+    /// @dev the pool for which we are staking the rewards
     IUniswapV3Pool public immutable pool;
 
+    /// @dev the number of NFTs staked by the given user.
     mapping(address => uint256) public balanceOf;
 
     /// @dev Mapping from owner to list of owned token IDs
@@ -67,6 +72,7 @@ contract StakingRewardsV2 is ReentrancyGuard {
     /// @dev Mapping from token id to position in the allTokens array
     mapping(uint256 => uint256) private _allTokensIndex;
 
+    /// @dev is the user attached to this gauge
     mapping(address => bool) public attached;
 
     /* ========== CONSTRUCTOR ========== */
@@ -164,6 +170,7 @@ contract StakingRewardsV2 is ReentrancyGuard {
         uint256 _tokenId,
         bytes calldata data
     ) external updateReward(_tokenId) returns (bytes4) {
+        require(!inEmergency, "in emergency mode");
         require(
             msg.sender == address(nonfungiblePositionManager),
             "not called from nft manager"
@@ -218,7 +225,7 @@ contract StakingRewardsV2 is ReentrancyGuard {
             _tokenId
         );
 
-        if (attached[msg.sender]) {
+        if (balanceOf[msg.sender] == 0 && attached[msg.sender]) {
             attached[msg.sender] = false;
             IGaugeVoterV2(registry.gaugeVoter()).detachStakerFromGauge(
                 msg.sender
