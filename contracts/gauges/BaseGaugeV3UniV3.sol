@@ -274,6 +274,17 @@ contract StakingRewardsV2 is ReentrancyGuard, IGauge {
         }
     }
 
+    function getReward(address account, address[] memory tokens)
+        external
+        override
+        nonReentrant
+    {
+        for (uint256 index = 0; index < balanceOf[account]; index++) {
+            uint256 tokenId = _ownedTokens[account][index];
+            getReward(tokenId);
+        }
+    }
+
     function exit(uint256 _tokenId) external {
         withdraw(_tokenId);
         getReward(_tokenId);
