@@ -12,10 +12,11 @@ import {NFTPositionInfo} from "../utils/NFTPositionInfo.sol";
 import {INonfungiblePositionManager} from "../interfaces/INonfungiblePositionManager.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
+import {IGauge} from "../interfaces/IGauge.sol";
 import {INFTLocker} from "../interfaces/INFTLocker.sol";
 import {INFTStaker} from "../interfaces/INFTStaker.sol";
 
-contract StakingRewardsV2 is ReentrancyGuard {
+contract StakingRewardsV2 is ReentrancyGuard, IGauge {
     using SafeMath for uint256;
     using SafeMath for uint128;
 
@@ -28,7 +29,7 @@ contract StakingRewardsV2 is ReentrancyGuard {
 
     /* ========== STATE VARIABLES ========== */
     IERC20 public rewardsToken;
-    IRegistry public immutable registry;
+    IRegistry public immutable override registry;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
     uint256 public rewardsDuration = 7 days;
@@ -99,6 +100,12 @@ contract StakingRewardsV2 is ReentrancyGuard {
 
     function totalSupply() external view returns (uint256) {
         return _totalSupply;
+    }
+
+    function left(address token) external view override returns (uint256) {
+        if (block.timestamp >= periodFinish) return 0;
+        uint256 _remaining = periodFinish - block.timestamp;
+        return _remaining * rewardRate;
     }
 
     function liquidity(uint256 _tokenId) external view returns (uint256) {
@@ -274,7 +281,11 @@ contract StakingRewardsV2 is ReentrancyGuard {
 
     /* ========== RESTRICTED FUNCTIONS ========== */
 
-    function notifyRewardAmount(uint256 reward) external updateReward(0) {
+    function notifyRewardAmount(address token, uint256 reward)
+        external
+        override
+        updateReward(0)
+    {
         require(msg.sender == registry.gaugeVoter(), "not gauge voter");
 
         if (block.timestamp >= periodFinish)
