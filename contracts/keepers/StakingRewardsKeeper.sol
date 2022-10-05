@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {KeeperCompatibleInterface} from "../interfaces/KeeperCompatibleInterface.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
 import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 import {Epoch} from "../utils/Epoch.sol";
@@ -24,8 +25,9 @@ contract StakingRewardsKeeper is Epoch, KeeperCompatibleInterface {
         IERC20[] memory _tokens,
         uint256[] memory _tokenRates,
         IERC20 _maha,
-        uint256 _mahaRewardPerEpoch
-    ) Epoch(86400 * 7, block.timestamp, 1) {
+        uint256 _mahaRewardPerEpoch,
+        uint256 lastTokenTime
+    ) Epoch(86400 * 7, lastTokenTime, 0) {
         distributors = _distributors;
         tokens = _tokens;
         maha = _maha;

@@ -7,6 +7,7 @@ import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.s
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Operator} from "../utils/Epoch.sol";
 
 import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 import {INFTLocker} from "../interfaces/INFTLocker.sol";
@@ -14,7 +15,7 @@ import {INFTLocker} from "../interfaces/INFTLocker.sol";
 import {console} from "hardhat/console.sol";
 
 contract FeeDistributor is
-    Ownable,
+    Operator,
     IFeeDistributor,
     ReentrancyGuard,
     Initializable
@@ -102,11 +103,11 @@ contract FeeDistributor is
 
     function checkpointToken() external override {
         require(
-            msg.sender == owner() ||
+            msg.sender == operator() ||
                 (canCheckpointToken &&
                     (block.timestamp >
                         lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)),
-            "not owner or not allowed"
+            "not operator or not allowed"
         );
         _checkpointToken(block.timestamp);
     }
