@@ -333,6 +333,16 @@ contract StakingRewardsV2 is ReentrancyGuard, IGauge {
         emit EmergencyModeEnabled();
     }
 
+    /// @dev in case admin needs to execute some calls directly
+    function emergencyCall(address target, bytes memory signature)
+        external
+        onlyTimelock
+    {
+        require(inEmergency, "not in emergency mode");
+        (bool success, bytes memory response) = target.call(signature);
+        require(success, string(response));
+    }
+
     function setMaxBoost(uint256 _maxBoostRequirement) external onlyTimelock {
         emit MaxBoostRequirementChanged(
             maxBoostRequirement,
