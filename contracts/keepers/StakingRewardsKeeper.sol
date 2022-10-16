@@ -7,6 +7,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
 import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 import {Epoch} from "../utils/Epoch.sol";
+import {console} from "hardhat/console.sol";
 
 /**
  * @dev This keeper contract rewards the caller with MAHA and distributes the
@@ -25,10 +26,8 @@ contract StakingRewardsKeeper is Epoch, KeeperCompatibleInterface {
         IERC20[] memory _tokens,
         uint256[] memory _tokenRates,
         IERC20 _maha,
-        uint256 _mahaRewardPerEpoch,
-        uint256 _startTime,
-        uint256 _startEpoch
-    ) Epoch(86400 * 7, _startTime, _startEpoch) {
+        uint256 _mahaRewardPerEpoch
+    ) Epoch(86400 * 7, block.timestamp, 0) {
         distributors = _distributors;
         tokens = _tokens;
         maha = _maha;
@@ -72,21 +71,22 @@ contract StakingRewardsKeeper is Epoch, KeeperCompatibleInterface {
         checkEpoch
     {
         for (uint256 index = 0; index < distributors.length; index++) {
-            uint256 amt = tokenRates[index];
-            if (amt == 0) continue;
-            tokens[index].transfer(address(distributors[index]), amt);
+            if (tokenRates[index] == 0) continue;
+            tokens[index].transfer(
+                address(distributors[index]),
+                tokenRates[index]
+            );
         }
 
         // give out maha rewards for upgrading the epoch
         if (performData.length > 0) {
-            uint256 flag = abi.decode(performData, (uint256));
-            if (flag >= 1) {
-                require(
-                    maha.balanceOf(address(this)) >= mahaRewardPerEpoch,
-                    "not enough maha for rewards"
-                );
-                maha.transfer(msg.sender, mahaRewardPerEpoch);
-            }
+            console.log(performData.length);
+
+            require(
+                maha.balanceOf(address(this)) >= mahaRewardPerEpoch,
+                "not enough maha for rewards"
+            );
+            maha.transfer(msg.sender, mahaRewardPerEpoch);
         }
     }
 

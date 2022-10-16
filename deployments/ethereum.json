@@ -133,14 +133,14 @@
     "verified": true,
     "address": "0xf58ab48D0B8b92376e0FF7C40edeAf965bC2f1D6"
   },
-  "StakingRewardsKeeper": {
-    "abi": "StakingRewardsKeeper",
-    "verified": true,
-    "address": "0xE7aa53E40ecB0239E1f4eB8C2b7A3e3caDc9A954"
-  },
   "MAHATimelockController": {
     "abi": "MAHATimelockController",
     "verified": true,
     "address": "0x43c958AFFe41D44F0a02aE177b591E93c86AdbEa"
+  },
+  "StakingRewardsKeeper": {
+    "abi": "StakingRewardsKeeper",
+    "verified": true,
+    "address": "0x469122E0aB2D8a6FE9f28AeCad9C4f1a6821C5E0"
   }
 }

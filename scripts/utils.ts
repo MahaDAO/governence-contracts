@@ -74,7 +74,7 @@ export const deployOrLoad = async (
 ) => {
   const addr = await getOutputAddress(key);
   if (addr) {
-    console.log(`loading ${key} at ${addr}`);
+    console.log(`using ${key} at ${addr}`);
     return await ethers.getContractAt(contractName, addr);
   }
 
