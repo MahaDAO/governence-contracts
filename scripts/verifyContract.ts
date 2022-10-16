@@ -9,7 +9,7 @@ export default async function verifyContract(
   constructorArguments: any[]
 ) {
   try {
-    // await wait(20 * 1000); // wait for 20s
+    await wait(20 * 1000); // wait for 20s
 
     await hre.run("verify:verify", {
       address,

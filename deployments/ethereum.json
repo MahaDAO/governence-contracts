@@ -137,5 +137,10 @@
     "abi": "StakingRewardsKeeper",
     "verified": true,
     "address": "0xE7aa53E40ecB0239E1f4eB8C2b7A3e3caDc9A954"
+  },
+  "MAHATimelockController": {
+    "abi": "MAHATimelockController",
+    "verified": true,
+    "address": "0x43c958AFFe41D44F0a02aE177b591E93c86AdbEa"
   }
 }
