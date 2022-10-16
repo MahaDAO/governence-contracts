@@ -26,8 +26,9 @@ contract StakingRewardsKeeper is Epoch, KeeperCompatibleInterface {
         uint256[] memory _tokenRates,
         IERC20 _maha,
         uint256 _mahaRewardPerEpoch,
-        uint256 lastTokenTime
-    ) Epoch(86400 * 7, lastTokenTime, 0) {
+        uint256 _startTime,
+        uint256 _startEpoch
+    ) Epoch(86400 * 7, _startTime, _startEpoch) {
         distributors = _distributors;
         tokens = _tokens;
         maha = _maha;
@@ -49,6 +50,13 @@ contract StakingRewardsKeeper is Epoch, KeeperCompatibleInterface {
         tokenRates.push(_tokenRate);
     }
 
+    function updateDistributorReward(uint256 _tokenIndex, uint256 _tokenRate)
+        external
+        onlyOwner
+    {
+        tokenRates[_tokenIndex] = _tokenRate;
+    }
+
     function checkUpkeep(bytes calldata _checkData)
         external
         view
@@ -64,10 +72,8 @@ contract StakingRewardsKeeper is Epoch, KeeperCompatibleInterface {
         checkEpoch
     {
         for (uint256 index = 0; index < distributors.length; index++) {
-            uint256 amt = tokenRates[index] == 0
-                ? tokens[index].balanceOf(address(this))
-                : tokenRates[index];
-
+            uint256 amt = tokenRates[index];
+            if (amt == 0) continue;
             tokens[index].transfer(address(distributors[index]), amt);
         }
 
