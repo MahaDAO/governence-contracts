@@ -35,7 +35,7 @@ contract StakingRewardsV2 is ReentrancyGuard, IGauge {
     uint256 public rewardsDuration = 7 days;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
-    uint256 public maxBoostRequirement;
+    uint256 public maxBoostRequirement = 5000e18;
     mapping(uint256 => uint256) public userRewardPerTokenPaid;
 
     uint256 private _totalSupply;

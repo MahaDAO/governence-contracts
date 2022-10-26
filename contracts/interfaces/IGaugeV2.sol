@@ -36,4 +36,5 @@ interface IGaugeV2 is IGauge {
         address indexed reward,
         uint256 amount
     );
+    event MaxBoostRequirementChanged(uint256 _old, uint256 _new);
 }

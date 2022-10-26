@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {IGovernorTimelock} from "@openzeppelin/contracts/governance/extensions/IGovernorTimelock.sol";
+
 
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
@@ -29,6 +31,8 @@ contract BaseGaugeV2 is IGaugeV2 {
     mapping(address => uint256) public periodFinish;
     mapping(address => uint256) public lastUpdateTime;
     mapping(address => uint256) public rewardPerTokenStored;
+
+    uint256 public maxBoostRequirement = 5000e18;
 
     mapping(address => mapping(address => uint256)) public lastEarn;
     mapping(address => mapping(address => uint256))
@@ -324,19 +328,22 @@ contract BaseGaugeV2 is IGaugeV2 {
                 PRECISION) / derivedSupply);
     }
 
-    function derivedBalance(address account) public view returns (uint256) {
-        uint256 _balance = balanceOf[account];
-        uint256 _derived = (_balance * 20) / 100;
-        uint256 _adjusted = 0;
-        uint256 _supply = IERC20(registry.locker()).totalSupply();
 
-        if (_supply > 0) {
-            _adjusted = INFTStaker(registry.staker()).balanceOf(account);
-            _adjusted = (((totalSupply * _adjusted) / _supply) * 80) / 100;
-        }
+    function derivedBalance(address account)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 _balance = balanceOf[account];
+
+        uint256 _derived = (_balance * 20) / 100;
+        uint256 _stake = INFTStaker(registry.staker()).balanceOf(account);
+
+        uint256 _adjusted = ((_balance * _stake * 80) /
+            maxBoostRequirement) / 100;
 
         // because of this we are able to max out the boost by 5x
-        return Math.min((_derived + _adjusted), _balance);
+        return Math.min(_derived + _adjusted, _balance);
     }
 
     function batchRewardPerToken(address token, uint256 maxRuns) external {
@@ -623,6 +630,23 @@ contract BaseGaugeV2 is IGaugeV2 {
         emit NotifyReward(msg.sender, token, amount);
     }
 
+    /// @dev in case admin needs to execute some calls directly
+    function emergencyCall(address target, bytes memory signature)
+        external
+        onlyTimelock
+    {
+        (bool success, bytes memory response) = target.call(signature);
+        require(success, string(response));
+    }
+
+    function setMaxBoost(uint256 _maxBoostRequirement) external onlyTimelock {
+        emit MaxBoostRequirementChanged(
+            maxBoostRequirement,
+            _maxBoostRequirement
+        );
+        maxBoostRequirement = _maxBoostRequirement;
+    }
+
     function _safeTransfer(
         address token,
         address to,
@@ -672,5 +696,13 @@ contract BaseGaugeV2 is IGaugeV2 {
             success && (data.length == 0 || abi.decode(data, (bool))),
             "approve failed"
         );
+    }
+
+    modifier onlyTimelock() {
+        require(
+            msg.sender == IGovernorTimelock(registry.governor()).timelock(),
+            "not timelock"
+        );
+        _;
     }
 }
