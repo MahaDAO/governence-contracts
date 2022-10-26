@@ -142,5 +142,15 @@
     "abi": "StakingRewardsKeeper",
     "verified": true,
     "address": "0x469122E0aB2D8a6FE9f28AeCad9C4f1a6821C5E0"
+  },
+  "ARTH3pool-LpGauge": {
+    "abi": "BaseGaugeV2",
+    "verified": true,
+    "address": "0x2c2E08B03c6f0831DC44ef6d5f4CaBfB4C46F2Fc"
+  },
+  "ARTH3pool-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x66D620008355B72F68C892d791D9f7619947F8D5"
   }
 }
