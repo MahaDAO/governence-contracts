@@ -146,11 +146,11 @@
   "ARTH3pool-LpGauge": {
     "abi": "BaseGaugeV2",
     "verified": true,
-    "address": "0x2c2E08B03c6f0831DC44ef6d5f4CaBfB4C46F2Fc"
+    "address": "0x945734282D9BA113ACb6cDBb06fdCe265F2600d6"
   },
-  "ARTH3pool-UniV3Bribe": {
+  "ARTH3pool-LpBribe": {
     "abi": "BaseV2Bribes",
     "verified": true,
-    "address": "0x66D620008355B72F68C892d791D9f7619947F8D5"
+    "address": "0xf27F02006725aE2BE3201c62E74cE992ee9629d7"
   }
 }
