@@ -288,11 +288,7 @@ contract FeeDistributor is
         return toDistribute;
     }
 
-    function _claimWithChecks(uint256 nftId)
-        internal
-        nonReentrant
-        returns (uint256)
-    {
+    function _claimWithChecks(uint256 nftId) internal returns (uint256) {
         require(!isKilled, "killed");
 
         if (block.timestamp >= timeCursor)
@@ -321,26 +317,31 @@ contract FeeDistributor is
         return amount;
     }
 
-    function claim(uint256 nftId)
+    function claim(uint256 id)
         external
         override
         nonReentrant
         returns (uint256)
     {
-        return _claimWithChecks(nftId);
+        return _claimWithChecks(id);
     }
 
-    function claimWithOldRewards(
-        uint256 nftId,
-        uint256 _oldReward,
+    function claimWithPendingRewards(
+        uint256 id,
+        uint256 _reward,
         bytes32[] memory _proof
     ) external nonReentrant returns (uint256) {
-        uint256 amt1 = _claimWithChecks(nftId);
+        uint256 amt1 = _claimWithChecks(id);
 
-        address who = locker.ownerOf(nftId);
-        pendingFeeDistributor.distribute(nftId, who, _oldReward, _proof);
+        address who = locker.ownerOf(id);
+        uint256 amt2 = pendingFeeDistributor.distribute(
+            id,
+            who,
+            _reward,
+            _proof
+        );
 
-        return amt1 + _oldReward;
+        return amt1 + amt2;
     }
 
     function claimMany(uint256[] memory nftIds)

@@ -6,8 +6,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Context, Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-
-import {INFTLocker} from "../interfaces/INFTLocker.sol";
 import {IPendingFeeDistributor} from "../interfaces/IPendingFeeDistributor.sol";
 
 contract PendingFeeDistributor is
@@ -18,18 +16,11 @@ contract PendingFeeDistributor is
     bytes32 public merkleRoot;
 
     IERC20 public rewardToken;
-    INFTLocker public locker;
-
     mapping(uint256 => bool) public hasClaimed;
 
-    constructor(
-        bytes32 _merkleRoot,
-        address _rewardToken,
-        address _locker
-    ) {
+    constructor(bytes32 _merkleRoot, address _rewardToken) {
         merkleRoot = _merkleRoot;
         rewardToken = IERC20(_rewardToken);
-        locker = INFTLocker(_locker);
     }
 
     function distribute(
