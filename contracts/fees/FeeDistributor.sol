@@ -242,7 +242,7 @@ contract FeeDistributor is
 
         if (weekCursor >= _lastTokenTime) return 0;
 
-        if (weekCursor >= _startTime) weekCursor = _startTime;
+        if (weekCursor < _startTime) weekCursor = _startTime;
 
         INFTLocker.Point memory oldUserPoint = INFTLocker.Point(0, 0, 0, 0);
 
