@@ -13,6 +13,7 @@ import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 import {INFTLocker} from "../interfaces/INFTLocker.sol";
 
 import {console} from "hardhat/console.sol";
+import {IPendingFeeDistributor} from "../interfaces/IPendingFeeDistributor.sol";
 
 contract FeeDistributor is
     Operator,
@@ -39,11 +40,13 @@ contract FeeDistributor is
 
     bool public isKilled;
     bool public canCheckpointToken = true;
+    IPendingFeeDistributor public pendingFeeDistributor;
 
     constructor(
         address _votingEscrow,
         uint256 _startTime,
-        address _token
+        address _token,
+        address _pendingFeeDistributor
     ) {
         uint256 t = (_startTime / WEEK) * WEEK;
         startTime = t;
@@ -51,6 +54,7 @@ contract FeeDistributor is
         timeCursor = t;
         token = IERC20(_token);
         locker = INFTLocker(_votingEscrow);
+        pendingFeeDistributor = IPendingFeeDistributor(_pendingFeeDistributor);
     }
 
     function initRewards(uint256 amount) external initializer {
@@ -284,9 +288,8 @@ contract FeeDistributor is
         return toDistribute;
     }
 
-    function claim(uint256 nftId)
-        external
-        override
+    function _claimWithChecks(uint256 nftId)
+        internal
         nonReentrant
         returns (uint256)
     {
@@ -316,6 +319,28 @@ contract FeeDistributor is
         }
 
         return amount;
+    }
+
+    function claim(uint256 nftId)
+        external
+        override
+        nonReentrant
+        returns (uint256)
+    {
+        return _claimWithChecks(nftId);
+    }
+
+    function claimWithOldRewards(
+        uint256 nftId,
+        uint256 _oldReward,
+        bytes32[] memory _proof
+    ) external nonReentrant returns (uint256) {
+        uint256 amt1 = _claimWithChecks(nftId);
+
+        address who = locker.ownerOf(nftId);
+        pendingFeeDistributor.distribute(nftId, who, _oldReward, _proof);
+
+        return amt1 + _oldReward;
     }
 
     function claimMany(uint256[] memory nftIds)
