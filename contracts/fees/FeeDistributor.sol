@@ -44,27 +44,16 @@ contract FeeDistributor is
 
     constructor(
         address _votingEscrow,
-        uint256 _startTime,
         address _token,
         address _pendingFeeDistributor
     ) {
-        uint256 t = (_startTime / WEEK) * WEEK;
+        uint256 t = (block.timestamp / WEEK) * WEEK;
         startTime = t;
         lastTokenTime = t;
         timeCursor = t;
         token = IERC20(_token);
         locker = INFTLocker(_votingEscrow);
         pendingFeeDistributor = IPendingFeeDistributor(_pendingFeeDistributor);
-    }
-
-    function initRewards(uint256 amount) external initializer {
-        token.transferFrom(msg.sender, address(this), amount);
-
-        uint256 thisWeek = (block.timestamp / WEEK) * WEEK;
-
-        _checkpointToken(thisWeek - WEEK);
-        _checkpointTotalSupply(thisWeek - WEEK);
-        _checkpointTotalSupply(thisWeek);
     }
 
     function _checkpointToken(uint256 timestamp) internal {

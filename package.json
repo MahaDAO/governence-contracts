@@ -26,10 +26,6 @@
   "homepage": "https://github.com/MahaDAO/governance-contracts#readme",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.6",
-    "@uniswap/v3-core": "^1.0.1",
-    "@uniswap/v3-periphery": "^1.4.1",
-    "hardhat": "^2.9.3",
-    "hardhat-abi-exporter": "^2.9.0",
     "@nomiclabs/hardhat-ethers": "^2.0.0",
     "@nomiclabs/hardhat-etherscan": "^3.0.0",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
@@ -41,6 +37,8 @@
     "@types/node": "^12.0.0",
     "@typescript-eslint/eslint-plugin": "^4.29.1",
     "@typescript-eslint/parser": "^4.29.1",
+    "@uniswap/v3-core": "^1.0.1",
+    "@uniswap/v3-periphery": "^1.4.1",
     "chai": "^4.2.0",
     "dotenv": "^10.0.0",
     "eslint": "^7.29.0",
@@ -52,6 +50,8 @@
     "eslint-plugin-promise": "^5.1.0",
     "ethereum-waffle": "^3.0.0",
     "ethers": "^5.0.0",
+    "hardhat": "^2.9.3",
+    "hardhat-abi-exporter": "^2.9.0",
     "hardhat-gas-reporter": "^1.0.4",
     "prettier": "^2.3.2",
     "prettier-plugin-solidity": "^1.0.0-beta.13",
@@ -60,5 +60,11 @@
     "ts-node": "^10.1.0",
     "typechain": "^5.1.2",
     "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "keccak256": "^1.0.6",
+    "merkletreejs": "^0.3.0",
+    "web3": "^1.8.0"
   }
 }

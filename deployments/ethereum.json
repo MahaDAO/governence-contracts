@@ -119,9 +119,19 @@
     "verified": true,
     "address": "0x9A7E7b4c2abe3255deC67E3BF2e6b24b46223111"
   },
+  "MAHAFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": true,
+    "address": "0x00b1d6c3838aEe6bDf508B2d23178Abdb23863d3"
+  },
   "UniswapNFTManager": {
     "abi": "IUniswapNFTManager",
     "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+  },
+  "SCLPFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": true,
+    "address": "0xf58ab48D0B8b92376e0FF7C40edeAf965bC2f1D6"
   },
   "MAHATimelockController": {
     "abi": "MAHATimelockController",
