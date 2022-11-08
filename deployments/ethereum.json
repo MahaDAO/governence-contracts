@@ -152,5 +152,10 @@
     "abi": "BaseV2Bribes",
     "verified": true,
     "address": "0xf27F02006725aE2BE3201c62E74cE992ee9629d7"
+  },
+  "ARTH3pool-Lp": {
+    "abi": "IERC20",
+    "verified": true,
+    "address": "0xbcceb5b710e3eb07d1ac6a079e87d799be30a71f"
   }
 }
