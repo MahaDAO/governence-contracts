@@ -119,5 +119,10 @@
     "abi": "FeeDistributor",
     "verified": true,
     "address": "0xd9548c70D0B4eBEDBe104b739453e40587fd2dF9"
+  },
+  "MultiFeeDistributor": {
+    "abi": "MultiFeeDistributor",
+    "verified": false,
+    "address": "0x63D1D323ED665C04B7E43E27927D450377B0ba59"
   }
 }
