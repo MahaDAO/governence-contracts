@@ -19,4 +19,11 @@ interface IFeeDistributor {
     function claim(uint256 nftId) external returns (uint256);
 
     function claimMany(uint256[] memory nftIds) external returns (bool);
+
+    function claimWithPendingRewards(
+        uint256 id,
+        address _who,
+        uint256 _reward,
+        bytes32[] memory _proof
+    ) external returns (uint256);
 }

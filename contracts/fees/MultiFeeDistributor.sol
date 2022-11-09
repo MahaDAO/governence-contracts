@@ -17,4 +17,28 @@ contract MultiFeeDistributor {
 
         return ret;
     }
+
+    function claimManyWithProofs(
+        bytes[] memory data,
+        IFeeDistributor[] memory distributors
+    ) external returns (uint256[] memory) {
+        uint256[] memory ret = new uint256[](data.length);
+
+        for (uint256 index = 0; index < data.length; index++) {
+            (
+                uint256 nftId,
+                address _who,
+                uint256 _reward,
+                bytes32[] memory _proof
+            ) = abi.decode(data[index], (uint256, address, uint256, bytes32[]));
+            ret[index] = distributors[index].claimWithPendingRewards(
+                nftId,
+                _who,
+                _reward,
+                _proof
+            );
+        }
+
+        return ret;
+    }
 }

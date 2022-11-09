@@ -317,15 +317,15 @@ contract FeeDistributor is
 
     function claimWithPendingRewards(
         uint256 id,
+        address _who,
         uint256 _reward,
         bytes32[] memory _proof
-    ) external nonReentrant returns (uint256) {
+    ) external override nonReentrant returns (uint256) {
         uint256 amt1 = _claimWithChecks(id);
 
-        address who = locker.ownerOf(id);
         uint256 amt2 = pendingFeeDistributor.distribute(
             id,
-            who,
+            _who,
             _reward,
             _proof
         );

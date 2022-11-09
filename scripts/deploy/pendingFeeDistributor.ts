@@ -6,7 +6,7 @@ async function main() {
 
   const token = "SCLP";
   const _merkleRoot =
-    "0xc3c86b1fc1994656a4b1e8cd426aab572faac034a85526be797fe55f4391b08b";
+    "0x0583689ef16778f7e60c8fb20bdefed728e78bfeae1c51851988ff2ca83c22e6";
 
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);

@@ -7,6 +7,10 @@
     "abi": "MockERC20",
     "address": "0xc003235c028A18E55bacE946E91fAe95769348BB"
   },
+  "SCLP": {
+    "abi": "MockERC20",
+    "address": "0xc003235c028A18E55bacE946E91fAe95769348BB"
+  },
   "MAHA": {
     "abi": "MockERC20",
     "address": "0x106E0c36aD45cEAce8a778fa7365a2ce0500C3a2"
@@ -55,10 +59,6 @@
     "abi": "IEmissionController",
     "address": "0xE390d0f60dFEd983E68d2a4B86a86e89ea208BC3"
   },
-  "MAHAFeeDistributor": {
-    "abi": "FeeDistributor",
-    "address": "0xc953285D64A3c8DF09f3167ee250605984778B53"
-  },
   "ARTHFeeDistributor": {
     "abi": "FeeDistributor",
     "address": "0x115318B43f88f0CE19F61b4292C646997DD9D0bC"
@@ -99,5 +99,25 @@
     "abi": "LockMigrator",
     "verified": true,
     "address": "0x25E1d1751C3ED5D27baaf9Ac6b3DA536042b07EB"
+  },
+  "MAHAPendingFeeDistributor": {
+    "abi": "PendingFeeDistributor",
+    "verified": true,
+    "address": "0xe6FBc6b8c3b4Cc5E7EC71Bc946D5dEfD80D7c98C"
+  },
+  "MAHAFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": true,
+    "address": "0x22D844f7E879eaE42242baF59eb6093D2fd07d8b"
+  },
+  "SCLPPendingFeeDistributor": {
+    "abi": "PendingFeeDistributor",
+    "verified": true,
+    "address": "0x209261044f2f913dd20fD6aA40367548ec8b3B41"
+  },
+  "SCLPFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": true,
+    "address": "0xd9548c70D0B4eBEDBe104b739453e40587fd2dF9"
   }
 }

@@ -100,7 +100,7 @@ export const deployOrLoadAndVerify = async (
   key: string,
   contractName: string,
   args: any[],
-  delay: number = 0
+  delay: number = 5000
 ) => {
   const instance = await deployOrLoad(key, contractName, args);
 

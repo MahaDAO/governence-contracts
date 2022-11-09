@@ -46,7 +46,7 @@ contract PendingFeeDistributor is
         uint256 _reward,
         bytes32[] memory proof
     ) public view override returns (bool) {
-        bytes32 leaf = keccak256(abi.encode(_tokenId, _owner, _reward));
+        bytes32 leaf = keccak256(abi.encode(_owner, _reward, _tokenId));
         return MerkleProof.verify(proof, merkleRoot, leaf);
     }
 
