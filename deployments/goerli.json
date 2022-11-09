@@ -122,7 +122,7 @@
   },
   "MultiFeeDistributor": {
     "abi": "MultiFeeDistributor",
-    "verified": false,
+    "verified": true,
     "address": "0x63D1D323ED665C04B7E43E27927D450377B0ba59"
   }
 }

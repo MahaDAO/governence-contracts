@@ -323,6 +323,7 @@ contract FeeDistributor is
     ) external override nonReentrant returns (uint256) {
         uint256 amt1 = _claimWithChecks(id);
 
+        if (address(pendingFeeDistributor) == address(0)) return amt1;
         uint256 amt2 = pendingFeeDistributor.distribute(
             id,
             _who,
@@ -392,6 +393,10 @@ contract FeeDistributor is
     function killMe() external onlyOwner {
         isKilled = true;
         token.transfer(msg.sender, token.balanceOf(address(this)));
+    }
+
+    function setPendingFeeDistributor(address _what) external onlyOwner {
+        pendingFeeDistributor = IPendingFeeDistributor(_what);
     }
 
     function recoverBalance(IERC20 _coin) external onlyOwner {
