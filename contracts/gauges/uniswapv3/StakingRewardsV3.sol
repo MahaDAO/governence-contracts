@@ -4,10 +4,8 @@ pragma solidity ^0.8.0;
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import {IGovernorTimelock} from "@openzeppelin/contracts/governance/extensions/IGovernorTimelock.sol";
 
 import {NFTPositionInfo} from "../../utils/NFTPositionInfo.sol";
-import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
 import {IGaugeVoterV2} from "../../interfaces/IGaugeVoterV2.sol";
 import {IGauge} from "../../interfaces/IGauge.sol";
 import {UniswapV3Base} from "./UniswapV3Base.sol";
@@ -16,24 +14,6 @@ import {INFTStaker} from "../../interfaces/INFTStaker.sol";
 abstract contract StakingRewardsV3 is UniswapV3Base {
     using SafeMath for uint256;
     using SafeMath for uint128;
-
-    constructor(
-        address token0,
-        address token1,
-        uint24 fee,
-        address _registry,
-        INonfungiblePositionManager _nonfungiblePositionManager
-    )
-        UniswapV3Base(
-            token0,
-            token1,
-            fee,
-            _registry,
-            _nonfungiblePositionManager
-        )
-    {
-        // nothing
-    }
 
     function derivedLiquidity(uint128 _liquidity, address account)
         public

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IGovernorTimelock} from "@openzeppelin/contracts/governance/extensions/IGovernorTimelock.sol";
 import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
-import {StakingRewardsV3} from "./StakingRewardsV3.sol";
+import {UniswapV3Base, StakingRewardsV3} from "./StakingRewardsV3.sol";
 
 contract BaseGaugeV3UniV3 is StakingRewardsV3 {
     /// @dev is the contract in emergency mode? if so then allow for NFTs to be withdrawn without much checks.
@@ -16,7 +16,7 @@ contract BaseGaugeV3UniV3 is StakingRewardsV3 {
         address _registry,
         INonfungiblePositionManager _nonfungiblePositionManager
     )
-        StakingRewardsV3(
+        UniswapV3Base(
             _token0,
             _token1,
             _fee,

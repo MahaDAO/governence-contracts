@@ -6,12 +6,10 @@ import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import {IRegistry} from "../../interfaces/IRegistry.sol";
 
-import {NFTPositionInfo} from "../../utils/NFTPositionInfo.sol";
+import {IRegistry} from "../../interfaces/IRegistry.sol";
 import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
 import {IGauge} from "../../interfaces/IGauge.sol";
-import {INFTStaker} from "../../interfaces/INFTStaker.sol";
 
 abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
     using SafeMath for uint256;
