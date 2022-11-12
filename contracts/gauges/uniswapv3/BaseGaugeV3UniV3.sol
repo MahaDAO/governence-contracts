@@ -36,21 +36,21 @@ contract BaseGaugeV3UniV3 is StakingRewardsV3 {
         return this.onERC721Received.selector;
     }
 
-    function withdrawViaEmergency(uint256 _tokenId)
+    function withdrawViaEmergency(uint256 tokenId)
         external
         nonReentrant
-        onlyTokenOwner(_tokenId)
+        onlyTokenOwner(tokenId)
     {
         require(inEmergency, "not in emergency mode");
-        require(deposits[_tokenId].liquidity != 0, "stake does not exist");
+        require(deposits[tokenId].liquidity != 0, "stake does not exist");
 
-        delete deposits[_tokenId];
-        emit Withdrawn(msg.sender, _tokenId);
+        delete deposits[tokenId];
+        emit Withdrawn(msg.sender, tokenId);
 
         nonfungiblePositionManager.safeTransferFrom(
             address(this),
             msg.sender,
-            _tokenId
+            tokenId
         );
     }
 

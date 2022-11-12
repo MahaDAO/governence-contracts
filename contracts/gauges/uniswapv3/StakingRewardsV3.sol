@@ -35,25 +35,26 @@ abstract contract StakingRewardsV3 is UniswapV3Base {
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    function withdraw(uint256 _tokenId)
+    function withdraw(uint256 tokenId)
         public
         nonReentrant
-        updateReward(_tokenId)
-        onlyTokenOwner(_tokenId)
+        updateReward(tokenId)
+        onlyTokenOwner(tokenId)
     {
-        require(deposits[_tokenId].liquidity > 0, "Cannot withdraw 0");
+        require(deposits[tokenId].liquidity > 0, "Cannot withdraw 0");
 
-        totalSupply = totalSupply.sub(deposits[_tokenId].derivedLiquidity);
+        totalSupply = totalSupply.sub(deposits[tokenId].derivedLiquidity);
+        delete deposits[tokenId];
 
-        _removeTokenFromOwnerEnumeration(msg.sender, _tokenId);
-        _removeTokenFromAllTokensEnumeration(_tokenId);
+        // delete the nft from our array
+        _removeTokenFromOwnerEnumeration(msg.sender, tokenId);
+        _removeTokenFromAllTokensEnumeration(tokenId);
         balanceOf[msg.sender] -= 1;
-        delete deposits[_tokenId];
 
         nonfungiblePositionManager.safeTransferFrom(
             address(this),
             msg.sender,
-            _tokenId
+            tokenId
         );
 
         if (balanceOf[msg.sender] == 0 && attached[msg.sender]) {
@@ -63,7 +64,7 @@ abstract contract StakingRewardsV3 is UniswapV3Base {
             );
         }
 
-        emit Withdrawn(msg.sender, _tokenId);
+        emit Withdrawn(msg.sender, tokenId);
     }
 
     function getReward(uint256 _tokenId)
@@ -239,6 +240,7 @@ abstract contract StakingRewardsV3 is UniswapV3Base {
     }
 
     function updateRewardFor(uint256 _tokenId) external {
+        require(deposits[_tokenId].liquidity > 0, "liquidity is 0");
         _updateReward(_tokenId);
     }
 }
