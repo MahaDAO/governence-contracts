@@ -6,10 +6,10 @@ import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {IRegistry} from "../../interfaces/IRegistry.sol";
 
 import {NFTPositionInfo} from "../../utils/NFTPositionInfo.sol";
 import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
-import {IRegistry} from "../../interfaces/IRegistry.sol";
 import {IGauge} from "../../interfaces/IGauge.sol";
 import {INFTStaker} from "../../interfaces/INFTStaker.sol";
 
@@ -25,8 +25,8 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
     }
 
     /* ========== STATE VARIABLES ========== */
-    IERC20 public rewardsToken;
-    IRegistry public immutable override registry;
+    IRegistry public override registry;
+    IERC20 public immutable rewardsToken;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
     uint256 public rewardsDuration = 7 days;
@@ -76,14 +76,13 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
         address token0,
         address token1,
         uint24 fee,
-        address _registry,
+        address _rewardsToken,
         INonfungiblePositionManager _nonfungiblePositionManager
     ) {
-        registry = IRegistry(_registry);
         nonfungiblePositionManager = _nonfungiblePositionManager;
 
         factory = IUniswapV3Factory(nonfungiblePositionManager.factory());
-        rewardsToken = IERC20(IRegistry(_registry).maha());
+        rewardsToken = IERC20(_rewardsToken);
 
         address _pool = factory.getPool(token0, token1, fee);
         require(_pool != address(0), "pool doesn't exist");
@@ -138,31 +137,6 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
     function getRewardForDuration() external view returns (uint256) {
         return rewardRate.mul(rewardsDuration);
     }
-
-    // function _checkInRange(uint256 _tokenId) internal returns (uint256) {
-    //     (
-    //         ,
-    //         int24 _tickLower,
-    //         int24 _tickUpper,
-    //         uint128 _liquidity
-    //     ) = NFTPositionInfo.getPositionInfo(
-    //             factory,
-    //             nonfungiblePositionManager,
-    //             _tokenId
-    //         );
-
-    //     if (_liquidity == deposits[_tokenId].liquidity) return 0;
-
-    //     address _who = deposits[_tokenId].owner;
-    //     uint128 _derivedLiquidity = derivedLiquidity(_liquidity, _who);
-
-    //     _totalSupply = _totalSupply.add(_derivedLiquidity).sub(
-    //         deposits[_tokenId].derivedLiquidity
-    //     );
-
-    //     deposits[_tokenId].liquidity = _liquidity;
-    //     deposits[_tokenId].derivedLiquidity = _derivedLiquidity;
-    // }
 
     /**
      * @dev Private function to add a token to this extension's ownership-tracking data structures.
