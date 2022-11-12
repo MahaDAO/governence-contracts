@@ -91,7 +91,7 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
 
     /* ========== VIEWS ========== */
 
-    function left(address token) external view override returns (uint256) {
+    function left(address) external view override returns (uint256) {
         if (block.timestamp >= periodFinish) return 0;
         uint256 _remaining = periodFinish - block.timestamp;
         return _remaining * rewardRate;
