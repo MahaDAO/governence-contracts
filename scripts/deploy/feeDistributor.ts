@@ -5,7 +5,7 @@ import { deployOrLoadAndVerify, getOutputAddress } from "../utils";
 async function main() {
   console.log(`Deploying migrator to ${network.name}`);
 
-  const tokenSymbol = "SCLP";
+  const tokenSymbol = "MAHA";
 
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);

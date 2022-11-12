@@ -89,11 +89,6 @@
     "verified": true,
     "address": "0xb180B2e4821e99a69d19f0845D2cc572eA412481"
   },
-  "MultiFeeDistributor": {
-    "abi": "MultiFeeDistributor",
-    "verified": true,
-    "address": "0xc1f0CEf73A3137D52E4d082023018A1d479d7848"
-  },
   "ARTHWETH-UniV3Gauge": {
     "abi": "BaseGaugeV2UniV3",
     "verified": true,
@@ -119,19 +114,9 @@
     "verified": true,
     "address": "0x9A7E7b4c2abe3255deC67E3BF2e6b24b46223111"
   },
-  "MAHAFeeDistributor": {
-    "abi": "FeeDistributor",
-    "verified": true,
-    "address": "0x00b1d6c3838aEe6bDf508B2d23178Abdb23863d3"
-  },
   "UniswapNFTManager": {
     "abi": "IUniswapNFTManager",
     "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
-  },
-  "SCLPFeeDistributor": {
-    "abi": "FeeDistributor",
-    "verified": true,
-    "address": "0xf58ab48D0B8b92376e0FF7C40edeAf965bC2f1D6"
   },
   "MAHATimelockController": {
     "abi": "MAHATimelockController",
@@ -157,5 +142,30 @@
     "abi": "IERC20",
     "verified": true,
     "address": "0xbcceb5b710e3eb07d1ac6a079e87d799be30a71f"
+  },
+  "SCLPPendingFeeDistributor": {
+    "abi": "PendingFeeDistributor",
+    "verified": true,
+    "address": "0xc06CE49b9Ccf6c5917c63279E0C82499E4501f73"
+  },
+  "SCLPFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": true,
+    "address": "0xCF61094829e68C4539E0378D31197204dA53b5E0"
+  },
+  "MultiFeeDistributor": {
+    "abi": "MultiFeeDistributor",
+    "verified": true,
+    "address": "0x88860D30716202c9257720BD0c65563657c9Bb79"
+  },
+  "MAHAPendingFeeDistributor": {
+    "abi": "PendingFeeDistributor",
+    "verified": true,
+    "address": "0x33d9f817AF2C507E20c8039a6786d1a1E5524fCF"
+  },
+  "MAHAFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": true,
+    "address": "0x587717B60bA3F383C097089D9414576a5a63D7e0"
   }
 }
