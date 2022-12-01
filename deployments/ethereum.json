@@ -167,5 +167,10 @@
     "abi": "FeeDistributor",
     "verified": true,
     "address": "0x587717B60bA3F383C097089D9414576a5a63D7e0"
+  },
+  "MAHAReferralV1": {
+    "abi": "MAHAReferralV1",
+    "verified": true,
+    "address": "0xa6eFbc041398b96cDA7f4B5b5FB9FD44d65574CC"
   }
 }

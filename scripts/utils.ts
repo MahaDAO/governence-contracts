@@ -12,6 +12,7 @@ export default async function verifyContract(
 ) {
   try {
     // await wait(20 * 1000); // wait for 20s
+    if (network.name === "hardhat") return;
 
     await hre.run("verify:verify", {
       address,
@@ -31,6 +32,7 @@ export const saveABI = (
   address: string,
   verified: boolean
 ) => {
+  if (network.name === "hardhat") return;
   const filename = `./deployments/${network.name}.json`;
 
   let outputFile: any = {};
@@ -105,7 +107,7 @@ export const deployOrLoadAndVerify = async (
   const instance = await deployOrLoad(key, contractName, args);
 
   const outputFile = getOutput();
-  if (!outputFile[key].verified) {
+  if (outputFile[key] && !outputFile[key].verified) {
     await wait(delay);
     await verifyContract(hre, instance.address, args);
     await saveABI(key, contractName, instance.address, true);
