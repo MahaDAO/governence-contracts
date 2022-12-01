@@ -7,8 +7,8 @@ import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.s
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {Operator} from "../utils/Epoch.sol";
 
+import {Operator} from "../utils/Operator.sol";
 import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 import {INFTLocker} from "../interfaces/INFTLocker.sol";
 

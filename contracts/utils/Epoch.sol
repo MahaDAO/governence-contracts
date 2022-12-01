@@ -3,10 +3,10 @@ pragma solidity ^0.8.0;
 
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import {Operator} from "./Operator.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IEpoch} from "../interfaces/IEpoch.sol";
 
-contract Epoch is IEpoch, Operator {
+contract Epoch is IEpoch, Ownable {
     using SafeMath for uint256;
 
     uint256 private period;
@@ -90,7 +90,7 @@ contract Epoch is IEpoch, Operator {
 
     /* ========== GOVERNANCE ========== */
 
-    function setPeriod(uint256 _period) external onlyOperator {
+    function setPeriod(uint256 _period) external onlyOwner {
         period = _period;
     }
 }
