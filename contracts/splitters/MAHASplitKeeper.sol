@@ -16,6 +16,8 @@ interface ICommunityFund {
 /**
  * This is a keeper contract that splits the maha from the ecosystem fund into the various treasuries on a
  * monthly basis via a keeper.
+ *
+ * Currently deployed at: https://etherscan.io/address/0x5f7a88d09491b89f0e9a02e3cce3309ef1502ab8
  */
 contract MAHASplitKeeper is Epoch, FeesSplitter, KeeperCompatibleInterface {
     IERC20 public maha;
