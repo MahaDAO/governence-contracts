@@ -124,5 +124,10 @@
     "abi": "MultiFeeDistributor",
     "verified": true,
     "address": "0x63D1D323ED665C04B7E43E27927D450377B0ba59"
+  },
+  "MAHAReferralV1": {
+    "abi": "MAHAReferralV1",
+    "verified": true,
+    "address": "0x3a254F5F772Ac1a9aa8A233aE55e877468fEe75e"
   }
 }

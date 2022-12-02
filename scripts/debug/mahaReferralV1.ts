@@ -24,7 +24,7 @@ async function main() {
     [
       locker, // INFTLocker _locker,
       maha.address, // IERC20 _maha,
-      86400 * 30, // uint256 _minLockDuration
+      86400 * 7 * 51, // uint256 _minLockDuration
     ]
   );
 

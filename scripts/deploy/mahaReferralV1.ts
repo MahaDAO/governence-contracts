@@ -7,10 +7,10 @@ async function main() {
   console.log(`Deployer address is ${deployer.address}`);
 
   // Get all the deployed smart contracts.
-  const locker = await getOutputAddress("MAHAXLocker", "ethereum");
+  const locker = await getOutputAddress("MAHAXLocker");
   const maha = await ethers.getContractAt(
     "IERC20",
-    await getOutputAddress("MAHA", "ethereum")
+    await getOutputAddress("MAHA")
   );
 
   const referral = await deployOrLoadAndVerify(
@@ -19,7 +19,7 @@ async function main() {
     [
       locker, // INFTLocker _locker,
       maha.address, // IERC20 _maha,
-      86400 * 30, // uint256 _minLockDuration
+      86400 * 7 * 51, // uint256 _minLockDuration
     ]
   );
 
@@ -33,14 +33,14 @@ async function main() {
   //   .connect(deployer)
   //   .transfer(referral.address, "100000000000000000000");
 
-  await maha.approve(referral.address, "10000000000000000000000");
+  // await maha.approve(referral.address, "10000000000000000000000");
 
-  await referral.createLockWithReferral(
-    "100000000000000000000", // uint256 _value,
-    86400 * 365 * 4, // uint256 _lockDuration,
-    true, // bool _stakeNFT,
-    "0xeccE08c2636820a81FC0c805dBDC7D846636bbc4" // address referral
-  );
+  // await referral.createLockWithReferral(
+  //   "100000000000000000000", // uint256 _value,
+  //   86400 * 365 * 4, // uint256 _lockDuration,
+  //   true, // bool _stakeNFT,
+  //   "0xeccE08c2636820a81FC0c805dBDC7D846636bbc4" // address referral
+  // );
   console.log(referral.address);
 }
 
