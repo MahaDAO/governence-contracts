@@ -69,16 +69,6 @@
     "verified": true,
     "address": "0x031a1d307C91fbDE01005Ec2Ebc5Fcb03b6f80aB"
   },
-  "ARTHMAHA-UniV3Gauge": {
-    "abi": "BaseGaugeV2UniV3",
-    "verified": true,
-    "address": "0x48165A4b84e00347C4f9a13b6D0aD8f7aE290bB8"
-  },
-  "ARTHMAHA-UniV3Bribe": {
-    "abi": "BaseV2Bribes",
-    "verified": false,
-    "address": "0x122acA85D59c34EFFc1171E645Be80C238AA4c24"
-  },
   "ARTHMAHA-UniV3-Pool": {
     "abi": "IUniswapV3Pool",
     "verified": true,
@@ -88,21 +78,6 @@
     "abi": "LockMigrator",
     "verified": true,
     "address": "0xb180B2e4821e99a69d19f0845D2cc572eA412481"
-  },
-  "ARTHWETH-UniV3Gauge": {
-    "abi": "BaseGaugeV2UniV3",
-    "verified": true,
-    "address": "0xf64AD0bbEa29D54159264d8a077BF0590bA05564"
-  },
-  "ARTHWETH-UniV3Bribe": {
-    "abi": "BaseV2Bribes",
-    "verified": true,
-    "address": "0xCe017c8e3807678AdfDA61613be6114afE95590f"
-  },
-  "ARTHWETH-UniV3-Pool": {
-    "abi": "IUniswapV3Pool",
-    "verified": true,
-    "address": "0xfD6c2A0674796D0452534846f4c90923352C716b"
   },
   "MAHAXGovernor": {
     "abi": "MAHAXGovernor",
@@ -133,16 +108,6 @@
     "verified": true,
     "address": "0x945734282D9BA113ACb6cDBb06fdCe265F2600d6"
   },
-  "ARTH3pool-LpBribe": {
-    "abi": "BaseV2Bribes",
-    "verified": true,
-    "address": "0xf27F02006725aE2BE3201c62E74cE992ee9629d7"
-  },
-  "ARTH3pool-Lp": {
-    "abi": "IERC20",
-    "verified": true,
-    "address": "0xbcceb5b710e3eb07d1ac6a079e87d799be30a71f"
-  },
   "SCLPPendingFeeDistributor": {
     "abi": "PendingFeeDistributor",
     "verified": true,
@@ -172,5 +137,40 @@
     "abi": "MAHAReferralV1",
     "verified": true,
     "address": "0x9D2390247921974b1A697a4ebC8CD88aBe93bF0A"
+  },
+  "ARTH3pool-LpBribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0xf27F02006725aE2BE3201c62E74cE992ee9629d7"
+  },
+  "ARTH3pool-Lp": {
+    "abi": "IERC20",
+    "verified": true,
+    "address": "0xbcceb5b710e3eb07d1ac6a079e87d799be30a71f"
+  },
+  "ARTHWETH-UniV3Gauge": {
+    "abi": "BaseGaugeV3UniV3",
+    "verified": true,
+    "address": "0xe7a477308FCC7fbc0529ABC38239dC42e953bBda"
+  },
+  "ARTHWETH-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0xCe017c8e3807678AdfDA61613be6114afE95590f"
+  },
+  "ARTHMAHA-UniV3Gauge": {
+    "abi": "BaseGaugeV3UniV3",
+    "verified": true,
+    "address": "0x0810001b0101b566C1497E60E7ec3Ca1DB462b84"
+  },
+  "ARTHMAHA-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x122acA85D59c34EFFc1171E645Be80C238AA4c24"
+  },
+  "ARTHMAHA-UniV3Gauge-old": {
+    "abi": "BaseGaugeV2UniV3",
+    "verified": true,
+    "address": "0x48165A4b84e00347C4f9a13b6D0aD8f7aE290bB8"
   }
 }
