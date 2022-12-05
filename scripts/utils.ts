@@ -64,7 +64,10 @@ export const getOutput = (_network?: string) => {
 };
 
 export const getOutputAddress = (key: string, _network?: string) => {
-  const outputFile = getOutput(_network);
+  const __network =
+    _network || process.env.FORK ? process.env.FORK : network.name;
+
+  const outputFile = getOutput(__network);
   if (!outputFile[key]) return;
   return outputFile[key].address;
 };

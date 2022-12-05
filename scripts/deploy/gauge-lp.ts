@@ -16,6 +16,7 @@ async function main() {
   //   "BaseV2Voter",
   //   await getOutputAddress("GaugeVoter")
   // );
+
   const registry = await ethers.getContractAt(
     "Registry",
     await getOutputAddress("Registry")
@@ -35,20 +36,6 @@ async function main() {
 
   console.log("gaugeContractInstance", gaugeInstance.address);
   console.log("bribesInstance", bribesInstance.address);
-
-  // !(await voter.whitelist(gaugeInstance.address)) &&
-  //   (await (async () => {
-  //     const tx = await voter.toggleWhitelist(gaugeInstance.address);
-  //     console.log("tx gauge whitelist", tx.hash);
-  //     await tx.wait();
-  //   })());
-
-  // !(await voter.whitelist(await gaugeInstance.pool())) &&
-  //   (await (async () => {
-  //     const tx = await voter.toggleWhitelist(await gaugeInstance.pool());
-  //     console.log("tx pool whitelist", tx.hash);
-  //     await tx.wait();
-  //   })());
 }
 
 main().catch((error) => {

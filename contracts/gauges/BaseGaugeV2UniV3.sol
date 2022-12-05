@@ -131,7 +131,7 @@ contract BaseGaugeV2UniV3 is
         address,
         address from,
         uint256 tokenId,
-        bytes calldata data
+        bytes calldata
     ) external override returns (bytes4) {
         require(!inEmergency, "in emergency mode");
         require(

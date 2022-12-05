@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -11,7 +12,7 @@ import {IRegistry} from "../../interfaces/IRegistry.sol";
 import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
 import {IGauge} from "../../interfaces/IGauge.sol";
 
-abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
+abstract contract UniswapV3Base is Initializable, ReentrancyGuard, IGauge {
     using SafeMath for uint256;
     using SafeMath for uint128;
 
@@ -24,7 +25,7 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
 
     /* ========== STATE VARIABLES ========== */
     IRegistry public override registry;
-    IERC20 public immutable rewardsToken;
+    IERC20 public rewardsToken;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
     uint256 public rewardsDuration = 7 days;
@@ -48,7 +49,7 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
     INonfungiblePositionManager public nonfungiblePositionManager;
 
     /// @dev the pool for which we are staking the rewards
-    IUniswapV3Pool public immutable pool;
+    IUniswapV3Pool public pool;
 
     /// @dev the number of NFTs staked by the given user.
     mapping(address => uint256) public balanceOf;
@@ -70,15 +71,19 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(
+    function initialize(
+        address _registry,
         address token0,
         address token1,
         uint24 fee,
         address _rewardsToken,
-        INonfungiblePositionManager _nonfungiblePositionManager
-    ) {
-        nonfungiblePositionManager = _nonfungiblePositionManager;
+        address _nonfungiblePositionManager
+    ) public initializer {
+        nonfungiblePositionManager = INonfungiblePositionManager(
+            _nonfungiblePositionManager
+        );
 
+        registry = IRegistry(_registry);
         factory = IUniswapV3Factory(nonfungiblePositionManager.factory());
         rewardsToken = IERC20(_rewardsToken);
 
