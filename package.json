@@ -1,7 +1,7 @@
 {
-  "name": "governance-contracts",
+  "name": "@mahadao/governance",
   "version": "2.0.1",
-  "description": "MahaDAO Governance Contracts ============================",
+  "description": "Contracts for the MahaDAO governance. This includes voting, staking, gauges and pool incentives.",
   "main": "index.js",
   "directories": {
     "test": "tests"
