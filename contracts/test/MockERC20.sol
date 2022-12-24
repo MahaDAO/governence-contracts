@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20, ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 
-contract MockERC20 is ERC20 {
+contract MockERC20 is ERC20Permit {
     uint8 private _decimals;
 
     // solhint-disable-next-line
@@ -12,7 +12,7 @@ contract MockERC20 is ERC20 {
         string memory name,
         string memory symbol,
         uint8 decimal
-    ) ERC20(name, symbol) {
+    ) ERC20Permit(name) ERC20(name, symbol) {
         _decimals = decimal;
         _mint(msg.sender, (1000000) * (10**decimal));
     }

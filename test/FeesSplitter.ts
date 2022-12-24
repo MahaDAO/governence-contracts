@@ -10,8 +10,8 @@ describe("FeesSplitter", async () => {
   let deployer: SignerWithAddress;
 
   const accounts = [
-    "0xFF3731BD6F44E49831eaCc30388506e6bcE4F49e",
-    "0xeccE08c2636820a81FC0c805dBDC7D846636bbc4",
+    "0x6357EDbfE5aDA570005ceB8FAd3139eF5A8863CC",
+    "0x5C677239f33B6761B1C24259a6ffDB36574d4496",
   ];
 
   const ghost = "0xd9333E02a4d85611D0F0498b858b2Ae3c29dE6Fb";
@@ -55,16 +55,22 @@ describe("FeesSplitter", async () => {
     expect(await erc20.balanceOf(accounts[1])).eq(e18.mul(20));
   });
 
-  it.skip("split eth properly", async function () {
+  it("split eth properly", async function () {
     // send 1 eth
-    await erc20.transfer(split.address, e18.mul(100));
-    expect(await erc20.balanceOf(split.address)).eq(e18.mul(100));
+    await deployer.sendTransaction({
+      to: split.address,
+      value: e18.mul(10),
+    });
+
+    expect(await ethers.provider.getBalance(split.address)).eq(e18.mul(10));
+
     // execute the split
-    // await split.distributeETH();
+    await split.distributeETH();
+
     // check balances
-    expect(await erc20.balanceOf(split.address)).eq(0);
-    expect(await erc20.balanceOf(accounts[0])).eq(e18.mul(80));
-    expect(await erc20.balanceOf(accounts[1])).eq(e18.mul(20));
+    expect(await ethers.provider.getBalance(split.address)).eq(0);
+    expect(await ethers.provider.getBalance(accounts[0])).eq(e18.mul(8));
+    expect(await ethers.provider.getBalance(accounts[1])).eq(e18.mul(2));
   });
 
   describe("on new split addresses and amounts", async () => {

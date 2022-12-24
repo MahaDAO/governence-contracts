@@ -8,6 +8,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract FeesSplitter is Ownable {
     using SafeERC20 for IERC20;
 
+    event ETHReceived(address from, uint256 amount);
+
     uint256 public constant PERCENTAGE_SCALE = 1e6;
     address[] public accounts;
     uint32[] public percentAllocations;
@@ -19,15 +21,11 @@ contract FeesSplitter is Ownable {
         checkPercentages(_percentAllocations);
     }
 
-    fallback() external {
-        distributeETH();
+    receive() external payable virtual {
+        emit ETHReceived(_msgSender(), msg.value);
     }
 
-    receive() external payable {
-        distributeETH();
-    }
-
-    function distributeETH() public payable {
+    function distributeETH() public {
         uint256 amountToSplit = address(this).balance;
 
         // distribute remaining balance
@@ -41,7 +39,8 @@ contract FeesSplitter is Ownable {
                 percentAllocations[i]
             );
 
-            payable(accounts[i]).transfer(amt);
+            (bool success, ) = accounts[i].call{value: amt}("");
+            require(success, "unable to send eth, recipient may have reverted");
         }
     }
 
