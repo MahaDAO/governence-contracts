@@ -172,5 +172,10 @@
     "abi": "BaseGaugeV2UniV3",
     "verified": true,
     "address": "0x48165A4b84e00347C4f9a13b6D0aD8f7aE290bB8"
+  },
+  "FeesSplitter": {
+    "abi": "FeesSplitter",
+    "verified": true,
+    "address": "0x9032F1Bd0cc645Fde1b41941990dA85f265A7623"
   }
 }
