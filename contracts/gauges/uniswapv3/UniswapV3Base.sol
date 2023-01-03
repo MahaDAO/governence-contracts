@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {VersionedInitializable} from "../../proxy/VersionedInitializable.sol";
 import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -12,7 +12,11 @@ import {IRegistry} from "../../interfaces/IRegistry.sol";
 import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
 import {IGauge} from "../../interfaces/IGauge.sol";
 
-abstract contract UniswapV3Base is Initializable, ReentrancyGuard, IGauge {
+abstract contract UniswapV3Base is
+    VersionedInitializable,
+    ReentrancyGuard,
+    IGauge
+{
     using SafeMath for uint256;
     using SafeMath for uint128;
 
@@ -69,6 +73,8 @@ abstract contract UniswapV3Base is Initializable, ReentrancyGuard, IGauge {
     /// @dev is the user attached to this gauge
     mapping(address => bool) public attached;
 
+    address public treasury;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -77,7 +83,8 @@ abstract contract UniswapV3Base is Initializable, ReentrancyGuard, IGauge {
         address token1,
         uint24 fee,
         address _rewardsToken,
-        address _nonfungiblePositionManager
+        address _nonfungiblePositionManager,
+        address _treasury
     ) public initializer {
         nonfungiblePositionManager = INonfungiblePositionManager(
             _nonfungiblePositionManager
@@ -90,6 +97,10 @@ abstract contract UniswapV3Base is Initializable, ReentrancyGuard, IGauge {
         address _pool = factory.getPool(token0, token1, fee);
         require(_pool != address(0), "pool doesn't exist");
         pool = IUniswapV3Pool(_pool);
+
+        rewardsDuration = 7 days;
+        maxBoostRequirement = 5000e18;
+        treasury = _treasury;
     }
 
     /* ========== VIEWS ========== */

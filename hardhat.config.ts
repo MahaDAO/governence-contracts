@@ -63,7 +63,6 @@ const config: HardhatUserConfig & any = {
     hardhat: {
       forking: {
         url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-        blockNumber: 16135778,
       },
     },
     dev: {
@@ -105,7 +104,7 @@ const config: HardhatUserConfig & any = {
   },
   abiExporter: {
     path: "./output/abis/",
-    runOnCompile: true,
+    runOnCompile: false,
     clear: true,
     flat: true,
     spacing: 2,
