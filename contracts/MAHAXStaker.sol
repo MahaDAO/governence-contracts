@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 import {Checkpoints} from "@openzeppelin/contracts/utils/Checkpoints.sol";
@@ -27,7 +27,12 @@ import {IRegistry, INFTStaker} from "./interfaces/INFTStaker.sol";
  *
  * @author Steven Enamakel <enamakel@mahadao.com>
  */
-contract MAHAXStaker is ReentrancyGuard, AccessControl, EIP712, INFTStaker {
+contract MAHAXStaker is
+    ReentrancyGuard,
+    AccessControlEnumerable,
+    EIP712,
+    INFTStaker
+{
     using Checkpoints for Checkpoints.History;
     using Counters for Counters.Counter;
 

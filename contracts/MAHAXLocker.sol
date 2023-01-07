@@ -5,7 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {ERC2981, IERC165} from "@openzeppelin/contracts/token/common/ERC2981.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 import {ITokenURIGenerator} from "./interfaces/ITokenURIGenerator.sol";
@@ -35,7 +35,12 @@ import {INFTStaker} from "./interfaces/INFTStaker.sol";
   # maxtime (4 years?)
 */
 
-contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
+contract MAHAXLocker is
+    ReentrancyGuard,
+    INFTLocker,
+    AccessControlEnumerable,
+    ERC2981
+{
     IRegistry public override registry;
 
     uint256 internal constant WEEK = 1 weeks;
@@ -61,7 +66,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
 
     string public constant name = "Locked MAHA NFT";
     string public constant symbol = "MAHAX";
-    string public constant version = "1.0.0";
+    string public constant version = "2.0.0";
     uint8 public constant decimals = 18;
     uint256 public minLockAmount = 99 * 1e18;
 
@@ -122,7 +127,7 @@ contract MAHAXLocker is ReentrancyGuard, INFTLocker, AccessControl, ERC2981 {
     function supportsInterface(bytes4 _interfaceID)
         public
         view
-        override(ERC2981, IERC165, AccessControl)
+        override(ERC2981, IERC165, AccessControlEnumerable)
         returns (bool)
     {
         return
