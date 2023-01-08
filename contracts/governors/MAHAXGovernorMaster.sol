@@ -8,10 +8,11 @@ import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {TimelockController, GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import {GovernorVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import {GovernorPreventLateQuorum} from "@openzeppelin/contracts/governance/extensions/GovernorPreventLateQuorum.sol";
-import {IRegistry} from "./interfaces/IRegistry.sol";
+import {IRegistry} from "../interfaces/IRegistry.sol";
 
 /// @custom:security-contact security@mahadao.com
-contract MAHAXGovernor is
+// The Governor master is used to make serious changes to the governance
+contract MAHAXGovernorMaster is
     Governor,
     GovernorSettings,
     GovernorPreventLateQuorum,
@@ -32,7 +33,7 @@ contract MAHAXGovernor is
         uint256 initialProposalThreshold,
         uint256 initialQuorum
     )
-        Governor("MAHAXGovernor")
+        Governor("MAHAXGovernorMaster")
         GovernorSettings(
             initialVotingDelay,
             initialVotingPeriod,

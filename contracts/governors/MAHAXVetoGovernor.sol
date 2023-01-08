@@ -5,7 +5,7 @@ import {IGovernor, Governor} from "@openzeppelin/contracts/governance/Governor.s
 import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
-import {IRegistry} from "./interfaces/IRegistry.sol";
+import {IRegistry} from "../interfaces/IRegistry.sol";
 
 /// @custom:security-contact security@mahadao.com
 contract MAHAXVetoGovernor is
