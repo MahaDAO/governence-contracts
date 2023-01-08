@@ -74,16 +74,6 @@
     "verified": true,
     "address": "0xb180B2e4821e99a69d19f0845D2cc572eA412481"
   },
-  "MAHAXGovernor": {
-    "abi": "MAHAXGovernor",
-    "verified": true,
-    "address": "0x0fBd92eA11e23D959E1489A9Abb84ae2E4778D31"
-  },
-  "MAHAXVetoGovernor": {
-    "abi": "MAHAXVetoGovernor",
-    "verified": true,
-    "address": "0x9A7E7b4c2abe3255deC67E3BF2e6b24b46223111"
-  },
   "UniswapNFTManager": {
     "abi": "IUniswapNFTManager",
     "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
@@ -92,11 +82,6 @@
     "abi": "StakingRewardsKeeper",
     "verified": true,
     "address": "0x469122E0aB2D8a6FE9f28AeCad9C4f1a6821C5E0"
-  },
-  "ARTH3pool-LpGauge": {
-    "abi": "BaseGaugeV2",
-    "verified": true,
-    "address": "0x945734282D9BA113ACb6cDBb06fdCe265F2600d6"
   },
   "SCLPPendingFeeDistributor": {
     "abi": "PendingFeeDistributor",
@@ -128,41 +113,6 @@
     "verified": true,
     "address": "0x9D2390247921974b1A697a4ebC8CD88aBe93bF0A"
   },
-  "ARTH3pool-LpBribe": {
-    "abi": "BaseV2Bribes",
-    "verified": true,
-    "address": "0xf27F02006725aE2BE3201c62E74cE992ee9629d7"
-  },
-  "ARTH3pool-Lp": {
-    "abi": "IERC20",
-    "verified": true,
-    "address": "0xbcceb5b710e3eb07d1ac6a079e87d799be30a71f"
-  },
-  "ARTHWETH-UniV3Gauge": {
-    "abi": "BaseGaugeV3UniV3",
-    "verified": true,
-    "address": "0xe7a477308FCC7fbc0529ABC38239dC42e953bBda"
-  },
-  "ARTHWETH-UniV3Bribe": {
-    "abi": "BaseV2Bribes",
-    "verified": true,
-    "address": "0xCe017c8e3807678AdfDA61613be6114afE95590f"
-  },
-  "ARTHMAHA-UniV3Gauge": {
-    "abi": "BaseGaugeV3UniV3",
-    "verified": true,
-    "address": "0x0810001b0101b566C1497E60E7ec3Ca1DB462b84"
-  },
-  "ARTHMAHA-UniV3Bribe": {
-    "abi": "BaseV2Bribes",
-    "verified": true,
-    "address": "0x122acA85D59c34EFFc1171E645Be80C238AA4c24"
-  },
-  "ARTHMAHA-UniV3Gauge-old": {
-    "abi": "BaseGaugeV2UniV3",
-    "verified": true,
-    "address": "0x48165A4b84e00347C4f9a13b6D0aD8f7aE290bB8"
-  },
   "FeesSplitter": {
     "abi": "FeesSplitter",
     "verified": true,
@@ -178,9 +128,24 @@
     "verified": true,
     "address": "0xB45021F5313B93927699aAe6CBe989bccf6B5900"
   },
+  "MAHAXGovernor": {
+    "abi": "MAHAXGovernor",
+    "verified": true,
+    "address": "0x0fBd92eA11e23D959E1489A9Abb84ae2E4778D31"
+  },
+  "MAHAXVetoGovernor": {
+    "abi": "MAHAXVetoGovernor",
+    "verified": true,
+    "address": "0x9A7E7b4c2abe3255deC67E3BF2e6b24b46223111"
+  },
   "MAHAXGovernorMaster": {
     "abi": "MAHAXGovernorMaster",
-    "verified": false,
+    "verified": true,
     "address": "0x90344dD6Dc73A6FDa00A9e8315065662cFf43228"
+  },
+  "GaugeUniswapV3-Impl": {
+    "abi": "GaugeUniswapV3",
+    "verified": false,
+    "address": "0x2B9F4A54333E3A5CBfC6221dE328f377C11372f1"
   }
 }

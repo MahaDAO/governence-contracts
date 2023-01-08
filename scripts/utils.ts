@@ -30,7 +30,7 @@ export const saveABI = (
   key: string,
   abi: string,
   address: string,
-  verified: boolean
+  verified: boolean = true
 ) => {
   if (network.name === "hardhat") return;
   const filename = `./deployments/${network.name}.json`;

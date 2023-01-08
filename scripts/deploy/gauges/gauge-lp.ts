@@ -1,5 +1,5 @@
 import { ethers, network } from "hardhat";
-import { deployOrLoadAndVerify, getOutputAddress } from "../utils";
+import { deployOrLoadAndVerify, getOutputAddress } from "../../utils";
 
 async function main() {
   console.log(`Deploying LP gauge to ${network.name}`);
