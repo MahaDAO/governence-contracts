@@ -168,7 +168,7 @@
     "verified": true,
     "address": "0x9032F1Bd0cc645Fde1b41941990dA85f265A7623"
   },
-  "MAHATimelockController-12d": {
+  "MAHATimelockController-14d": {
     "abi": "MAHATimelockController",
     "verified": true,
     "address": "0x43c958AFFe41D44F0a02aE177b591E93c86AdbEa"
@@ -177,5 +177,10 @@
     "abi": "MAHATimelockController",
     "verified": true,
     "address": "0xB45021F5313B93927699aAe6CBe989bccf6B5900"
+  },
+  "MAHAXGovernorMaster": {
+    "abi": "MAHAXGovernorMaster",
+    "verified": false,
+    "address": "0x90344dD6Dc73A6FDa00A9e8315065662cFf43228"
   }
 }

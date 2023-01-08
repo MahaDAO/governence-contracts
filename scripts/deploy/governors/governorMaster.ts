@@ -15,7 +15,7 @@ async function main() {
 
   // Get all the deployed smart contracts.
   const registry = await getOutputAddress("Registry");
-  const timelock = await getOutputAddress("TimelockController-14d");
+  const timelock = await getOutputAddress("MAHATimelockController-30d");
 
   await deployOrLoadAndVerify("MAHAXGovernorMaster", "MAHAXGovernorMaster", [
     registry,
