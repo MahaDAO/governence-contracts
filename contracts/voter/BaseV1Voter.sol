@@ -156,7 +156,8 @@ contract BaseV1Voter is ReentrancyGuard, Ownable, IGaugeVoter {
             }
         }
 
-        if (_usedWeight > 0) IOldVotingEscrow(registry.locker()).voting(_tokenId);
+        if (_usedWeight > 0)
+            IOldVotingEscrow(registry.locker()).voting(_tokenId);
         totalWeight += uint256(_totalWeight);
         usedWeights[_tokenId] = uint256(_usedWeight);
     }

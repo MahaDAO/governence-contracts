@@ -13,7 +13,7 @@ import {INFTStaker} from "../../interfaces/INFTStaker.sol";
 
 import {VersionedInitializable} from "../../proxy/VersionedInitializable.sol";
 
-contract BaseGaugeV3UniV3 is VersionedInitializable, UniswapV3Base {
+contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
     using SafeMath for uint256;
     using SafeMath for uint128;
 
@@ -217,6 +217,7 @@ contract BaseGaugeV3UniV3 is VersionedInitializable, UniswapV3Base {
             deposits[_tokenId].derivedLiquidity
         );
 
+        // update old
         deposits[_tokenId].liquidity = _liquidity;
         deposits[_tokenId].derivedLiquidity = _derivedLiquidity;
     }

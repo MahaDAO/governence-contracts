@@ -93,8 +93,8 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
         require(_pool != address(0), "pool doesn't exist");
         pool = IUniswapV3Pool(_pool);
 
-        rewardsDuration = 7 days;
-        maxBoostRequirement = 5000e18;
+        rewardsDuration = 14 days; // 14 day epochs
+        maxBoostRequirement = 5000e18; // 5000 maha for max boost
         treasury = _treasury;
     }
 

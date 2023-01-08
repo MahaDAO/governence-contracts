@@ -5,16 +5,15 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IGovernorTimelock} from "@openzeppelin/contracts/governance/extensions/IGovernorTimelock.sol";
 
-
-import {IRegistry} from "../interfaces/IRegistry.sol";
-import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
-import {INFTLocker} from "../interfaces/INFTLocker.sol";
-import {IBribe} from "../interfaces/IBribe.sol";
-import {IGaugeV2} from "../interfaces/IGaugeV2.sol";
-import {INFTStaker} from "../interfaces/INFTStaker.sol";
+import {IRegistry} from "../../interfaces/IRegistry.sol";
+import {IGaugeVoterV2} from "../../interfaces/IGaugeVoterV2.sol";
+import {INFTLocker} from "../../interfaces/INFTLocker.sol";
+import {IBribe} from "../../interfaces/IBribe.sol";
+import {IGaugeV2} from "../../interfaces/IGaugeV2.sol";
+import {INFTStaker} from "../../interfaces/INFTStaker.sol";
 
 // Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
-contract BaseGaugeV2 is IGaugeV2 {
+contract GaugeLP is IGaugeV2 {
     IRegistry public immutable override registry;
     address public immutable stake; // the LP token that needs to be staked for rewards
 
@@ -328,19 +327,14 @@ contract BaseGaugeV2 is IGaugeV2 {
                 PRECISION) / derivedSupply);
     }
 
-
-    function derivedBalance(address account)
-        public
-        view
-        returns (uint256)
-    {
+    function derivedBalance(address account) public view returns (uint256) {
         uint256 _balance = balanceOf[account];
 
         uint256 _derived = (_balance * 20) / 100;
         uint256 _stake = INFTStaker(registry.staker()).balanceOf(account);
 
-        uint256 _adjusted = ((_balance * _stake * 80) /
-            maxBoostRequirement) / 100;
+        uint256 _adjusted = ((_balance * _stake * 80) / maxBoostRequirement) /
+            100;
 
         // because of this we are able to max out the boost by 5x
         return Math.min(_derived + _adjusted, _balance);
