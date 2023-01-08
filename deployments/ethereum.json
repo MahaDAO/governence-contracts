@@ -44,36 +44,6 @@
     "verified": true,
     "address": "0x0fBd374bfDfA835F8F3601B6C29D15E9E546C517"
   },
-  "GaugeVoter": {
-    "abi": "BaseV2Voter",
-    "verified": true,
-    "address": "0xFbbe448D38231c298E9A2251bc0c567543e2ccA6"
-  },
-  "ARTHUSDC-UniV3Gauge": {
-    "abi": "BaseGaugeV2UniV3",
-    "verified": true,
-    "address": "0x174327F7B7A624a87bd47b5d7e1899e3562646DF"
-  },
-  "ARTHUSDC-UniV3Bribe": {
-    "abi": "BaseV2Bribes",
-    "verified": true,
-    "address": "0xE91aCd2C336AdBD11cD4f06fAb785bbf2c68BD34"
-  },
-  "ARTHUSDC-UniV3-Pool": {
-    "abi": "IUniswapV3Pool",
-    "verified": true,
-    "address": "0x031a1d307C91fbDE01005Ec2Ebc5Fcb03b6f80aB"
-  },
-  "ARTHMAHA-UniV3-Pool": {
-    "abi": "IUniswapV3Pool",
-    "verified": true,
-    "address": "0xC5Ee69662e7EF79e503be9D54C237d5aafaC305d"
-  },
-  "LockMigrator": {
-    "abi": "LockMigrator",
-    "verified": true,
-    "address": "0xb180B2e4821e99a69d19f0845D2cc572eA412481"
-  },
   "UniswapNFTManager": {
     "abi": "IUniswapNFTManager",
     "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
@@ -145,7 +115,22 @@
   },
   "GaugeUniswapV3-Impl": {
     "abi": "GaugeUniswapV3",
-    "verified": false,
+    "verified": true,
     "address": "0x2B9F4A54333E3A5CBfC6221dE328f377C11372f1"
+  },
+  "ARTHMAHA-Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x6C65E99Bb25079b51A4928DC1A196CD067811de4"
+  },
+  "ARTHMAHA-GaugeUniswapV3": {
+    "abi": "GaugeUniswapV3",
+    "verified": true,
+    "address": "0x8aDF73Ae6E54F988920Dd37249461d1472b24682"
+  },
+  "BaseV2Voter": {
+    "abi": "BaseV2Voter",
+    "verified": true,
+    "address": "0x7224c3C6b8c2815Ed12D0436ba3650f3E5476531"
   }
 }

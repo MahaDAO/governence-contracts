@@ -19,7 +19,7 @@ contract EmissionController is IEmissionController, Epoch {
     event RateUpdated(uint256 old, uint256 rate);
 
     constructor(address _registry, uint256 _ratePerEpoch)
-        Epoch(7 days, block.timestamp, 0)
+        Epoch(14 days, block.timestamp, 0)
     {
         registry = IRegistry(_registry);
         ratePerEpoch = _ratePerEpoch;

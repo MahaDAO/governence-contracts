@@ -1,18 +1,13 @@
 import { ethers } from "hardhat";
-import { deployOrLoadAndVerify, getOutputAddress } from "../utils";
+import { saveABI, deployOrLoadAndVerify, getOutputAddress } from "../../utils";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);
 
-  // Get all the deployed smart contracts.
-  // const voter = await ethers.getContractAt(
-  //   "BaseV2Voter",
-  //   await getOutputAddress("GaugeVoter")
-  // );
-
   const registry = await getOutputAddress("Registry");
-  const masterGovernor = await getOutputAddress("MAHAXGovernorMaster");
+  const proxyAdmin = await getOutputAddress("MAHATimelockController-30d");
+  const voterAdmin = "0x6357EDbfE5aDA570005ceB8FAd3139eF5A8863CC"; // await getOutputAddress("MAHATimelockController-14d");
 
   console.log("Deploying BaseV2Voter...");
   const BaseV2Voter = await ethers.getContractFactory("BaseV2Voter");
@@ -26,18 +21,19 @@ async function main() {
   console.log("Deploying proxy...");
   const initDecode = BaseV2Voter.interface.encodeFunctionData("initialize", [
     registry,
-    deployer.address,
-    deployer.address,
+    voterAdmin,
   ]);
 
   const proxy = await deployOrLoadAndVerify(
-    "GaugeVoter",
+    "BaseV2VoterProxy",
     "TransparentUpgradeableProxy",
-    [implementation.address, masterGovernor, initDecode]
+    [implementation.address, proxyAdmin, initDecode]
   );
 
   console.log("implementation", implementation.address);
   console.log("proxy", proxy.address);
+
+  await saveABI("BaseV2Voter", "BaseV2Voter", proxy.address);
 }
 
 main().catch((error) => {

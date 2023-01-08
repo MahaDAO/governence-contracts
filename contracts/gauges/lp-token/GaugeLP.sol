@@ -11,17 +11,18 @@ import {INFTLocker} from "../../interfaces/INFTLocker.sol";
 import {IBribe} from "../../interfaces/IBribe.sol";
 import {IGaugeV2} from "../../interfaces/IGaugeV2.sol";
 import {INFTStaker} from "../../interfaces/INFTStaker.sol";
+import {VersionedInitializable} from "../../proxy/VersionedInitializable.sol";
 
 // Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
-contract GaugeLP is IGaugeV2 {
-    IRegistry public immutable override registry;
-    address public immutable stake; // the LP token that needs to be staked for rewards
+contract GaugeLP is IGaugeV2, VersionedInitializable {
+    IRegistry public override registry;
+    address public stake; // the LP token that needs to be staked for rewards
 
     uint256 public derivedSupply;
     mapping(address => uint256) public derivedBalances;
 
-    uint256 internal constant DURATION = 14 days; // rewards are released over 14 days
-    uint256 internal constant PRECISION = 10**18;
+    uint256 internal DURATION;
+    uint256 internal PRECISION;
 
     mapping(address => bool) public attached;
 
@@ -31,7 +32,7 @@ contract GaugeLP is IGaugeV2 {
     mapping(address => uint256) public lastUpdateTime;
     mapping(address => uint256) public rewardPerTokenStored;
 
-    uint256 public maxBoostRequirement = 5000e18;
+    uint256 public maxBoostRequirement;
 
     mapping(address => mapping(address => uint256)) public lastEarn;
     mapping(address => mapping(address => uint256))
@@ -63,17 +64,27 @@ contract GaugeLP is IGaugeV2 {
     mapping(address => uint256) public rewardPerTokenNumCheckpoints;
 
     // simple re-entrancy check
-    uint256 internal _unlocked = 1;
+    uint256 internal _unlocked = 0;
     modifier lock() {
-        require(_unlocked == 1, "reentrancy");
-        _unlocked = 2;
-        _;
+        require(_unlocked == 0, "reentrancy");
         _unlocked = 1;
+        _;
+        _unlocked = 0;
     }
 
-    constructor(address _stake, address _registry) {
+    function initialize(address _registry, address _stake) public initializer {
         stake = _stake;
         registry = IRegistry(_registry);
+
+        _unlocked = 0;
+        maxBoostRequirement = 5000e18; // 5000 MAHAX for max boost
+
+        DURATION = 14 days; // rewards are released over 14 days
+        PRECISION = 10**18;
+    }
+
+    function getRevision() public pure virtual override returns (uint256) {
+        return 1;
     }
 
     /**
@@ -89,32 +100,23 @@ contract GaugeLP is IGaugeV2 {
         returns (uint256)
     {
         uint256 nCheckpoints = numCheckpoints[account];
-        if (nCheckpoints == 0) {
-            return 0;
-        }
+        if (nCheckpoints == 0) return 0;
 
         // First check most recent balance
-        if (checkpoints[account][nCheckpoints - 1].timestamp <= timestamp) {
+        if (checkpoints[account][nCheckpoints - 1].timestamp <= timestamp)
             return (nCheckpoints - 1);
-        }
 
         // Next check implicit zero balance
-        if (checkpoints[account][0].timestamp > timestamp) {
-            return 0;
-        }
+        if (checkpoints[account][0].timestamp > timestamp) return 0;
 
         uint256 lower = 0;
         uint256 upper = nCheckpoints - 1;
         while (upper > lower) {
             uint256 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
             Checkpoint memory cp = checkpoints[account][center];
-            if (cp.timestamp == timestamp) {
-                return center;
-            } else if (cp.timestamp < timestamp) {
-                lower = center;
-            } else {
-                upper = center - 1;
-            }
+            if (cp.timestamp == timestamp) return center;
+            else if (cp.timestamp < timestamp) lower = center;
+            else upper = center - 1;
         }
         return lower;
     }
@@ -125,32 +127,23 @@ contract GaugeLP is IGaugeV2 {
         returns (uint256)
     {
         uint256 nCheckpoints = supplyNumCheckpoints;
-        if (nCheckpoints == 0) {
-            return 0;
-        }
+        if (nCheckpoints == 0) return 0;
 
         // First check most recent balance
-        if (supplyCheckpoints[nCheckpoints - 1].timestamp <= timestamp) {
+        if (supplyCheckpoints[nCheckpoints - 1].timestamp <= timestamp)
             return (nCheckpoints - 1);
-        }
 
         // Next check implicit zero balance
-        if (supplyCheckpoints[0].timestamp > timestamp) {
-            return 0;
-        }
+        if (supplyCheckpoints[0].timestamp > timestamp) return 0;
 
         uint256 lower = 0;
         uint256 upper = nCheckpoints - 1;
         while (upper > lower) {
             uint256 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
             SupplyCheckpoint memory cp = supplyCheckpoints[center];
-            if (cp.timestamp == timestamp) {
-                return center;
-            } else if (cp.timestamp < timestamp) {
-                lower = center;
-            } else {
-                upper = center - 1;
-            }
+            if (cp.timestamp == timestamp) return center;
+            else if (cp.timestamp < timestamp) lower = center;
+            else upper = center - 1;
         }
         return lower;
     }
@@ -161,9 +154,7 @@ contract GaugeLP is IGaugeV2 {
         returns (uint256, uint256)
     {
         uint256 nCheckpoints = rewardPerTokenNumCheckpoints[token];
-        if (nCheckpoints == 0) {
-            return (0, 0);
-        }
+        if (nCheckpoints == 0) return (0, 0);
 
         // First check most recent balance
         if (
@@ -178,9 +169,8 @@ contract GaugeLP is IGaugeV2 {
         }
 
         // Next check implicit zero balance
-        if (rewardPerTokenCheckpoints[token][0].timestamp > timestamp) {
+        if (rewardPerTokenCheckpoints[token][0].timestamp > timestamp)
             return (0, 0);
-        }
 
         uint256 lower = 0;
         uint256 upper = nCheckpoints - 1;
