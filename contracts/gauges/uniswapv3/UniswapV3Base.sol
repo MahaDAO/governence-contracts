@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {VersionedInitializable} from "../../proxy/VersionedInitializable.sol";
 import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -12,11 +11,7 @@ import {IRegistry} from "../../interfaces/IRegistry.sol";
 import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
 import {IGauge} from "../../interfaces/IGauge.sol";
 
-abstract contract UniswapV3Base is
-    VersionedInitializable,
-    ReentrancyGuard,
-    IGauge
-{
+abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
     using SafeMath for uint256;
     using SafeMath for uint128;
 
@@ -77,7 +72,7 @@ abstract contract UniswapV3Base is
 
     /* ========== CONSTRUCTOR ========== */
 
-    function initialize(
+    function _initialize(
         address _registry,
         address token0,
         address token1,
@@ -85,7 +80,7 @@ abstract contract UniswapV3Base is
         address _rewardsToken,
         address _nonfungiblePositionManager,
         address _treasury
-    ) public initializer {
+    ) internal {
         nonfungiblePositionManager = INonfungiblePositionManager(
             _nonfungiblePositionManager
         );

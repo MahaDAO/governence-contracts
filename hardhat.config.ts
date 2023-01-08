@@ -64,6 +64,12 @@ const config: HardhatUserConfig & any = {
       forking: {
         url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
       },
+      accounts: [
+        {
+          balance: "100000000000000000000",
+          privateKey: process.env.PRIVATE_KEY,
+        },
+      ],
     },
     dev: {
       url: `http://127.0.0.1:8545/`,

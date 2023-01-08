@@ -11,9 +11,31 @@ import {IGauge} from "../../interfaces/IGauge.sol";
 import {UniswapV3Base} from "./UniswapV3Base.sol";
 import {INFTStaker} from "../../interfaces/INFTStaker.sol";
 
-contract BaseGaugeV3UniV3 is UniswapV3Base {
+import {VersionedInitializable} from "../../proxy/VersionedInitializable.sol";
+
+contract BaseGaugeV3UniV3 is VersionedInitializable, UniswapV3Base {
     using SafeMath for uint256;
     using SafeMath for uint128;
+
+    function initialize(
+        address _registry,
+        address _token0,
+        address _token1,
+        uint24 _fee,
+        address _rewardsToken,
+        address _nonfungiblePositionManager,
+        address _treasury
+    ) public initializer {
+        super._initialize(
+            _registry,
+            _token0,
+            _token1,
+            _fee,
+            _rewardsToken,
+            _nonfungiblePositionManager,
+            _treasury
+        );
+    }
 
     function derivedLiquidity(uint128 _liquidity, address account)
         public
