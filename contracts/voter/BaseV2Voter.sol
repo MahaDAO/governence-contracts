@@ -16,19 +16,22 @@ import {IGaugeVoterV2} from "../interfaces/IGaugeVoterV2.sol";
 import {IRegistry} from "../interfaces/IRegistry.sol";
 import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
 import {INFTStaker} from "../interfaces/INFTStaker.sol";
+import {VersionedInitializable} from "../proxy/VersionedInitializable.sol";
 
 /**
  * This contract is an extension of the BaseV1Voter that was originally written by Andre.
  * This contract allows delegation and captures voting power of a user overtime. This contract
  * is also compatible with openzepplin's Governor contract.
  */
-contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
-    IRegistry public immutable override registry;
-
-    uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
-
+contract BaseV2Voter is
+    VersionedInitializable,
+    ReentrancyGuard,
+    Ownable,
+    IGaugeVoterV2
+{
+    IRegistry public override registry;
+    uint256 internal DURATION;
     uint256 public totalWeight; // total voting weight
-
     address[] public pools; // all pools viable for incentives
     mapping(address => address) public gauges; // pool => gauge
     mapping(address => address) public poolForGauge; // gauge => pool
@@ -39,20 +42,27 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
     mapping(address => uint256) public usedWeights; // nft => total voting weight of user
     mapping(address => bool) public isGauge;
     mapping(address => bool) public whitelist;
-
     mapping(address => uint256) public override attachments;
-
-    uint256 internal index;
     mapping(address => uint256) internal supplyIndex;
     mapping(address => uint256) public claimable;
+    uint256 internal index;
 
     modifier onlyGauge() {
         require(isGauge[msg.sender], "not gauge");
         _;
     }
 
-    constructor(address _registry) {
+    function initialize(address _registry, address _owner)
+        external
+        initializer
+    {
         registry = IRegistry(_registry);
+        DURATION = 14 days; // rewards are released over 14 days
+        _transferOwnership(_owner);
+    }
+
+    function getRevision() public pure virtual override returns (uint256) {
+        return 1;
     }
 
     function reset() external override {
@@ -249,9 +259,7 @@ contract BaseV2Voter is ReentrancyGuard, Ownable, IGaugeVoterV2 {
             "not emission controller"
         );
         uint256 _ratio = (amount * 1e18) / totalWeight; // 1e18 adjustment is removed during claim
-        if (_ratio > 0) {
-            index += _ratio;
-        }
+        if (_ratio > 0) index += _ratio;
         emit NotifyReward(msg.sender, registry.maha(), amount);
     }
 
