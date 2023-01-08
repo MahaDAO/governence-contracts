@@ -24,7 +24,6 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
 
     /* ========== STATE VARIABLES ========== */
     IRegistry public override registry;
-    IERC20 public rewardsToken;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
     uint256 public rewardsDuration = 7 days;
@@ -77,7 +76,6 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
         address token0,
         address token1,
         uint24 fee,
-        address _rewardsToken,
         address _nonfungiblePositionManager,
         address _treasury
     ) internal {
@@ -87,7 +85,6 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
 
         registry = IRegistry(_registry);
         factory = IUniswapV3Factory(nonfungiblePositionManager.factory());
-        rewardsToken = IERC20(_rewardsToken);
 
         address _pool = factory.getPool(token0, token1, fee);
         require(_pool != address(0), "pool doesn't exist");

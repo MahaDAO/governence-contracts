@@ -9,6 +9,7 @@ async function main() {
   const tokenB = "MAHA";
   const fee = 10000;
   const registry = await getOutputAddress("Registry");
+  const feeSplitter = "0x9032f1bd0cc645fde1b41941990da85f265a7623";
 
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);
@@ -21,14 +22,15 @@ async function main() {
 
   const proxyAdmin = "0x6357EDbfE5aDA570005ceB8FAd3139eF5A8863CC";
 
-  const BaseGaugeV3UniV3 = await ethers.getContractFactory("BaseGaugeV3UniV3");
+  const BaseGaugeV3UniV3 = await ethers.getContractFactory("GaugeUniswapV3");
   const data = BaseGaugeV3UniV3.interface.encodeFunctionData("initialize", [
     registry,
     tokens[0], // address token0,
     tokens[1], // address token1,
     fee, // uint24 fee,
     getOutputAddress(tokenB), // address _rewardsToken,
-    uniPositionManager, // INonfungiblePositionManager _nonfungiblePositionManager
+    uniPositionManager, // INonfungiblePositionManager _nonfungiblePositionManager,
+    feeSplitter,
   ]);
 
   const univ3GaugeContractImpl = await deployOrLoadAndVerify(

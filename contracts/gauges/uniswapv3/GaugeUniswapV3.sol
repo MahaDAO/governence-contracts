@@ -10,6 +10,8 @@ import {IGaugeVoterV2} from "../../interfaces/IGaugeVoterV2.sol";
 import {IGauge} from "../../interfaces/IGauge.sol";
 import {UniswapV3Base} from "./UniswapV3Base.sol";
 import {INFTStaker} from "../../interfaces/INFTStaker.sol";
+import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 import {VersionedInitializable} from "../../proxy/VersionedInitializable.sol";
 
@@ -22,7 +24,6 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         address _token0,
         address _token1,
         uint24 _fee,
-        address _rewardsToken,
         address _nonfungiblePositionManager,
         address _treasury
     ) public initializer {
@@ -31,7 +32,6 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
             _token0,
             _token1,
             _fee,
-            _rewardsToken,
             _nonfungiblePositionManager,
             _treasury
         );
@@ -68,7 +68,6 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         onlyTokenOwner(tokenId)
     {
         require(deposits[tokenId].liquidity > 0, "Cannot withdraw 0");
-
         totalSupply = totalSupply.sub(deposits[tokenId].derivedLiquidity);
         delete deposits[tokenId];
 
@@ -77,12 +76,17 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         _removeTokenFromAllTokensEnumeration(tokenId);
         balanceOf[msg.sender] -= 1;
 
+        // claim fees for the treasury
+        _claimFees(tokenId);
+
+        // send the NFT back to the user
         nonfungiblePositionManager.safeTransferFrom(
             address(this),
             msg.sender,
             tokenId
         );
 
+        // detach if empty
         if (balanceOf[msg.sender] == 0 && attached[msg.sender]) {
             attached[msg.sender] = false;
             IGaugeVoterV2(registry.gaugeVoter()).detachStakerFromGauge(
@@ -102,7 +106,7 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         uint256 reward = rewards[_tokenId];
         if (reward > 0) {
             rewards[_tokenId] = 0;
-            rewardsToken.transfer(deposits[_tokenId].owner, reward);
+            IERC20(registry.maha()).transfer(deposits[_tokenId].owner, reward);
             emit RewardPaid(deposits[_tokenId].owner, _tokenId, reward);
         }
     }
@@ -121,6 +125,26 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
     function exit(uint256 _tokenId) external {
         withdraw(_tokenId);
         getReward(_tokenId);
+    }
+
+    function claimFeesMultiple(uint256[] memory _tokenIds) external {
+        for (uint256 i = 0; i < _tokenIds.length; i++) _claimFees(_tokenIds[i]);
+    }
+
+    function claimFees(uint256 _tokenId) external {
+        _claimFees(_tokenId);
+    }
+
+    function _claimFees(uint256 _tokenId) internal {
+        // send fees to the treasury
+        nonfungiblePositionManager.collect(
+            INonfungiblePositionManager.CollectParams({
+                tokenId: _tokenId,
+                recipient: treasury,
+                amount0Max: type(uint128).max,
+                amount1Max: type(uint128).max
+            })
+        );
     }
 
     /// @notice Upon receiving a Uniswap V3 ERC721, creates the token deposit setting owner to `from`. Also stakes token
@@ -189,7 +213,7 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         // This keeps the reward rate in the right range, preventing overflows due to
         // very high values of rewardRate in the earned and rewardsPerToken functions;
         // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
-        uint256 balance = rewardsToken.balanceOf(address(this));
+        uint256 balance = IERC20(registry.maha()).balanceOf(address(this));
         require(
             rewardRate <= balance.div(rewardsDuration),
             "Provided reward too high"

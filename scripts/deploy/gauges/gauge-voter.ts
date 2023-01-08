@@ -12,6 +12,7 @@ async function main() {
   // );
 
   const registry = await getOutputAddress("Registry");
+  const masterGovernor = await getOutputAddress("MAHAXGovernorMaster");
 
   console.log("Deploying BaseV2Voter...");
   const BaseV2Voter = await ethers.getContractFactory("BaseV2Voter");
@@ -30,13 +31,13 @@ async function main() {
   ]);
 
   const proxy = await deployOrLoadAndVerify(
-    "BaseV2Voter",
+    "GaugeVoter",
     "TransparentUpgradeableProxy",
-    [implementation.address, config.gnosisProxy, initDecode]
+    [implementation.address, masterGovernor, initDecode]
   );
 
-  console.log("gaugeContractInstance", gaugeInstance.address);
-  console.log("bribesInstance", implementation.address);
+  console.log("implementation", implementation.address);
+  console.log("proxy", proxy.address);
 }
 
 main().catch((error) => {
