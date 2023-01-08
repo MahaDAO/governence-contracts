@@ -6,7 +6,7 @@ async function main() {
 
   const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
   const tokenA = "ARTH";
-  const tokenB = "MAHA";
+  const tokenB = "WETH";
   const fee = 10000;
   const registry = await getOutputAddress("Registry");
   const feeSplitter = "0x9032f1bd0cc645fde1b41941990da85f265a7623";
