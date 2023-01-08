@@ -13,7 +13,7 @@
   },
   "MAHA": {
     "abi": "IERC20",
-    "address": "0xb4d930279552397bba2ee473229f89ec245bc365"
+    "address": "0x745407c86df8db893011912d3ab28e68b62e49b0"
   },
   "WETH": {
     "abi": "IWETH",
@@ -38,11 +38,6 @@
     "abi": "MAHAXLocker",
     "verified": true,
     "address": "0xbdD8F4dAF71C2cB16ccE7e54BB81ef3cfcF5AAcb"
-  },
-  "EmissionController": {
-    "abi": "EmissionController",
-    "verified": true,
-    "address": "0x0fBd374bfDfA835F8F3601B6C29D15E9E546C517"
   },
   "UniswapNFTManager": {
     "abi": "IUniswapNFTManager",
@@ -123,14 +118,49 @@
     "verified": true,
     "address": "0x6C65E99Bb25079b51A4928DC1A196CD067811de4"
   },
-  "ARTHMAHA-GaugeUniswapV3": {
-    "abi": "GaugeUniswapV3",
-    "verified": true,
-    "address": "0x8aDF73Ae6E54F988920Dd37249461d1472b24682"
-  },
   "BaseV2Voter": {
     "abi": "BaseV2Voter",
     "verified": true,
     "address": "0x7224c3C6b8c2815Ed12D0436ba3650f3E5476531"
+  },
+  "ARTHUSDC-Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x7d4B79ED098c1a593512525201a0ec27aEaA9F9B"
+  },
+  "ARTHUSDC-LPToken": {
+    "abi": "IERC20",
+    "verified": true,
+    "address": "0xdf34bad1d3b16c8f28c9cf95f15001949243a038"
+  },
+  "ARTHUSDC-GaugeLP": {
+    "abi": "GaugeLP",
+    "verified": true,
+    "address": "0x9ee8110c0aACb7f9147252d7A2D95a5ff52F8496"
+  },
+  "ARTHMAHA-UniV3-Pool": {
+    "abi": "IUniswapV3Pool",
+    "verified": true,
+    "address": "0x8a039FB7503B914A9cb2a004010706ca192377Bc"
+  },
+  "ARTHMAHA-GaugeUniswapV3": {
+    "abi": "GaugeUniswapV3",
+    "verified": true,
+    "address": "0x3b49D7dbce1a19D02c1D85c74D55d8ab49577A2b"
+  },
+  "ARTHWETH-Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x8F362e16A74c2EB564bfbF24DC73bd5CE37D9063"
+  },
+  "ARTHWETH-GaugeUniswapV3": {
+    "abi": "GaugeUniswapV3",
+    "verified": true,
+    "address": "0xf92D0644f4153A511BeE245b16CeC64eB226bf12"
+  },
+  "EmissionController": {
+    "abi": "EmissionController",
+    "verified": true,
+    "address": "0xBd86A195c90ceC4606dBC378Ea0aa338f674a704"
   }
 }
