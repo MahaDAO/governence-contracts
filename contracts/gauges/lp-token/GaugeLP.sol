@@ -20,7 +20,7 @@ contract GaugeLP is IGaugeV2 {
     uint256 public derivedSupply;
     mapping(address => uint256) public derivedBalances;
 
-    uint256 internal constant DURATION = 7 days; // rewards are released over 7 days
+    uint256 internal constant DURATION = 14 days; // rewards are released over 14 days
     uint256 internal constant PRECISION = 10**18;
 
     mapping(address => bool) public attached;
