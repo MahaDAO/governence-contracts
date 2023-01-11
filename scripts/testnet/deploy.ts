@@ -83,17 +83,17 @@ async function main() {
 
   // Deploy fee distributor contracts.
   console.log(`deploying MAHA fee distributor.`);
-  const mahaFeeDistributorCI = await deployOrLoadAndVerify(
-    "MAHAFeeDistributor",
-    "FeeDistributor",
-    [mahaxCI.address, mahaCI.address, deployer.address]
-  );
+  // const mahaFeeDistributorCI = await deployOrLoadAndVerify(
+  //   "MAHAFeeDistributor",
+  //   "FeeDistributor",
+  //   [mahaxCI.address, mahaCI.address, deployer.address]
+  // );
 
-  const arthFeeDistributorCI = await deployOrLoadAndVerify(
-    "ARTHFeeDistributor",
-    "FeeDistributor",
-    [mahaxCI.address, arthCI.address, deployer.address]
-  );
+  // const arthFeeDistributorCI = await deployOrLoadAndVerify(
+  //   "ARTHFeeDistributor",
+  //   "FeeDistributor",
+  //   [mahaxCI.address, arthCI.address, deployer.address]
+  // );
 
   console.log("init voter");
   await voterCI.initialize(registryCI.address, deployer.address);
@@ -110,27 +110,27 @@ async function main() {
     { gasPrice }
   );
 
-  // Mint to the emissions controller.
-  console.log(`Minting MAHA to EmissionController`);
-  await mahaCI.mint(
-    emissionControllerCI.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e6),
-    { gasPrice }
-  );
+  // // Mint to the emissions controller.
+  // console.log(`Minting MAHA to EmissionController`);
+  // await mahaCI.mint(
+  //   emissionControllerCI.address,
+  //   ethers.BigNumber.from(10).pow(18).mul(1e6),
+  //   { gasPrice }
+  // );
 
-  // Mint fee to fee distributors.
-  console.log(`Minting MAHA to Fee distributor`);
-  await mahaCI.mint(
-    mahaFeeDistributorCI.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e6),
-    { gasPrice }
-  );
-  console.log(`Minting ARTH to Fee distributor`);
-  await arthCI.mint(
-    arthFeeDistributorCI.address,
-    ethers.BigNumber.from(10).pow(18).mul(1e6),
-    { gasPrice }
-  );
+  // // Mint fee to fee distributors.
+  // console.log(`Minting MAHA to Fee distributor`);
+  // await mahaCI.mint(
+  //   mahaFeeDistributorCI.address,
+  //   ethers.BigNumber.from(10).pow(18).mul(1e6),
+  //   { gasPrice }
+  // );
+  // console.log(`Minting ARTH to Fee distributor`);
+  // await arthCI.mint(
+  //   arthFeeDistributorCI.address,
+  //   ethers.BigNumber.from(10).pow(18).mul(1e6),
+  //   { gasPrice }
+  // );
 
   console.log(`Governance deployment on ${network.name} complete.`);
 }

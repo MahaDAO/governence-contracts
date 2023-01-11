@@ -1,133 +1,52 @@
 {
-  "ARTH": {
-    "abi": "MockERC20",
-    "address": "0xbeab728fcc37de548620f17e9a521374f4a35c02"
-  },
-  "USDC": {
-    "abi": "MockERC20",
-    "address": "0xc003235c028A18E55bacE946E91fAe95769348BB"
-  },
-  "SCLP": {
-    "abi": "MockERC20",
-    "address": "0xc003235c028A18E55bacE946E91fAe95769348BB"
-  },
   "MAHA": {
     "abi": "MockERC20",
-    "address": "0x106E0c36aD45cEAce8a778fa7365a2ce0500C3a2"
+    "verified": true,
+    "address": "0x90344dD6Dc73A6FDa00A9e8315065662cFf43228"
   },
-  "WETH": {
-    "abi": "IWETH",
-    "address": "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6"
+  "ARTH": {
+    "abi": "MockERC20",
+    "verified": true,
+    "address": "0x2B9F4A54333E3A5CBfC6221dE328f377C11372f1"
   },
-  "UniswapNFTManager": {
-    "abi": "IUniswapNFTManager",
-    "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
-  },
-  "MAHAXStaker": {
-    "abi": "MAHAXStaker",
-    "address": "0x43AA3e64092aAd813c7A17cA942e23d3609996dc"
-  },
-  "TimelockController": {
-    "abi": "TimelockController",
-    "address": "0x0cD574c7018FDED33da08c470f63925119a85346"
-  },
-  "MAHAXGovernor": {
-    "abi": "MAHAXGovernor",
-    "address": "0x314EC613416654346EBdD6c5059233f0553cA3a4"
-  },
-  "MAHAXLocker": {
-    "abi": "MAHAXLocker",
-    "address": "0x2711954Fa2675496d5741dA6965fA079BCDE0679"
-  },
-  "GaugeVoter": {
-    "abi": "BaseV2Voter",
-    "address": "0x88c7F878520FA0A97A41a098f1c23979A5ddC327"
+  "MAHATimelockController": {
+    "abi": "MAHATimelockController",
+    "verified": true,
+    "address": "0x8aDF73Ae6E54F988920Dd37249461d1472b24682"
   },
   "Registry": {
-    "abi": "IRegistry",
-    "address": "0x5cd8A5ddA1a86F1b70e046DE06CD91d0A2261178"
-  },
-  "GaugeFactory": {
-    "abi": "IGaugeFactory",
-    "address": "0x4405D508B7e0D9caC7e0A31Ea61432c12E3658A7"
-  },
-  "BribesFactory": {
-    "abi": "IBribeFactory",
-    "address": "0x0fBd92eA11e23D959E1489A9Abb84ae2E4778D31"
-  },
-  "EmissionController": {
-    "abi": "IEmissionController",
-    "address": "0xE390d0f60dFEd983E68d2a4B86a86e89ea208BC3"
-  },
-  "ARTHFeeDistributor": {
-    "abi": "FeeDistributor",
-    "address": "0x115318B43f88f0CE19F61b4292C646997DD9D0bC"
-  },
-  "USDCFeeDistributor": {
-    "abi": "FeeDistributor",
-    "address": "0x44247faAC3000fcc2BC0336738BF7F243ECcCeF5"
-  },
-  "ARTHMAHA-UniV3Gauge": {
-    "abi": "BaseGaugeV2UniV3",
-    "address": "0x736a089Ad405f1C35394Ad15004f5359938f771e"
-  },
-  "ARTHMAHA-UniV3Bribe": {
-    "abi": "BaseV2Bribes",
-    "address": "0xBBf618A5AEEaDB2B8801C1cDF4504EF5B5a48eeC"
-  },
-  "ARTHMAHA-UniV3-Pool": {
-    "abi": "IUniswapV3Pool",
-    "address": "0x1C4e4d8a4Ab69d6c8671C3eA908efb8449d1252B"
-  },
-  "ARTHUSDC-UniV3Gauge": {
-    "abi": "BaseGaugeV2UniV3",
-    "address": "0x0eD9931c374230BC4199b18D2903c97e2db2faa2"
-  },
-  "ARTHUSDC-UniV3Bribe": {
-    "abi": "BaseV2Bribes",
-    "address": "0xFf1361cf1BcD9edADa0507a0a9Ba351134f01CD6"
-  },
-  "ARTHUSDC-UniV3-Pool": {
-    "abi": "IUniswapV3Pool",
-    "address": "0xE2e7e671ccB343E8Fe1Db0Ec2968b0bE4FCAefF9"
+    "abi": "Registry",
+    "verified": true,
+    "address": "0x6C65E99Bb25079b51A4928DC1A196CD067811de4"
   },
   "RenderingContract": {
     "abi": "RenderingContract",
-    "address": "0x5e00673986E7BDCa5a3F444F724456F9510f49Ea"
-  },
-  "LockMigrator": {
-    "abi": "LockMigrator",
     "verified": true,
-    "address": "0x25E1d1751C3ED5D27baaf9Ac6b3DA536042b07EB"
+    "address": "0x40B34FD4CFAFF73E1b037De83328eBD2D9b7EEFb"
   },
-  "MAHAPendingFeeDistributor": {
-    "abi": "PendingFeeDistributor",
+  "MAHAXGovernor": {
+    "abi": "MAHAXGovernor",
     "verified": true,
-    "address": "0xe6FBc6b8c3b4Cc5E7EC71Bc946D5dEfD80D7c98C"
+    "address": "0x7224c3C6b8c2815Ed12D0436ba3650f3E5476531"
   },
-  "MAHAFeeDistributor": {
-    "abi": "FeeDistributor",
+  "MAHAXStaker": {
+    "abi": "MAHAXStaker",
     "verified": true,
-    "address": "0x22D844f7E879eaE42242baF59eb6093D2fd07d8b"
+    "address": "0xD2125a722d28C7685AEd658A3Ddc7b08275b8Aeb"
   },
-  "SCLPPendingFeeDistributor": {
-    "abi": "PendingFeeDistributor",
+  "MAHAXLocker": {
+    "abi": "MAHAXLocker",
     "verified": true,
-    "address": "0x209261044f2f913dd20fD6aA40367548ec8b3B41"
+    "address": "0x9ee8110c0aACb7f9147252d7A2D95a5ff52F8496"
   },
-  "SCLPFeeDistributor": {
-    "abi": "FeeDistributor",
+  "EmissionController": {
+    "abi": "EmissionController",
     "verified": true,
-    "address": "0xd9548c70D0B4eBEDBe104b739453e40587fd2dF9"
+    "address": "0x7d4B79ED098c1a593512525201a0ec27aEaA9F9B"
   },
-  "MultiFeeDistributor": {
-    "abi": "MultiFeeDistributor",
+  "BaseV2Voter": {
+    "abi": "BaseV2Voter",
     "verified": true,
-    "address": "0x63D1D323ED665C04B7E43E27927D450377B0ba59"
-  },
-  "MAHAReferralV1": {
-    "abi": "MAHAReferralV1",
-    "verified": true,
-    "address": "0x3a254F5F772Ac1a9aa8A233aE55e877468fEe75e"
+    "address": "0x3b49D7dbce1a19D02c1D85c74D55d8ab49577A2b"
   }
 }
