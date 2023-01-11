@@ -167,12 +167,7 @@ contract MAHAXGovernor is
     /**
      * @dev Returns the quorum for a block number, in terms of number of votes: `supply * numerator / denominator`.
      */
-    function quorum(uint256 blockNumber)
-        public
-        view
-        override
-        returns (uint256)
-    {
+    function quorum(uint256) public view override returns (uint256) {
         return _quorum;
     }
 
