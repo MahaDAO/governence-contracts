@@ -18,6 +18,8 @@ import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
 import {INFTStaker} from "../interfaces/INFTStaker.sol";
 import {VersionedInitializable} from "../proxy/VersionedInitializable.sol";
 
+// import "hardhat/console.sol";
+
 /**
  * This contract is an extension of the BaseV1Voter that was originally written by Andre.
  * This contract allows delegation and captures voting power of a user overtime. This contract
@@ -231,6 +233,10 @@ contract BaseV2Voter is
         poolForGauge[_newgauge] = _pool;
         isGauge[_newgauge] = true;
 
+        // give allowance to the new gauge
+        IERC20(registry.maha()).approve(oldgauge, 0);
+        IERC20(registry.maha()).approve(_newgauge, type(uint256).max);
+
         _updateFor(_newgauge);
         emit GaugeUpdated(_newgauge, msg.sender, _newbribe, _pool);
     }
@@ -240,13 +246,10 @@ contract BaseV2Voter is
         emit Attach(account, msg.sender);
     }
 
-    function detachStakerFromGauge(address account)
-        external
-        override
-        onlyGauge
-    {
-        attachments[account] = attachments[account] - 1;
-        emit Detach(account, msg.sender);
+    function detachStakerFromGauge(address who) external override onlyGauge {
+        // prevent subtraction underflow
+        if (attachments[who] > 0) attachments[who] = attachments[who] - 1;
+        emit Detach(who, msg.sender);
     }
 
     function length() external view returns (uint256) {

@@ -19,17 +19,17 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
     struct Deposit {
         address owner;
         uint128 liquidity;
-        uint128 derivedLiquidity;
+        uint256 derivedLiquidity;
     }
 
     /* ========== STATE VARIABLES ========== */
     IRegistry public override registry;
-    uint256 public periodFinish = 0;
-    uint256 public rewardRate = 0;
-    uint256 public rewardsDuration = 7 days;
     uint256 public lastUpdateTime;
+    uint256 public maxBoostRequirement;
+    uint256 public periodFinish;
     uint256 public rewardPerTokenStored;
-    uint256 public maxBoostRequirement = 5000e18;
+    uint256 public rewardRate;
+    uint256 public rewardsDuration;
     mapping(uint256 => uint256) public userRewardPerTokenPaid;
 
     uint256 public totalSupply;
@@ -69,13 +69,17 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
 
     address public treasury;
 
+    address token0;
+    address token1;
+    uint24 fee;
+
     /* ========== CONSTRUCTOR ========== */
 
     function _initialize(
         address _registry,
-        address token0,
-        address token1,
-        uint24 fee,
+        address _token0,
+        address _token1,
+        uint24 _fee,
         address _nonfungiblePositionManager,
         address _treasury
     ) internal {
@@ -86,13 +90,18 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
         registry = IRegistry(_registry);
         factory = IUniswapV3Factory(nonfungiblePositionManager.factory());
 
-        address _pool = factory.getPool(token0, token1, fee);
+        address _pool = factory.getPool(_token0, _token1, _fee);
         require(_pool != address(0), "pool doesn't exist");
         pool = IUniswapV3Pool(_pool);
 
         rewardsDuration = 14 days; // 14 day epochs
         maxBoostRequirement = 5000e18; // 5000 maha for max boost
+
+        // record data
         treasury = _treasury;
+        token0 = _token0;
+        token1 = _token1;
+        fee = _fee;
     }
 
     /* ========== VIEWS ========== */
@@ -113,31 +122,6 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
         returns (uint256)
     {
         return deposits[_tokenId].derivedLiquidity;
-    }
-
-    function lastTimeRewardApplicable() public view returns (uint256) {
-        return block.timestamp < periodFinish ? block.timestamp : periodFinish;
-    }
-
-    function rewardPerToken() public view returns (uint256) {
-        if (totalSupply == 0) return rewardPerTokenStored;
-        return
-            rewardPerTokenStored.add(
-                lastTimeRewardApplicable()
-                    .sub(lastUpdateTime)
-                    .mul(rewardRate)
-                    .mul(1e18)
-                    .div(totalSupply)
-            );
-    }
-
-    function earned(uint256 _tokenId) public view returns (uint256) {
-        return
-            deposits[_tokenId]
-                .derivedLiquidity
-                .mul(rewardPerToken().sub(userRewardPerTokenPaid[_tokenId]))
-                .div(1e18)
-                .add(rewards[_tokenId]);
     }
 
     function getRewardForDuration() external view returns (uint256) {
@@ -230,7 +214,7 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
         address indexed user,
         uint256 tokenId,
         uint128 liquidty,
-        uint128 derivedLiquidity
+        uint256 derivedLiquidity
     );
     event Withdrawn(address indexed user, uint256 tokenId);
     event RewardPaid(address indexed user, uint256 tokenId, uint256 reward);
