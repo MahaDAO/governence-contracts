@@ -5,10 +5,10 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {IGauge} from "../../interfaces/IGauge.sol";
+import {IGaugeUniswapV3} from "../../interfaces/IGaugeUniswapV3.sol";
 import {IGaugeVoterV2} from "../../interfaces/IGaugeVoterV2.sol";
 import {INFTStaker} from "../../interfaces/INFTStaker.sol";
 import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
@@ -16,11 +16,7 @@ import {NFTPositionInfo} from "../../utils/NFTPositionInfo.sol";
 import {UniswapV3Base} from "./UniswapV3Base.sol";
 import {VersionedInitializable} from "../../proxy/VersionedInitializable.sol";
 
-contract GaugeUniswapV3 is
-    VersionedInitializable,
-    UniswapV3Base,
-    IERC721Receiver
-{
+contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
     using SafeMath for uint256;
     using SafeMath for uint128;
 
@@ -42,11 +38,154 @@ contract GaugeUniswapV3 is
         );
     }
 
+    modifier updateReward(uint256 _tokenId) {
+        _updateReward(_tokenId);
+        _;
+    }
+
     function getRevision() public pure virtual override returns (uint256) {
         return 2;
     }
 
-    function earned(uint256 _tokenId) public view returns (uint256) {
+    function _getReward(uint256 _tokenId)
+        internal
+        nonReentrant
+        updateReward(_tokenId)
+        onlyTokenOwner(_tokenId)
+    {
+        uint256 reward = rewards[_tokenId];
+        if (reward > 0) {
+            rewards[_tokenId] = 0;
+            IERC20(registry.maha()).transfer(deposits[_tokenId].owner, reward);
+            emit RewardPaid(deposits[_tokenId].owner, _tokenId, reward);
+        }
+    }
+
+    function _onERC721Received(address _from, uint256 _tokenId) internal {
+        (
+            IUniswapV3Pool _pool,
+            bool inRange,
+            uint128 liquidity
+        ) = _getLiquidityAndInRange(_tokenId);
+
+        require(
+            address(_pool) == address(pool),
+            "token pool is not the right pool"
+        );
+        require(inRange, "liquidty not in range");
+        require(liquidity > 0, "cannot stake 0 liquidity");
+
+        uint256 __derivedLiquidity = _derivedLiquidity(liquidity, _from);
+
+        deposits[_tokenId] = Deposit({
+            owner: _from,
+            liquidity: liquidity,
+            derivedLiquidity: __derivedLiquidity
+        });
+
+        _addTokenToAllTokensEnumeration(_tokenId);
+        _addTokenToOwnerEnumeration(_from, _tokenId);
+
+        balanceOf[_from] += 1;
+        totalSupply = totalSupply.add(__derivedLiquidity);
+
+        if (!attached[_from]) {
+            attached[_from] = true;
+            IGaugeVoterV2(registry.gaugeVoter()).attachStakerToGauge(_from);
+        }
+
+        // update rewards
+        rewardPerTokenStored = rewardPerToken();
+        lastUpdateTime = lastTimeRewardApplicable();
+        rewards[_tokenId] = _earned(_tokenId);
+        userRewardPerTokenPaid[_tokenId] = rewardPerTokenStored;
+
+        emit Staked(msg.sender, _tokenId, liquidity, __derivedLiquidity);
+    }
+
+    function _claimFees(uint256 _tokenId) internal {
+        // send fees to the treasury
+        (uint256 amount0, uint256 amount1) = nonfungiblePositionManager.collect(
+            INonfungiblePositionManager.CollectParams({
+                tokenId: _tokenId,
+                recipient: address(this),
+                amount0Max: type(uint128).max,
+                amount1Max: type(uint128).max
+            })
+        );
+
+        // send 50% to the owner, 50% to the DAO
+        address owner = deposits[_tokenId].owner;
+        if (amount0 > 0) {
+            IERC20(token0).transfer(owner, amount0 / 2);
+            IERC20(token0).transfer(treasury, amount0 / 2);
+        }
+        if (amount1 > 0) {
+            IERC20(token1).transfer(owner, amount1 / 2);
+            IERC20(token1).transfer(treasury, amount1 / 2);
+        }
+    }
+
+    function _updateLiquidity(uint256 _tokenId) private {
+        (, , , uint128 _liquidity) = NFTPositionInfo.getPositionInfo(
+            factory,
+            nonfungiblePositionManager,
+            _tokenId
+        );
+
+        if (_liquidity == deposits[_tokenId].liquidity) return;
+
+        address _who = deposits[_tokenId].owner;
+        uint256 __derivedLiquidity = _derivedLiquidity(_liquidity, _who);
+
+        // remove old, add new derived liquidity
+        totalSupply = totalSupply.add(__derivedLiquidity).sub(
+            deposits[_tokenId].derivedLiquidity
+        );
+
+        // update old
+        deposits[_tokenId].liquidity = _liquidity;
+        deposits[_tokenId].derivedLiquidity = __derivedLiquidity;
+    }
+
+    function _getLiquidityAndInRange(uint256 _tokenId)
+        private
+        view
+        returns (
+            IUniswapV3Pool _p,
+            bool _inRange,
+            uint128 liquidity
+        )
+    {
+        (
+            IUniswapV3Pool _pool,
+            int24 _tickLower,
+            int24 _tickUpper,
+            uint128 _liquidity
+        ) = NFTPositionInfo.getPositionInfo(
+                factory,
+                nonfungiblePositionManager,
+                _tokenId
+            );
+
+        (, int24 tick, , , , , ) = _pool.slot0();
+
+        _p = _pool;
+        _inRange = _tickLower <= tick && tick <= _tickUpper;
+        liquidity = _liquidity;
+    }
+
+    function _updateReward(uint256 _tokenId) private {
+        rewardPerTokenStored = rewardPerToken();
+        lastUpdateTime = lastTimeRewardApplicable();
+        if (_tokenId != 0) {
+            rewards[_tokenId] = _earned(_tokenId);
+            userRewardPerTokenPaid[_tokenId] = rewardPerTokenStored;
+            _updateLiquidity(_tokenId);
+        }
+    }
+
+    function _earned(uint256 _tokenId) internal view returns (uint256) {
         return
             deposits[_tokenId]
                 .derivedLiquidity
@@ -55,8 +194,8 @@ contract GaugeUniswapV3 is
                 .add(rewards[_tokenId]);
     }
 
-    function derivedLiquidity(uint128 _liquidity, address account)
-        public
+    function _derivedLiquidity(uint128 _liquidity, address account)
+        internal
         view
         returns (uint256)
     {
@@ -86,10 +225,8 @@ contract GaugeUniswapV3 is
             );
     }
 
-    /* ========== MUTATIVE FUNCTIONS ========== */
-
-    function withdraw(uint256 tokenId)
-        public
+    function _withdraw(uint256 tokenId)
+        internal
         nonReentrant
         updateReward(tokenId)
         onlyTokenOwner(tokenId)
@@ -124,41 +261,44 @@ contract GaugeUniswapV3 is
         emit Withdrawn(msg.sender, tokenId);
     }
 
-    function getReward(uint256 _tokenId)
-        public
-        nonReentrant
-        updateReward(_tokenId)
-        onlyTokenOwner(_tokenId)
-    {
-        uint256 reward = rewards[_tokenId];
-        if (reward > 0) {
-            rewards[_tokenId] = 0;
-            IERC20(registry.maha()).transfer(deposits[_tokenId].owner, reward);
-            emit RewardPaid(deposits[_tokenId].owner, _tokenId, reward);
-        }
+    function getReward(uint256 _tokenId) external override {
+        _getReward(_tokenId);
     }
 
-    function getReward(address account, address[] memory)
-        external
-        override
-        nonReentrant
-    {
+    function getReward(address account, address[] memory) external override {
         for (uint256 index = 0; index < balanceOf[account]; index++) {
-            uint256 tokenId = _ownedTokens[account][index];
-            getReward(tokenId);
+            uint256 _tokenId = _ownedTokens[account][index];
+            _getReward(_tokenId);
         }
     }
 
-    function exit(uint256 _tokenId) external {
-        withdraw(_tokenId);
-        getReward(_tokenId);
+    function earned(uint256 _tokenId) external view override returns (uint256) {
+        return _earned(_tokenId);
     }
 
-    function claimFeesMultiple(uint256[] memory _tokenIds) external {
+    function derivedLiquidity(uint128 _liquidity, address account)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        return _derivedLiquidity(_liquidity, account);
+    }
+
+    function withdraw(uint256 tokenId) external override {
+        _withdraw(tokenId);
+    }
+
+    function exit(uint256 _tokenId) external override {
+        _withdraw(_tokenId);
+        _getReward(_tokenId);
+    }
+
+    function claimFeesMultiple(uint256[] memory _tokenIds) external override {
         for (uint256 i = 0; i < _tokenIds.length; i++) _claimFees(_tokenIds[i]);
     }
 
-    function claimFees(uint256 _tokenId) external {
+    function claimFees(uint256 _tokenId) external override {
         _claimFees(_tokenId);
     }
 
@@ -177,8 +317,6 @@ contract GaugeUniswapV3 is
         _onERC721Received(from, tokenId);
         return this.onERC721Received.selector;
     }
-
-    /* ========== RESTRICTED FUNCTIONS ========== */
 
     function notifyRewardAmount(address, uint256 reward)
         external
@@ -215,138 +353,7 @@ contract GaugeUniswapV3 is
         emit RewardAdded(reward);
     }
 
-    function _onERC721Received(address _from, uint256 _tokenId) internal {
-        (
-            IUniswapV3Pool _pool,
-            bool inRange,
-            uint128 liquidity
-        ) = _getLiquidityAndInRange(_tokenId);
-
-        require(
-            address(_pool) == address(pool),
-            "token pool is not the right pool"
-        );
-        require(inRange, "liquidty not in range");
-        require(liquidity > 0, "cannot stake 0 liquidity");
-
-        uint256 _derivedLiquidity = derivedLiquidity(liquidity, _from);
-
-        deposits[_tokenId] = Deposit({
-            owner: _from,
-            liquidity: liquidity,
-            derivedLiquidity: _derivedLiquidity
-        });
-
-        _addTokenToAllTokensEnumeration(_tokenId);
-        _addTokenToOwnerEnumeration(_from, _tokenId);
-
-        balanceOf[_from] += 1;
-        totalSupply = totalSupply.add(_derivedLiquidity);
-
-        if (!attached[_from]) {
-            attached[_from] = true;
-            IGaugeVoterV2(registry.gaugeVoter()).attachStakerToGauge(_from);
-        }
-
-        // update rewards
-        rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = lastTimeRewardApplicable();
-        rewards[_tokenId] = earned(_tokenId);
-        userRewardPerTokenPaid[_tokenId] = rewardPerTokenStored;
-
-        emit Staked(msg.sender, _tokenId, liquidity, _derivedLiquidity);
-    }
-
-    function _claimFees(uint256 _tokenId) internal {
-        // send fees to the treasury
-        (uint256 amount0, uint256 amount1) = nonfungiblePositionManager.collect(
-            INonfungiblePositionManager.CollectParams({
-                tokenId: _tokenId,
-                recipient: address(this),
-                amount0Max: type(uint128).max,
-                amount1Max: type(uint128).max
-            })
-        );
-
-        // send 50% to the owner, 50% to the DAO
-        address owner = deposits[_tokenId].owner;
-        if (amount0 > 0) {
-            IERC20(token0).transfer(owner, amount0 / 2);
-            IERC20(token0).transfer(treasury, amount0 / 2);
-        }
-        if (amount1 > 0) {
-            IERC20(token1).transfer(owner, amount1 / 2);
-            IERC20(token1).transfer(treasury, amount1 / 2);
-        }
-    }
-
-    function _updateLiquidity(uint256 _tokenId) private {
-        (, , , uint128 _liquidity) = NFTPositionInfo.getPositionInfo(
-            factory,
-            nonfungiblePositionManager,
-            _tokenId
-        );
-
-        if (_liquidity == deposits[_tokenId].liquidity) return;
-
-        address _who = deposits[_tokenId].owner;
-        uint256 _derivedLiquidity = derivedLiquidity(_liquidity, _who);
-
-        // remove old, add new derived liquidity
-        totalSupply = totalSupply.add(_derivedLiquidity).sub(
-            deposits[_tokenId].derivedLiquidity
-        );
-
-        // update old
-        deposits[_tokenId].liquidity = _liquidity;
-        deposits[_tokenId].derivedLiquidity = _derivedLiquidity;
-    }
-
-    function _getLiquidityAndInRange(uint256 _tokenId)
-        private
-        view
-        returns (
-            IUniswapV3Pool _p,
-            bool _inRange,
-            uint128 liquidity
-        )
-    {
-        (
-            IUniswapV3Pool _pool,
-            int24 _tickLower,
-            int24 _tickUpper,
-            uint128 _liquidity
-        ) = NFTPositionInfo.getPositionInfo(
-                factory,
-                nonfungiblePositionManager,
-                _tokenId
-            );
-
-        (, int24 tick, , , , , ) = _pool.slot0();
-
-        _p = _pool;
-        _inRange = _tickLower <= tick && tick <= _tickUpper;
-        liquidity = _liquidity;
-    }
-
-    /* ========== MODIFIERS ========== */
-
-    function _updateReward(uint256 _tokenId) private {
-        rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = lastTimeRewardApplicable();
-        if (_tokenId != 0) {
-            rewards[_tokenId] = earned(_tokenId);
-            userRewardPerTokenPaid[_tokenId] = rewardPerTokenStored;
-            _updateLiquidity(_tokenId);
-        }
-    }
-
-    modifier updateReward(uint256 _tokenId) {
-        _updateReward(_tokenId);
-        _;
-    }
-
-    function updateRewardFor(uint256 _tokenId) external {
+    function updateRewardFor(uint256 _tokenId) external override {
         require(deposits[_tokenId].liquidity > 0, "liquidity is 0");
         _updateReward(_tokenId);
     }

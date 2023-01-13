@@ -9,9 +9,9 @@ import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import {IRegistry} from "../../interfaces/IRegistry.sol";
 import {INonfungiblePositionManager} from "../../interfaces/INonfungiblePositionManager.sol";
-import {IGauge} from "../../interfaces/IGauge.sol";
+import {IGaugeUniswapV3} from "../../interfaces/IGaugeUniswapV3.sol";
 
-abstract contract UniswapV3Base is ReentrancyGuard, IGauge {
+abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
     using SafeMath for uint256;
     using SafeMath for uint128;
 
