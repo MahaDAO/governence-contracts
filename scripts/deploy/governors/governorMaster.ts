@@ -23,8 +23,8 @@ async function main() {
     7200, // 1 day voting extension
     28800, // 4 day voting delay
     100800, // 14 day vote
-    ethers.BigNumber.from(10).pow(18).mul(250), // 1000 mahax to create a vote
-    ethers.BigNumber.from(10).pow(18).mul(50000), // 200k mahax quorum
+    ethers.BigNumber.from(10).pow(18).mul(1000), // 1000 mahax to create a vote
+    ethers.BigNumber.from(10).pow(18).mul(200000), // 200k mahax quorum
   ]);
 }
 

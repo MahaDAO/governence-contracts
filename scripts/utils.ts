@@ -19,11 +19,14 @@ export default async function verifyContract(
       constructorArguments,
     });
   } catch (error: any) {
+    console.log(error);
     if (error.name !== "NomicLabsHardhatPluginError") {
       console.error(`- Error verifying: ${error.name}`);
       console.error(error);
     }
+    return false;
   }
+  return true;
 }
 
 export const saveABI = (
@@ -112,8 +115,8 @@ export const deployOrLoadAndVerify = async (
   const outputFile = getOutput();
   if (outputFile[key] && !outputFile[key].verified) {
     await wait(delay);
-    await verifyContract(hre, instance.address, args);
-    await saveABI(key, contractName, instance.address, true);
+    const verified = await verifyContract(hre, instance.address, args);
+    await saveABI(key, contractName, instance.address, verified);
   }
 
   return instance;

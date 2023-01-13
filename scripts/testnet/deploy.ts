@@ -5,6 +5,7 @@ async function main() {
   console.log(`deploying governance to ${network.name}`);
 
   const [deployer] = await ethers.getSigners();
+
   console.log(`Deployer address is ${deployer.address}`);
 
   const { provider } = ethers;
@@ -18,6 +19,7 @@ async function main() {
     "MAHA",
     18,
   ]);
+
   const arthCI = await deployOrLoadAndVerify("ARTH", "MockERC20", [
     "ARTH",
     "ARTH",
