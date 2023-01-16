@@ -207,6 +207,39 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
         require(deposits[_tokenId].owner == msg.sender, "only tokenid owner");
         _;
     }
+
+    function tokenOfOwnerByIndex(address owner, uint256 index)
+        public
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        require(
+            index < balanceOf[owner],
+            "ERC721Enumerable: owner index out of bounds"
+        );
+        return _ownedTokens[owner][index];
+    }
+
+    function tokenByIndex(uint256 index)
+        public
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        require(
+            index < totalNFTSupply(),
+            "ERC721Enumerable: global index out of bounds"
+        );
+        return _allTokens[index];
+    }
+
+    function totalNFTSupply() public view virtual override returns (uint256) {
+        return _allTokens.length;
+    }
+
     /* ========== EVENTS ========== */
 
     event RewardAdded(uint256 reward);

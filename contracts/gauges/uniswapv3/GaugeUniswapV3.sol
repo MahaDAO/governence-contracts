@@ -47,6 +47,65 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         return 2;
     }
 
+    function boostedFactor(uint256 tokenId, address who)
+        external
+        view
+        returns (
+            uint256 original,
+            uint256 boosted,
+            uint256 factor
+        )
+    {
+        (, , , uint128 _liquidity) = NFTPositionInfo.getPositionInfo(
+            factory,
+            nonfungiblePositionManager,
+            tokenId
+        );
+
+        original = (_liquidity * 20) / 100;
+        boosted = _derivedLiquidity(_liquidity, who);
+        factor = (boosted * 1e18) / original;
+    }
+
+    function isIdsWithinRange(uint256[] memory tokenIds)
+        external
+        view
+        override
+        returns (bool[] memory)
+    {
+        bool[] memory ret = new bool[](tokenIds.length);
+        for (uint256 index = 0; index < tokenIds.length; index++) {
+            uint256 tokenId = tokenIds[index];
+            (
+                IUniswapV3Pool _pool,
+                int24 tickLower,
+                int24 tickUpper,
+
+            ) = NFTPositionInfo.getPositionInfo(
+                    factory,
+                    nonfungiblePositionManager,
+                    tokenId
+                );
+
+            (, int24 tick, , , , , ) = _pool.slot0();
+            ret[index] = tickLower < tick && tick < tickUpper;
+        }
+
+        return ret;
+    }
+
+    function getLiquidityAndInRange(uint256 _tokenId)
+        external
+        view
+        returns (
+            IUniswapV3Pool _p,
+            bool _inRange,
+            uint128 liquidity
+        )
+    {
+        return _getLiquidityAndInRange(_tokenId);
+    }
+
     function _getReward(uint256 _tokenId)
         internal
         nonReentrant
@@ -118,11 +177,11 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         address owner = deposits[_tokenId].owner;
         if (amount0 > 0) {
             IERC20(token0).transfer(owner, amount0 / 2);
-            IERC20(token0).transfer(treasury, amount0 / 2);
+            IERC20(token0).transfer(treasury, amount0 - (amount0 / 2));
         }
         if (amount1 > 0) {
             IERC20(token1).transfer(owner, amount1 / 2);
-            IERC20(token1).transfer(treasury, amount1 / 2);
+            IERC20(token1).transfer(treasury, amount1 - (amount1 / 2));
         }
     }
 

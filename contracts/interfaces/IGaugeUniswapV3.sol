@@ -23,4 +23,18 @@ interface IGaugeUniswapV3 is IGauge, IERC721Receiver {
     function claimFees(uint256 _tokenId) external;
 
     function updateRewardFor(uint256 _tokenId) external;
+
+    function tokenOfOwnerByIndex(address owner, uint256 index)
+        external
+        view
+        returns (uint256);
+
+    function totalNFTSupply() external view returns (uint256);
+
+    function tokenByIndex(uint256 index) external view returns (uint256);
+
+    function isIdsWithinRange(uint256[] memory tokenIds)
+        external
+        view
+        returns (bool[] memory);
 }

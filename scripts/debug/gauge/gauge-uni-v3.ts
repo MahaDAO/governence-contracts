@@ -8,23 +8,24 @@ import { deployOrLoadAndVerify, getOutputAddress } from "../../utils";
 async function main() {
   const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
   const tokenA = "ARTH";
-  const tokenB = "WETH";
+  const tokenB = "MAHA";
   const fee = 10000;
   const registryAddr = await getOutputAddress("Registry");
-  const poolAddr = await getOutputAddress("ARTHWETH-UniV3-Pool");
+  const poolAddr = await getOutputAddress("ARTHMAHA-UniV3-Pool");
   const feeSplitter = "0x9032f1bd0cc645fde1b41941990da85f265a7623";
 
-  const whale = "0x77cd66d59ac48a0E7CE54fF16D9235a5fffF335E";
+  const deployerAddr = "0x77cd66d59ac48a0E7CE54fF16D9235a5fffF335E";
   const gnosisAddr = "0x6357EDbfE5aDA570005ceB8FAd3139eF5A8863CC";
 
   await impersonateAccount(gnosisAddr);
-  await impersonateAccount(whale);
+  await impersonateAccount(deployerAddr);
 
   setBalance(gnosisAddr, "0x56BC75E2D63100000");
+  setBalance(deployerAddr, "0x56BC75E2D63100000");
 
   const gnosis = await ethers.getSigner(gnosisAddr);
-  const deployer = await ethers.getSigner(whale);
-  const nftId = "411235";
+  const deployer = await ethers.getSigner(deployerAddr);
+  const nftId = "411480";
 
   // const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);
@@ -33,8 +34,6 @@ async function main() {
     ethers.getContractAt("IERC20", await getOutputAddress(tokenA)),
     ethers.getContractAt("IERC20", await getOutputAddress(tokenB)),
   ]);
-
-  const registry = await ethers.getContractAt("Registry", registryAddr);
 
   const uniswapNft = await ethers.getContractAt(
     "INonfungiblePositionManager",
@@ -54,11 +53,12 @@ async function main() {
     feeSplitter,
   ]);
 
-  const voter = await (await ethers.getContractFactory(`BaseV2Voter`)).deploy();
+  const voter = await ethers.getContractAt(
+    `BaseV2Voter`,
+    "0xEB99748e91AfCA94a6289db3b02E7ef4a8f0A22d"
+  );
 
   console.log("set voter");
-  await voter.connect(gnosis).initialize(registryAddr, gnosisAddr);
-  await registry.connect(gnosis).setVoter(voter.address);
 
   const implementation = await deployOrLoadAndVerify(
     `GaugeUniswapV3-Impl`,
@@ -73,19 +73,14 @@ async function main() {
   );
 
   const gauge = await ethers.getContractAt("GaugeUniswapV3", proxy.address);
-
   await voter.connect(gnosis).toggleWhitelist(proxy.address);
-  await voter.connect(gnosis).toggleWhitelist(poolAddr);
-  await voter
-    .connect(gnosis)
-    .toggleWhitelist(await getOutputAddress("ARTHWETH-Bribe"));
 
   // update
   await voter
     .connect(gnosis)
-    .registerGaugeBribe(
-      await getOutputAddress("ARTHWETH-UniV3-Pool"),
-      await getOutputAddress("ARTHWETH-Bribe"),
+    .updateGaugeBribe(
+      await getOutputAddress("ARTHMAHA-UniV3-Pool"),
+      await getOutputAddress("ARTHMAHA-Bribe"),
       proxy.address
     );
 
@@ -110,8 +105,8 @@ async function main() {
   ]);
 
   // voter
-  console.log("vote for pool");
-  await voter.connect(deployer).vote([poolAddr], [10000]);
+  // console.log("vote for pool");
+  // await voter.connect(deployer).vote([poolAddr], [10000]);
 
   // distribute rewards
   console.log("distribute rewards");
