@@ -20,7 +20,7 @@ async function main() {
     getOutputAddress(tokenB),
   ]);
 
-  const gaugeProxyAdmin = await getOutputAddress("MAHATimelockController-14d");
+  const gaugeProxyAdmin = "0x6357EDbfE5aDA570005ceB8FAd3139eF5A8863CC"; // await getOutputAddress("MAHATimelockController-14d");
 
   const BaseGaugeV3UniV3 = await ethers.getContractFactory("GaugeUniswapV3");
   const initData = BaseGaugeV3UniV3.interface.encodeFunctionData("initialize", [
@@ -29,7 +29,8 @@ async function main() {
     tokens[1], // address token1,
     fee, // uint24 fee,
     uniPositionManager, // INonfungiblePositionManager _nonfungiblePositionManager,
-    feeSplitter,
+    feeSplitter, // treasury
+    "0x77cd66d59ac48a0E7CE54fF16D9235a5fffF335E", // migrator
   ]);
 
   const implementation = await deployOrLoadAndVerify(

@@ -372,7 +372,22 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         return this.onERC721Received.selector;
     }
 
-    function changeStaker(address who, uint256 tokenId) external onlyOwner {}
+    function uploadStaker(address who, uint256 tokenId) external onlyOwner {
+        nonfungiblePositionManager.transferFrom(
+            msg.sender,
+            address(this),
+            tokenId
+        );
+        _onERC721Received(who, tokenId);
+    }
+
+    function transferNFT(uint256 tokenId) external onlyOwner {
+        nonfungiblePositionManager.transferFrom(
+            msg.sender,
+            address(this),
+            tokenId
+        );
+    }
 
     function notifyRewardAmount(address, uint256 reward)
         external

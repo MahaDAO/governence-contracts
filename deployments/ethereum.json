@@ -148,29 +148,29 @@
     "verified": false,
     "address": "0xEB99748e91AfCA94a6289db3b02E7ef4a8f0A22d"
   },
-  "GaugeUniswapV3-Impl": {
-    "abi": "GaugeUniswapV3",
-    "verified": true,
-    "address": "0x5441695f4445E40900b4c4B0Fb3eD2B9E51601A6"
-  },
   "ARTHMAHA-UniV3GaugeProxy": {
     "abi": "TransparentUpgradeableProxy",
     "verified": false,
-    "address": "0x8933bFD6870d323de86e4b96D1eF7F72c44fe1c3"
+    "address": "0x98e1701F6558Dd63481B57926c9F22c64d918C35"
   },
   "ARTHMAHA-GaugeUniswapV3": {
     "abi": "GaugeUniswapV3",
     "verified": true,
-    "address": "0x8933bFD6870d323de86e4b96D1eF7F72c44fe1c3"
+    "address": "0x98e1701F6558Dd63481B57926c9F22c64d918C35"
   },
   "ARTHWETH-UniV3GaugeProxy": {
     "abi": "TransparentUpgradeableProxy",
     "verified": false,
-    "address": "0x1693380b4013b1bcedD6424157566f0DAb79c9a3"
+    "address": "0x2E1dB01F87aB645321CB12048bBAB8a9538c61CC"
   },
   "ARTHWETH-GaugeUniswapV3": {
     "abi": "GaugeUniswapV3",
     "verified": true,
-    "address": "0x1693380b4013b1bcedD6424157566f0DAb79c9a3"
+    "address": "0x2E1dB01F87aB645321CB12048bBAB8a9538c61CC"
+  },
+  "GaugeUniswapV3-Impl": {
+    "abi": "GaugeUniswapV3",
+    "verified": true,
+    "address": "0x0b1b37c0d376e72d523319c6592f3A24D39912fD"
   }
 }
