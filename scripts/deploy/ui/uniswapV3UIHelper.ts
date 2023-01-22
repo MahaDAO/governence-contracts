@@ -17,10 +17,8 @@ async function main() {
 
   console.log(
     "boosted factor",
-    await helper.boostedFactor(
-      "0x7bb5bf0be8cb2d3f884389c0cadeef7b5f05e1c8", // gauge
-      411235, // tokenid
-      "0x77cd66d59ac48a0e7ce54ff16d9235a5ffff335e" // who
+    await helper.totalAmountsStaked(
+      "0x98e1701f6558dd63481b57926c9f22c64d918c35" // gauge
     )
   );
   console.log("is in range", await helper.isInRange(411235));
