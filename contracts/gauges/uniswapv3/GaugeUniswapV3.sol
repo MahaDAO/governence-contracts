@@ -121,8 +121,8 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         uint256 reward = rewards[_tokenId];
         if (reward > 0) {
             rewards[_tokenId] = 0;
-            IERC20(registry.maha()).transfer(deposits[_tokenId].owner, reward);
-            emit RewardPaid(deposits[_tokenId].owner, _tokenId, reward);
+            IERC20(registry.maha()).transfer(_deposits[_tokenId].owner, reward);
+            emit RewardPaid(_deposits[_tokenId].owner, _tokenId, reward);
         }
     }
 
@@ -142,7 +142,7 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
 
         uint256 __derivedLiquidity = _derivedLiquidity(liquidity, _from);
 
-        deposits[_tokenId] = Deposit({
+        _deposits[_tokenId] = Deposit({
             owner: _from,
             liquidity: liquidity,
             derivedLiquidity: __derivedLiquidity
@@ -187,19 +187,19 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
             _tokenId
         );
 
-        if (_liquidity == deposits[_tokenId].liquidity) return;
+        if (_liquidity == _deposits[_tokenId].liquidity) return;
 
-        address _who = deposits[_tokenId].owner;
+        address _who = _deposits[_tokenId].owner;
         uint256 __derivedLiquidity = _derivedLiquidity(_liquidity, _who);
 
         // remove old, add new derived liquidity
         totalSupply = totalSupply.add(__derivedLiquidity).sub(
-            deposits[_tokenId].derivedLiquidity
+            _deposits[_tokenId].derivedLiquidity
         );
 
         // update old
-        deposits[_tokenId].liquidity = _liquidity;
-        deposits[_tokenId].derivedLiquidity = __derivedLiquidity;
+        _deposits[_tokenId].liquidity = _liquidity;
+        _deposits[_tokenId].derivedLiquidity = __derivedLiquidity;
     }
 
     function _getLiquidityAndInRange(uint256 _tokenId)
@@ -241,7 +241,7 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
 
     function _earned(uint256 _tokenId) internal view returns (uint256) {
         return
-            deposits[_tokenId]
+            _deposits[_tokenId]
                 .derivedLiquidity
                 .mul(rewardPerToken().sub(userRewardPerTokenPaid[_tokenId]))
                 .div(1e18)
@@ -288,9 +288,9 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         // claim fees for the treasury
         _claimFees(tokenId);
 
-        require(deposits[tokenId].liquidity > 0, "Cannot withdraw 0");
-        totalSupply = totalSupply.sub(deposits[tokenId].derivedLiquidity);
-        delete deposits[tokenId];
+        require(_deposits[tokenId].liquidity > 0, "Cannot withdraw 0");
+        totalSupply = totalSupply.sub(_deposits[tokenId].derivedLiquidity);
+        delete _deposits[tokenId];
 
         // delete the nft from our array
         _removeTokenFromOwnerEnumeration(msg.sender, tokenId);
@@ -425,7 +425,7 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
     }
 
     function updateRewardFor(uint256 _tokenId) external override {
-        require(deposits[_tokenId].liquidity > 0, "liquidity is 0");
+        require(_deposits[_tokenId].liquidity > 0, "liquidity is 0");
         _updateReward(_tokenId);
     }
 }

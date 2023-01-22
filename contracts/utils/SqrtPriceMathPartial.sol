@@ -29,7 +29,7 @@ library SqrtPriceMathPartial {
         uint256 numerator1 = uint256(liquidity) << FixedPoint96.RESOLUTION;
         uint256 numerator2 = sqrtRatioBX96 - sqrtRatioAX96;
 
-        require(sqrtRatioAX96 > 0);
+        require(sqrtRatioAX96 > 0, "sqrtRatioAX96 = 0");
 
         return
             roundUp
@@ -61,17 +61,19 @@ library SqrtPriceMathPartial {
         if (sqrtRatioAX96 > sqrtRatioBX96)
             (sqrtRatioAX96, sqrtRatioBX96) = (sqrtRatioBX96, sqrtRatioAX96);
 
-        return
-            roundUp
-                ? FullMath.mulDivRoundingUp(
-                    liquidity,
-                    sqrtRatioBX96 - sqrtRatioAX96,
-                    FixedPoint96.Q96
-                )
-                : FullMath.mulDiv(
-                    liquidity,
-                    sqrtRatioBX96 - sqrtRatioAX96,
-                    FixedPoint96.Q96
-                );
+        unchecked {
+            return
+                roundUp
+                    ? FullMath.mulDivRoundingUp(
+                        liquidity,
+                        sqrtRatioBX96 - sqrtRatioAX96,
+                        FixedPoint96.Q96
+                    )
+                    : FullMath.mulDiv(
+                        liquidity,
+                        sqrtRatioBX96 - sqrtRatioAX96,
+                        FixedPoint96.Q96
+                    );
+        }
     }
 }

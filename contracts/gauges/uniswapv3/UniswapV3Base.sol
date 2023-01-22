@@ -15,13 +15,6 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
     using SafeMath for uint256;
     using SafeMath for uint128;
 
-    /// @notice Represents the deposit of a liquidity NFT
-    struct Deposit {
-        address owner;
-        uint128 liquidity;
-        uint256 derivedLiquidity;
-    }
-
     /* ========== STATE VARIABLES ========== */
     IRegistry public override registry;
     uint256 public lastUpdateTime;
@@ -35,7 +28,7 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
     uint256 public totalSupply;
 
     /// @dev all the NFT deposits
-    mapping(uint256 => Deposit) public deposits;
+    mapping(uint256 => Deposit) internal _deposits;
 
     /// @dev [nft token id => reward count] rewards
     mapping(uint256 => uint256) public rewards;
@@ -109,7 +102,7 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
     }
 
     function liquidity(uint256 _tokenId) external view returns (uint256) {
-        return deposits[_tokenId].liquidity;
+        return _deposits[_tokenId].liquidity;
     }
 
     function derivedLiquidity(uint256 _tokenId)
@@ -117,7 +110,7 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
         view
         returns (uint256)
     {
-        return deposits[_tokenId].derivedLiquidity;
+        return _deposits[_tokenId].derivedLiquidity;
     }
 
     function getRewardForDuration() external view returns (uint256) {
@@ -200,7 +193,7 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
     }
 
     modifier onlyTokenOwner(uint256 _tokenId) {
-        require(deposits[_tokenId].owner == msg.sender, "only tokenid owner");
+        require(_deposits[_tokenId].owner == msg.sender, "only tokenid owner");
         _;
     }
 
@@ -234,6 +227,15 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
 
     function totalNFTSupply() public view virtual override returns (uint256) {
         return _allTokens.length;
+    }
+
+    function deposits(uint256 index)
+        external
+        view
+        override
+        returns (Deposit memory)
+    {
+        return _deposits[index];
     }
 
     /* ========== EVENTS ========== */

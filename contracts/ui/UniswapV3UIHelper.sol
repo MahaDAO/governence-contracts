@@ -33,19 +33,37 @@ contract UniswapV3UIHelper {
         factory = IUniswapV3Factory(nonfungiblePositionManager.factory());
     }
 
-    function totalAmountsStaked(IGaugeUniswapV3 gauge)
+    struct TotalAmountsStakedReturnPosition {
+        uint256 a0;
+        uint256 a1;
+        uint128 liquidity;
+        uint256 derivedLiquidity;
+    }
+
+    struct TotalAmountsStakedReturn {
+        uint256 a0Total;
+        uint256 a1Total;
+        uint256 liquidityTotal;
+        uint256 derivedLiquidityTotal;
+        TotalAmountsStakedReturnPosition[] positions;
+    }
+
+    function amountsStaked(IGaugeUniswapV3 gauge)
         external
         view
-        returns (uint256 a0, uint256 a1)
+        returns (TotalAmountsStakedReturn memory ret)
     {
+        ret.positions = new TotalAmountsStakedReturnPosition[](
+            gauge.totalNFTSupply()
+        );
+
         for (uint256 i = 0; i < gauge.totalNFTSupply(); i++) {
             uint256 nftId = gauge.tokenByIndex(i);
-
             (
                 IUniswapV3Pool pool,
                 int24 _tickLower,
                 int24 _tickUpper,
-                uint128 liquidity
+                uint128 _liquidity
             ) = NFTPositionInfo.getPositionInfo(
                     factory,
                     nonfungiblePositionManager,
@@ -54,42 +72,82 @@ contract UniswapV3UIHelper {
 
             (uint160 sqrtRatioX96, int24 tick, , , , , ) = pool.slot0();
 
-            console.log(
-                "a0",
-                _amount0(
-                    _tickLower,
-                    _tickUpper,
-                    tick,
-                    liquidity,
-                    sqrtRatioX96
-                ) / 1e18
-            );
-
-            console.log(
-                "a1",
-                _amount1(
-                    _tickLower,
-                    _tickUpper,
-                    tick,
-                    liquidity,
-                    sqrtRatioX96
-                ) / 1e18
-            );
-
-            a0 += _amount0(
+            // capture position details
+            TotalAmountsStakedReturnPosition
+                memory p = TotalAmountsStakedReturnPosition({
+                    a0: 0,
+                    a1: 0,
+                    liquidity: 0,
+                    derivedLiquidity: 0
+                });
+            p.a0 = _amount0(
                 _tickLower,
                 _tickUpper,
                 tick,
-                liquidity,
+                _liquidity,
                 sqrtRatioX96
             );
-            a1 += _amount1(
+            p.a1 = _amount1(
                 _tickLower,
                 _tickUpper,
                 tick,
-                liquidity,
+                _liquidity,
                 sqrtRatioX96
             );
+            p.liquidity = _liquidity;
+            p.derivedLiquidity = gauge.deposits(nftId).derivedLiquidity;
+
+            // total it all up
+            ret.derivedLiquidityTotal += gauge.deposits(nftId).derivedLiquidity;
+            ret.liquidityTotal += _liquidity;
+            ret.a0Total += p.a0;
+            ret.a1Total += p.a1;
+
+            ret.positions[i] = p;
+        }
+    }
+
+    function totalAmountsStaked(IGaugeUniswapV3 gauge)
+        external
+        view
+        returns (
+            uint256 a0Total,
+            uint256 a1Total,
+            uint256 liquidityTotal,
+            uint256 derivedLiquidityTotal
+        )
+    {
+        for (uint256 i = 0; i < gauge.totalNFTSupply(); i++) {
+            uint256 nftId = gauge.tokenByIndex(i);
+            (
+                IUniswapV3Pool pool,
+                int24 _tickLower,
+                int24 _tickUpper,
+                uint128 _liquidity
+            ) = NFTPositionInfo.getPositionInfo(
+                    factory,
+                    nonfungiblePositionManager,
+                    nftId
+                );
+
+            (uint160 sqrtRatioX96, int24 tick, , , , , ) = pool.slot0();
+
+            a0Total += _amount0(
+                _tickLower,
+                _tickUpper,
+                tick,
+                _liquidity,
+                sqrtRatioX96
+            );
+            a1Total += _amount1(
+                _tickLower,
+                _tickUpper,
+                tick,
+                _liquidity,
+                sqrtRatioX96
+            );
+            liquidityTotal += _liquidity;
+            derivedLiquidityTotal += gauge.deposits(nftId).derivedLiquidity;
         }
     }
 
@@ -128,24 +186,22 @@ contract UniswapV3UIHelper {
         uint128 liquidity,
         uint160 sqrtRatioX96
     ) internal pure returns (uint256) {
-        if (tickCurrent < tickLower) {
+        if (tickCurrent < tickLower) return 0;
+        if (tickCurrent < tickUpper) {
             return
-                SqrtPriceMathPartial.getAmount0Delta(
+                SqrtPriceMathPartial.getAmount1Delta(
                     TickMath.getSqrtRatioAtTick(tickLower),
                     sqrtRatioX96,
                     liquidity,
                     false
                 );
-        } else if (tickCurrent < tickUpper) {
-            return
-                SqrtPriceMathPartial.getAmount0Delta(
-                    TickMath.getSqrtRatioAtTick(tickLower),
-                    TickMath.getSqrtRatioAtTick(tickUpper),
-                    liquidity,
-                    false
-                );
         }
-
-        return 0;
+        return
+            SqrtPriceMathPartial.getAmount1Delta(
+                TickMath.getSqrtRatioAtTick(tickLower),
+                TickMath.getSqrtRatioAtTick(tickUpper),
+                liquidity,
+                false
+            );
     }
 }

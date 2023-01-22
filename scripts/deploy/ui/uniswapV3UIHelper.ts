@@ -16,12 +16,18 @@ async function main() {
   );
 
   console.log(
-    "boosted factor",
+    "amountsStaked",
+    await helper.amountsStaked(
+      "0x98e1701f6558dd63481b57926c9f22c64d918c35" // gauge
+    )
+  );
+
+  console.log(
+    "totalAmountsStaked",
     await helper.totalAmountsStaked(
       "0x98e1701f6558dd63481b57926c9f22c64d918c35" // gauge
     )
   );
-  console.log("is in range", await helper.isInRange(411235));
 }
 
 main().catch((error) => {

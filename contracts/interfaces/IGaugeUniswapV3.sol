@@ -5,6 +5,13 @@ import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receive
 import {IGauge} from "./IGauge.sol";
 
 interface IGaugeUniswapV3 is IGauge, IERC721Receiver {
+    /// @notice Represents the deposit of a liquidity NFT
+    struct Deposit {
+        address owner;
+        uint128 liquidity;
+        uint256 derivedLiquidity;
+    }
+
     function earned(uint256 _tokenId) external view returns (uint256);
 
     function derivedLiquidity(uint128 _liquidity, address account)
@@ -37,4 +44,6 @@ interface IGaugeUniswapV3 is IGauge, IERC721Receiver {
         external
         view
         returns (bool[] memory);
+
+    function deposits(uint256 index) external view returns (Deposit memory);
 }
