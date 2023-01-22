@@ -6,6 +6,7 @@ import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {IGauge} from "../../interfaces/IGauge.sol";
 import {IGaugeUniswapV3} from "../../interfaces/IGaugeUniswapV3.sol";
@@ -16,9 +17,11 @@ import {NFTPositionInfo} from "../../utils/NFTPositionInfo.sol";
 import {UniswapV3Base} from "./UniswapV3Base.sol";
 import {VersionedInitializable} from "../../proxy/VersionedInitializable.sol";
 
-contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
+contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
     using SafeMath for uint256;
     using SafeMath for uint128;
+
+    address public treasury;
 
     function initialize(
         address _registry,
@@ -26,16 +29,19 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         address _token1,
         uint24 _fee,
         address _nonfungiblePositionManager,
-        address _treasury
+        address _treasury,
+        address _migrator
     ) public initializer {
         super._initialize(
             _registry,
             _token0,
             _token1,
             _fee,
-            _nonfungiblePositionManager,
-            _treasury
+            _nonfungiblePositionManager
         );
+
+        treasury = _treasury;
+        _transferOwnership(_migrator);
     }
 
     modifier updateReward(uint256 _tokenId) {
@@ -159,30 +165,19 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         rewards[_tokenId] = _earned(_tokenId);
         userRewardPerTokenPaid[_tokenId] = rewardPerTokenStored;
 
-        emit Staked(msg.sender, _tokenId, liquidity, __derivedLiquidity);
+        emit Staked(_from, _tokenId, liquidity, __derivedLiquidity);
     }
 
     function _claimFees(uint256 _tokenId) internal {
         // send fees to the treasury
-        (uint256 amount0, uint256 amount1) = nonfungiblePositionManager.collect(
+        nonfungiblePositionManager.collect(
             INonfungiblePositionManager.CollectParams({
                 tokenId: _tokenId,
-                recipient: address(this),
+                recipient: treasury,
                 amount0Max: type(uint128).max,
                 amount1Max: type(uint128).max
             })
         );
-
-        // send 50% to the owner, 50% to the DAO
-        address owner = deposits[_tokenId].owner;
-        if (amount0 > 0) {
-            IERC20(token0).transfer(owner, amount0 / 2);
-            IERC20(token0).transfer(treasury, amount0 - (amount0 / 2));
-        }
-        if (amount1 > 0) {
-            IERC20(token1).transfer(owner, amount1 / 2);
-            IERC20(token1).transfer(treasury, amount1 - (amount1 / 2));
-        }
     }
 
     function _updateLiquidity(uint256 _tokenId) private {
@@ -376,6 +371,8 @@ contract GaugeUniswapV3 is VersionedInitializable, UniswapV3Base {
         _onERC721Received(from, tokenId);
         return this.onERC721Received.selector;
     }
+
+    function changeStaker(address who, uint256 tokenId) external onlyOwner {}
 
     function notifyRewardAmount(address, uint256 reward)
         external

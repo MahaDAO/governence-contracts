@@ -67,8 +67,6 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
     /// @dev is the user attached to this gauge
     mapping(address => bool) public attached;
 
-    address public treasury;
-
     address token0;
     address token1;
     uint24 fee;
@@ -80,8 +78,7 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
         address _token0,
         address _token1,
         uint24 _fee,
-        address _nonfungiblePositionManager,
-        address _treasury
+        address _nonfungiblePositionManager
     ) internal {
         nonfungiblePositionManager = INonfungiblePositionManager(
             _nonfungiblePositionManager
@@ -98,7 +95,6 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
         maxBoostRequirement = 5000e18; // 5000 maha for max boost
 
         // record data
-        treasury = _treasury;
         token0 = _token0;
         token1 = _token1;
         fee = _fee;
