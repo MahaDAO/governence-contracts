@@ -53,11 +53,6 @@
     "verified": true,
     "address": "0x88860D30716202c9257720BD0c65563657c9Bb79"
   },
-  "MAHAReferralV1": {
-    "abi": "MAHAReferralV1",
-    "verified": true,
-    "address": "0x9D2390247921974b1A697a4ebC8CD88aBe93bF0A"
-  },
   "FeesSplitter": {
     "abi": "FeesSplitter",
     "verified": true,
@@ -172,5 +167,10 @@
     "abi": "FeeDistributor",
     "verified": false,
     "address": "0x5D3449E940d596127DE5Cc6469eeb13635f7e51e"
+  },
+  "MAHAReferralV1": {
+    "abi": "MAHAReferralV1",
+    "verified": true,
+    "address": "0x3A0815aCbBd463a09492f6621B73DE4b58200801"
   }
 }

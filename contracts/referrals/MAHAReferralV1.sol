@@ -27,12 +27,7 @@ contract MAHAReferralV1 is Ownable {
         locker = _locker;
         maha = _maha;
         minLockDuration = _minLockDuration;
-
-        maha.approve(
-            address(locker),
-            0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-        );
-
+        maha.approve(address(locker), type(uint256).max);
         me = address(this);
     }
 
