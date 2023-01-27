@@ -4,6 +4,7 @@ import csvParser from "csv-parser";
 import keccak256 from "keccak256";
 import { MerkleTree } from "merkletreejs";
 import Web3 from "web3";
+import { BigNumber } from "ethers";
 
 const web3 = new Web3();
 
@@ -16,21 +17,25 @@ type csvLine = {
 const token = "SCLP";
 
 const result: csvLine[] = [];
-const csvPath = path.resolve(__dirname, `./stake-snapshot-${token}.csv`);
+const csvPath = path.resolve(__dirname, `./stake-snapshot-${token}-v2.csv`);
 const outputPath = path.resolve(__dirname, `./stake-merkleProof-${token}.json`);
+
+const e18 = BigNumber.from(10).pow(18);
 
 fs.createReadStream(csvPath)
   .pipe(csvParser())
   .on("data", (data: csvLine) => result.push(data))
   .on("end", () => {
+    const toE18 = (a: number) => e18.mul(Math.floor(a * 1000)).div(1000);
+
     const constructArray = () =>
       result
         .filter((d) => Number(d.amount) > 0)
         .map((data) => {
           return {
-            owner: data.owner,
             id: data.id,
-            amount: data.amount,
+            amount: toE18(Number(data.amount)).toString(),
+            amountE18: data.amount,
           };
         })
         .filter((d) => d != null);
@@ -39,8 +44,8 @@ fs.createReadStream(csvPath)
     const leaves = arrayData.map((item: any) =>
       keccak256(
         web3.eth.abi.encodeParameters(
-          ["address", "uint256", "uint256"],
-          [item.owner, item.amount, item.id]
+          ["uint256", "uint256"],
+          [item.amount, item.id]
         )
       )
     );

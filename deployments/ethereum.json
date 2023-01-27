@@ -48,30 +48,10 @@
     "verified": true,
     "address": "0x469122E0aB2D8a6FE9f28AeCad9C4f1a6821C5E0"
   },
-  "SCLPPendingFeeDistributor": {
-    "abi": "PendingFeeDistributor",
-    "verified": true,
-    "address": "0xc06CE49b9Ccf6c5917c63279E0C82499E4501f73"
-  },
-  "SCLPFeeDistributor": {
-    "abi": "FeeDistributor",
-    "verified": true,
-    "address": "0xCF61094829e68C4539E0378D31197204dA53b5E0"
-  },
   "MultiFeeDistributor": {
     "abi": "MultiFeeDistributor",
     "verified": true,
     "address": "0x88860D30716202c9257720BD0c65563657c9Bb79"
-  },
-  "MAHAPendingFeeDistributor": {
-    "abi": "PendingFeeDistributor",
-    "verified": true,
-    "address": "0x33d9f817AF2C507E20c8039a6786d1a1E5524fCF"
-  },
-  "MAHAFeeDistributor": {
-    "abi": "FeeDistributor",
-    "verified": true,
-    "address": "0x587717B60bA3F383C097089D9414576a5a63D7e0"
   },
   "MAHAReferralV1": {
     "abi": "MAHAReferralV1",
@@ -172,5 +152,25 @@
     "abi": "GaugeUniswapV3",
     "verified": true,
     "address": "0x0b1b37c0d376e72d523319c6592f3A24D39912fD"
+  },
+  "MAHAPendingFeeDistributor": {
+    "abi": "PendingFeeDistributor",
+    "verified": true,
+    "address": "0xEDe13A2f72eaDd2262818c535d456c1D63CCe90B"
+  },
+  "MAHAFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": false,
+    "address": "0x48afCdf93711707A05106B17e24DC830f248Ca89"
+  },
+  "SCLPPendingFeeDistributor": {
+    "abi": "PendingFeeDistributor",
+    "verified": false,
+    "address": "0xF6D51cf808A7A848ea825D41DD2651C4AF236fe1"
+  },
+  "SCLPFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": false,
+    "address": "0x5D3449E940d596127DE5Cc6469eeb13635f7e51e"
   }
 }

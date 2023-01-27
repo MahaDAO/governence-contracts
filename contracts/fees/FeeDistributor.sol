@@ -45,7 +45,8 @@ contract FeeDistributor is
     constructor(
         address _votingEscrow,
         address _token,
-        address _pendingFeeDistributor
+        address _pendingFeeDistributor,
+        address _owner
     ) {
         uint256 t = (block.timestamp / WEEK) * WEEK;
         startTime = t;
@@ -54,6 +55,8 @@ contract FeeDistributor is
         token = IERC20(_token);
         locker = INFTLocker(_votingEscrow);
         pendingFeeDistributor = IPendingFeeDistributor(_pendingFeeDistributor);
+
+        _transferOwnership(_owner);
     }
 
     function _checkpointToken(uint256 timestamp) internal {
@@ -317,19 +320,13 @@ contract FeeDistributor is
 
     function claimWithPendingRewards(
         uint256 id,
-        address _who,
         uint256 _reward,
         bytes32[] memory _proof
     ) external override nonReentrant returns (uint256) {
         uint256 amt1 = _claimWithChecks(id);
 
         if (address(pendingFeeDistributor) == address(0)) return amt1;
-        uint256 amt2 = pendingFeeDistributor.distribute(
-            id,
-            _who,
-            _reward,
-            _proof
-        );
+        uint256 amt2 = pendingFeeDistributor.distribute(id, _reward, _proof);
 
         return amt1 + amt2;
     }
@@ -397,6 +394,10 @@ contract FeeDistributor is
 
     function setPendingFeeDistributor(address _what) external onlyOwner {
         pendingFeeDistributor = IPendingFeeDistributor(_what);
+    }
+
+    function setRewardToken(address _what) external onlyOwner {
+        token = IERC20(_what);
     }
 
     function recoverBalance(IERC20 _coin) external onlyOwner {

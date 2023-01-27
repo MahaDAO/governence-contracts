@@ -5,10 +5,10 @@ import { deployOrLoadAndVerify, getOutputAddress } from "../utils";
 async function main() {
   console.log(`Deploying migrator to ${network.name}`);
 
-  const tokenSymbol = "MAHA";
+  const tokenSymbol = "SCLP";
 
   const [deployer] = await ethers.getSigners();
-  console.log(`Deployer address is ${deployer.address}`);
+  console.log(`deployer address is ${deployer.address}`);
 
   const pendingFeeDistributor = await getOutputAddress(
     `${tokenSymbol}PendingFeeDistributor`
@@ -27,6 +27,7 @@ async function main() {
       await getOutputAddress("MAHAXLocker"),
       token.address,
       pendingFeeDistributor,
+      await getOutputAddress("MAHATimelockController-14d"),
     ]
   );
 

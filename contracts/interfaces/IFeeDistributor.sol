@@ -22,7 +22,6 @@ interface IFeeDistributor {
 
     function claimWithPendingRewards(
         uint256 id,
-        address _who,
         uint256 _reward,
         bytes32[] memory _proof
     ) external returns (uint256);

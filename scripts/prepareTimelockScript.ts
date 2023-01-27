@@ -18,7 +18,7 @@ async function main() {
 
   const timelock = await ethers.getContractAt(
     "MAHATimelockController",
-    "0xd9333e02a4d85611d0f0498b858b2ae3c29de6fb"
+    "0x43c958AFFe41D44F0a02aE177b591E93c86AdbEa"
   );
 
   // grant proposer and executor roles
@@ -32,10 +32,18 @@ async function main() {
   const execute: [string, number, string, string, string] = [
     "0x8cc0f052fff7ead7f2edcccac895502e884a8a71", // address target, arth
     0, // uint256 value
-    "0xf2fde38b0000000000000000000000006357EDbfE5aDA570005ceB8FAd3139eF5A8863CC", // bytes calldata data, transferOwnership
-    "0x3bea49a617a7a55669003cbba150816d681e9d895026257ac71dde85b775a1fe", // bytes32 predecessor,
+    "0x41f8b949000000000000000000000000aefb39d1bc9f5f506730005ec96ff10b4ded8dda", // bytes calldata data, toggleTroveManager
+    "0x0000000000000000000000000000000000000000000000000000000000000000", // bytes32 predecessor,
     "0x724e78da000000000000000000000000cb056c17ce063f20a8d0650f30550b20", // bytes32 salt,
   ];
+
+  const arth = await ethers.getContractAt("ARTHValuecoin", execute[0]);
+  console.log(
+    "tm address",
+    await arth.troveManagerAddresses(
+      "0xaefb39d1bc9f5f506730005ec96ff10b4ded8dda"
+    )
+  );
 
   console.log(`creating timelock tx...`);
   const hash = await timelock.hashOperation(
@@ -53,7 +61,7 @@ async function main() {
     execute[2],
     execute[3],
     execute[4],
-    1036800 // uint256 delay
+    await timelock.getMinDelay() // uint256 delay
   );
   console.log(`tx ${tx.hash}`);
 
@@ -79,8 +87,12 @@ async function main() {
   console.log(`tx2 ${tx2.hash}`);
 
   // now check whatever we want here
-  const arth = await ethers.getContractAt("Ownable", execute[0]);
-  console.log("owner", await arth.owner());
+  console.log(
+    "tm address",
+    await arth.troveManagerAddresses(
+      "0xaefb39d1bc9f5f506730005ec96ff10b4ded8dda"
+    )
+  );
 }
 
 main().catch((error) => {
