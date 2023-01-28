@@ -35,7 +35,7 @@ contract WhitelistGiveaway is Ownable, MerkleWhitelist {
         require(maha.balanceOf(me) >= lockAmount, "freemint is over.");
         require(block.timestamp >= startTime, "freemint is not yet open");
 
-        locker.createLockFor(
+        locker.creat eLockFor(
             lockAmount,
             block.timestamp + lockDuration,
             msg.sender,
