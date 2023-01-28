@@ -8,8 +8,11 @@ contract MerkleWhitelist {
     bytes32 public merkleRoot;
     mapping(address => bool) internal whitelistCache;
 
+    event SetMerkleRoot(address who, bytes32 root);
+
     function _setMerkleRoot(bytes32 root) internal {
         merkleRoot = root;
+        emit SetMerkleRoot(msg.sender, root);
     }
 
     function isWhitelisted(address _who, bytes32[] memory proof)
