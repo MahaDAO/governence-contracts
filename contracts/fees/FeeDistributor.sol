@@ -142,7 +142,6 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuard, Initializable {
     }
 
     function _checkpointTotalSupply(uint256 timestamp) internal {
-        // console.log("_checkpointTotalSupply(...)");
         uint256 t = timeCursor;
         uint256 roundedTimestamp = (timestamp / WEEK) * WEEK;
 
@@ -158,12 +157,6 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuard, Initializable {
 
                 if (t > pt.ts) dt = int128(uint128(t - pt.ts));
                 veSupply[t] = Math.max(uint128(pt.bias - pt.slope * dt), 0);
-
-                // console.log("_checkpointTotalSupply(...) t", t);
-                // console.log(
-                //     "_checkpointTotalSupply(...) veSupply t",
-                //     veSupply[t]
-                // );
             }
 
             t += WEEK;
@@ -182,19 +175,15 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuard, Initializable {
     {
         require(locker.isStaked(nftId), "nft not staked");
 
-        // console.log("inside claim");
-
         uint256 userEpoch = 0;
         uint256 toDistribute = 0;
 
         uint256 maxUserEpoch = locker.userPointEpoch(nftId);
         uint256 _startTime = startTime;
 
-        // console.log("if maxUserEpoch = 0", maxUserEpoch);
         if (maxUserEpoch == 0) return 0;
 
         uint256 weekCursor = timeCursorOf[nftId];
-        // console.log("weekCursor     =", weekCursor);
 
         if (weekCursor == 0)
             userEpoch = _findTimestampUserEpoch(
@@ -211,19 +200,8 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuard, Initializable {
             userEpoch
         );
 
-        // console.log("userEpoch      =", userEpoch);
-        // console.log("weekCursor     =", weekCursor);
-
         if (weekCursor == 0)
             weekCursor = ((userPoint.ts + WEEK - 1) / WEEK) * WEEK;
-
-        // console.log("weekCursor     =", weekCursor);
-        // console.log("_lastTokenTime =", _lastTokenTime);
-        // console.log("_startTime     =", _startTime);
-        // console.log(
-        //     "weekCursor >= _lastTokenTime",
-        //     weekCursor >= _lastTokenTime
-        // );
 
         if (weekCursor >= _lastTokenTime) return 0;
 
@@ -247,9 +225,6 @@ contract FeeDistributor is IFeeDistributor, ReentrancyGuard, Initializable {
                     uint128(oldUserPoint.bias - dt * oldUserPoint.slope),
                     0
                 );
-
-                // console.log("weekCursor", weekCursor);
-                // console.log("veSupply[weekCursor]", veSupply[weekCursor]);
 
                 if (balanceOf == 0 && userEpoch > maxUserEpoch) break;
                 if (balanceOf > 0)

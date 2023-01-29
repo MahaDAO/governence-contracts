@@ -10,7 +10,7 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Using wallet address: ${deployer.address}.`);
 
-  const token = "MAHA";
+  const token = "SCLP";
 
   const locker = await ethers.getContractAt(
     "MAHAXLocker",
@@ -19,7 +19,7 @@ async function main() {
 
   const feeDistributor = await ethers.getContractAt(
     "FeeDistributor",
-    "0xcf61094829e68c4539e0378d31197204da53b5e0"
+    "0xCF61094829e68C4539E0378D31197204dA53b5E0"
   );
 
   console.log(`deployer address is ${deployer.address}.`);
@@ -30,7 +30,6 @@ async function main() {
 
   let data = "id,owner,amount,amounte18\n";
   for (let i = 0; i <= 593; i++) {
-    if (i !== 14) continue;
     const isStaked = await locker.isStaked(i);
     console.log(`Fetching stake details for ${i}`);
     if (!isStaked) continue;
@@ -43,10 +42,7 @@ async function main() {
     const amounte18 = amount.mul(1000).div(e18).toNumber() / 1000;
     data += `${i},${owner},${amount.toString()},${amounte18}\n`;
 
-    // fs.writeFileSync(
-    //   path.resolve(__dirname, `./stake-ownership-${token}.csv`),
-    //   data
-    // );
+    fs.writeFileSync(path.resolve(__dirname, `./ownership-${token}.csv`), data);
   }
 }
 

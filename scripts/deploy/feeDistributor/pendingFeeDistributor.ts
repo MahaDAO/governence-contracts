@@ -1,12 +1,12 @@
 import { ethers, network } from "hardhat";
-import { deployOrLoadAndVerify, getOutputAddress } from "../utils";
+import { deployOrLoadAndVerify, getOutputAddress } from "../../utils";
 
 async function main() {
   console.log(`Deploying migrator to ${network.name}`);
 
-  const token = "SCLP";
+  const token = "MAHA";
   const _merkleRoot =
-    "0x30791d15d7dea3fd38f0628428e4f9c436c975364f77c23deb7d4791057f18e6";
+    "0x865730c4a374e78f7f2d6d98afb629a38bb34e5cf9b36c9c361d7576d3fd8d62";
 
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);

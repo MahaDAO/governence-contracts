@@ -61,4 +61,8 @@ contract PendingFeeDistributor is
     function refund(IERC20 token) external onlyOwner {
         token.transfer(msg.sender, token.balanceOf(address(this)));
     }
+
+    function setProof(bytes32 _merkleRoot) external onlyOwner {
+        merkleRoot = _merkleRoot;
+    }
 }

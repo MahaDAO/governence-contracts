@@ -148,29 +148,34 @@
     "verified": true,
     "address": "0x0b1b37c0d376e72d523319c6592f3A24D39912fD"
   },
-  "MAHAPendingFeeDistributor": {
-    "abi": "PendingFeeDistributor",
-    "verified": true,
-    "address": "0xEDe13A2f72eaDd2262818c535d456c1D63CCe90B"
-  },
-  "MAHAFeeDistributor": {
-    "abi": "FeeDistributor",
-    "verified": false,
-    "address": "0x48afCdf93711707A05106B17e24DC830f248Ca89"
-  },
-  "SCLPPendingFeeDistributor": {
-    "abi": "PendingFeeDistributor",
-    "verified": false,
-    "address": "0xF6D51cf808A7A848ea825D41DD2651C4AF236fe1"
-  },
-  "SCLPFeeDistributor": {
-    "abi": "FeeDistributor",
-    "verified": false,
-    "address": "0x5D3449E940d596127DE5Cc6469eeb13635f7e51e"
-  },
   "MAHAReferralV1": {
     "abi": "MAHAReferralV1",
     "verified": true,
     "address": "0x3A0815aCbBd463a09492f6621B73DE4b58200801"
+  },
+  "SCLPPendingFeeDistributor": {
+    "abi": "PendingFeeDistributor",
+    "verified": true,
+    "address": "0x11E853666678d3Bb5818f43744C5861Aae5fAD6E"
+  },
+  "MAHAPendingFeeDistributor": {
+    "abi": "PendingFeeDistributor",
+    "verified": false,
+    "address": "0x03093674790726dCBf4884808538c9d807d14776"
+  },
+  "FeeDistributor-Impl": {
+    "abi": "FeeDistributor",
+    "verified": true,
+    "address": "0xbF90A7FdDa6B8674C731f1f949e47C177aCA8FF5"
+  },
+  "SCLPFeeDistributor": {
+    "abi": "TransparentUpgradeableProxy",
+    "verified": true,
+    "address": "0xBcc8b09D85fabd90BDA773cA762C341cfaBc3e2B"
+  },
+  "MAHAFeeDistributor": {
+    "abi": "TransparentUpgradeableProxy",
+    "verified": false,
+    "address": "0x5094B4C40E8d7c9a7522349AFCE1032237e35f20"
   }
 }
