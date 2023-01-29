@@ -5,27 +5,18 @@ pragma solidity ^0.8.0;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import {Operator} from "../utils/Operator.sol";
 import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 import {INFTLocker} from "../interfaces/INFTLocker.sol";
-
-import {console} from "hardhat/console.sol";
 import {IPendingFeeDistributor} from "../interfaces/IPendingFeeDistributor.sol";
 
-contract FeeDistributor is
-    Operator,
-    IFeeDistributor,
-    ReentrancyGuard,
-    Initializable
-{
-    uint256 public constant WEEK = 7 * 86400;
-    uint256 public constant TOKEN_CHECKPOINT_DEADLINE = 86400;
-
+contract FeeDistributor is IFeeDistributor, ReentrancyGuard, Initializable {
+    uint256 public WEEK;
+    uint256 public TOKEN_CHECKPOINT_DEADLINE;
     uint256 public startTime;
     uint256 public timeCursor;
+
     mapping(uint256 => uint256) public timeCursorOf;
     mapping(uint256 => uint256) public userEpochOf;
 
@@ -39,24 +30,25 @@ contract FeeDistributor is
     uint256[1000000000000000] public veSupply; // VE total supply at week bounds
 
     bool public isKilled;
-    bool public canCheckpointToken = true;
     IPendingFeeDistributor public pendingFeeDistributor;
 
-    constructor(
+    function initialize(
         address _votingEscrow,
         address _token,
-        address _pendingFeeDistributor,
-        address _owner
-    ) {
+        address _pendingFeeDistributor
+    ) external initializer {
+        WEEK = 7 * 86400;
+        TOKEN_CHECKPOINT_DEADLINE = 86400;
+
+        // round off the time
         uint256 t = (block.timestamp / WEEK) * WEEK;
         startTime = t;
         lastTokenTime = t;
         timeCursor = t;
+
         token = IERC20(_token);
         locker = INFTLocker(_votingEscrow);
         pendingFeeDistributor = IPendingFeeDistributor(_pendingFeeDistributor);
-
-        _transferOwnership(_owner);
     }
 
     function _checkpointToken(uint256 timestamp) internal {
@@ -99,11 +91,8 @@ contract FeeDistributor is
 
     function checkpointToken() external override {
         require(
-            msg.sender == operator() ||
-                (canCheckpointToken &&
-                    (block.timestamp >
-                        lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)),
-            "not operator or not allowed"
+            ((block.timestamp > lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)),
+            "cant checkpoint now"
         );
         _checkpointToken(block.timestamp);
     }
@@ -288,10 +277,7 @@ contract FeeDistributor is
 
         uint256 _lastTokenTime = lastTokenTime;
 
-        if (
-            canCheckpointToken &&
-            (block.timestamp > lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)
-        ) {
+        if ((block.timestamp > lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)) {
             _checkpointToken(block.timestamp);
             _lastTokenTime = block.timestamp;
         }
@@ -343,10 +329,7 @@ contract FeeDistributor is
 
         uint256 _lastTokenTime = lastTokenTime;
 
-        if (
-            canCheckpointToken &&
-            (block.timestamp > lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)
-        ) {
+        if ((block.timestamp > lastTokenTime + TOKEN_CHECKPOINT_DEADLINE)) {
             _checkpointToken(block.timestamp);
             _lastTokenTime = block.timestamp;
         }
@@ -364,43 +347,5 @@ contract FeeDistributor is
         }
 
         return true;
-    }
-
-    // @external
-    // def burn(_coin: address) -> bool:
-    //     """
-    //     @notice Receive 3CRV into the contract and trigger a token checkpoint
-    //     @param _coin Address of the coin being received (must be 3CRV)
-    //     @return bool success
-    //     """
-    //     assert _coin == self.token
-    //     assert not self.isKilled
-    //     amount: uint256 = ERC20(_coin).balanceOf(msg.sender)
-    //     if amount != 0:
-    //         ERC20(_coin).transferFrom(msg.sender, self, amount)
-    //         if self.canCheckpointToken and (block.timestamp > self.lastTokenTime + TOKEN_CHECKPOINT_DEADLINE):
-    //             self._checkpoint_token()
-    //     return True
-
-    function toggleAllowCheckpointToken() external onlyOwner {
-        canCheckpointToken = !canCheckpointToken;
-        emit ToggleAllowCheckpointToken(canCheckpointToken);
-    }
-
-    function killMe() external onlyOwner {
-        isKilled = true;
-        token.transfer(msg.sender, token.balanceOf(address(this)));
-    }
-
-    function setPendingFeeDistributor(address _what) external onlyOwner {
-        pendingFeeDistributor = IPendingFeeDistributor(_what);
-    }
-
-    function setRewardToken(address _what) external onlyOwner {
-        token = IERC20(_what);
-    }
-
-    function recoverBalance(IERC20 _coin) external onlyOwner {
-        _coin.transfer(msg.sender, _coin.balanceOf(address(this)));
     }
 }

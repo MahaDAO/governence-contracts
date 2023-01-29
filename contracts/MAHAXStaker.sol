@@ -140,7 +140,7 @@ contract MAHAXStaker is
 
     /// @dev ban a NFT from stake; ideally should be used with NFTs that are staked but listed on opensea.
     /// Should be called from a smart contract
-    function banFromStake(uint256 _tokenId) external {
+    function banFromStake(uint256 _tokenId) external override {
         _checkRole(KICK_FROM_STAKE_ROLE, msg.sender);
         _unstake(_tokenId);
     }
