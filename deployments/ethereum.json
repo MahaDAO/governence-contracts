@@ -63,11 +63,6 @@
     "verified": true,
     "address": "0x43c958AFFe41D44F0a02aE177b591E93c86AdbEa"
   },
-  "MAHAXGovernor": {
-    "abi": "MAHAXGovernor",
-    "verified": true,
-    "address": "0x0fBd92eA11e23D959E1489A9Abb84ae2E4778D31"
-  },
   "MAHAXVetoGovernor": {
     "abi": "MAHAXVetoGovernor",
     "verified": true,
@@ -177,5 +172,10 @@
     "abi": "TransparentUpgradeableProxy",
     "verified": false,
     "address": "0x5094B4C40E8d7c9a7522349AFCE1032237e35f20"
+  },
+  "MAHAXGovernor": {
+    "abi": "MAHAXGovernor",
+    "verified": false,
+    "address": "0xe7D23C2B3E9148c46ceC796F018842ab72D5867F"
   }
 }

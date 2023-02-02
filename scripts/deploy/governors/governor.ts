@@ -15,7 +15,7 @@ async function main() {
 
   // Get all the deployed smart contracts.
   const registry = await getOutputAddress("Registry");
-  const timelock = await getOutputAddress("TimelockController");
+  const timelock = await getOutputAddress("MAHATimelockController-14d");
 
   await deployOrLoadAndVerify("MAHAXGovernor", "MAHAXGovernor", [
     registry,
@@ -23,8 +23,8 @@ async function main() {
     6545, // 1 day voting extension
     6545, // 1 day voting delay
     26182, // 4 day
-    ethers.BigNumber.from(10).pow(18).mul(250), // 250 mahax
-    ethers.BigNumber.from(10).pow(18).mul(50000), // 50k mahax quorum
+    ethers.BigNumber.from(10).pow(18).mul(250), // 250 mahax min
+    ethers.BigNumber.from(10).pow(18).mul(100000), // 100k mahax quorum
   ]);
 }
 
