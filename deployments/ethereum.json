@@ -175,7 +175,12 @@
   },
   "MAHAXGovernor": {
     "abi": "MAHAXGovernor",
-    "verified": false,
+    "verified": true,
     "address": "0xe7D23C2B3E9148c46ceC796F018842ab72D5867F"
+  },
+  "MAHASplitKeeper": {
+    "abi": "MAHASplitKeeper",
+    "verified": true,
+    "address": "0xd3408050f18024E9412311A3aFf8B8294f083f67"
   }
 }

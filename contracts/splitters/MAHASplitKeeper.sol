@@ -8,9 +8,9 @@ import {KeeperCompatibleInterface} from "../interfaces/KeeperCompatibleInterface
 import {Epoch} from "../utils/Epoch.sol";
 
 interface ICommunityFund {
-    function release(IERC20 token) external;
+    function release() external;
 
-    function releasableAmount(IERC20 token) external view returns (uint256);
+    function releasableAmount() external view returns (uint256);
 }
 
 /**
@@ -27,22 +27,25 @@ contract MAHASplitKeeper is Epoch, FeesSplitter, KeeperCompatibleInterface {
         address[] memory _accounts,
         uint32[] memory _percentAllocations,
         IERC20 _maha,
-        ICommunityFund _fund
+        ICommunityFund _fund,
+        address _owner
     )
         FeesSplitter(_accounts, _percentAllocations)
         Epoch(86400 * 30, block.timestamp, 0)
     {
         maha = _maha;
         communityFund = _fund;
+
+        _transferOwnership(_owner);
     }
 
     function releaseAndDistributeMAHA() public {
-        communityFund.release(maha);
+        communityFund.release();
         distributeERC20(maha);
     }
 
     function releasable() public view returns (uint256) {
-        return communityFund.releasableAmount(maha);
+        return communityFund.releasableAmount();
     }
 
     function distributeMAHA() public {
