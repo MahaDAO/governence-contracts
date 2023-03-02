@@ -1,7 +1,57 @@
 {
+  "MAHA": {
+    "abi": "MockERC20",
+    "verified": true,
+    "address": "0x90344dD6Dc73A6FDa00A9e8315065662cFf43228"
+  },
+  "MAHATimelockController": {
+    "abi": "MAHATimelockController",
+    "verified": true,
+    "address": "0x2B9F4A54333E3A5CBfC6221dE328f377C11372f1"
+  },
+  "Registry": {
+    "abi": "Registry",
+    "verified": true,
+    "address": "0x8aDF73Ae6E54F988920Dd37249461d1472b24682"
+  },
+  "RenderingContract": {
+    "abi": "RenderingContract",
+    "verified": true,
+    "address": "0x6C65E99Bb25079b51A4928DC1A196CD067811de4"
+  },
+  "MAHAXGovernor": {
+    "abi": "MAHAXGovernor",
+    "verified": true,
+    "address": "0x40B34FD4CFAFF73E1b037De83328eBD2D9b7EEFb"
+  },
+  "MAHAXStaker": {
+    "abi": "MAHAXStaker",
+    "verified": true,
+    "address": "0x7224c3C6b8c2815Ed12D0436ba3650f3E5476531"
+  },
+  "MAHAXLocker": {
+    "abi": "MAHAXLocker",
+    "verified": true,
+    "address": "0xD2125a722d28C7685AEd658A3Ddc7b08275b8Aeb"
+  },
+  "EmissionController": {
+    "abi": "EmissionController",
+    "verified": true,
+    "address": "0x9ee8110c0aACb7f9147252d7A2D95a5ff52F8496"
+  },
+  "BaseV2Voter": {
+    "abi": "BaseV2Voter",
+    "verified": true,
+    "address": "0x7d4B79ED098c1a593512525201a0ec27aEaA9F9B"
+  },
   "MAHAFeeDistributor": {
     "abi": "FeeDistributor",
     "verified": true,
-    "address": "0x9D55cd684F644F16718C674D3011e0DB2E5f31FD"
+    "address": "0x3b49D7dbce1a19D02c1D85c74D55d8ab49577A2b"
+  },
+  "MAHAReferralV1": {
+    "abi": "MAHAReferralV1",
+    "verified": true,
+    "address": "0xBd86A195c90ceC4606dBC378Ea0aa338f674a704"
   }
 }

@@ -23,11 +23,11 @@ async function main() {
     ]
   );
 
-  console.log(
-    await maha.balanceOf(deployer.address),
-    deployer.address,
-    maha.address
-  );
+  // console.log(
+  //   await maha.balanceOf(deployer.address),
+  //   deployer.address,
+  //   maha.address
+  // );
 
   // await maha
   //   .connect(deployer)
