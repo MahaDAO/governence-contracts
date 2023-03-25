@@ -177,5 +177,20 @@
     "abi": "TransparentUpgradeableProxy",
     "verified": false,
     "address": "0x5956a0AAC5b20Ab32c2eFB183CB8798e6611aC11"
+  },
+  "MAHAWETH-Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x9118CC5F638A84745F7FB9E1c24Be803A5fDCB3E"
+  },
+  "MAHAWETH-UniV3-Pool": {
+    "abi": "IUniswapV3Pool",
+    "verified": true,
+    "address": "0xB28Ddf1Ee8EE014eAfBecD8De979AC8D297931C7"
+  },
+  "MAHAWETH-GaugeUniswapV3": {
+    "abi": "GaugeUniswapV3",
+    "verified": true,
+    "address": "0x5956a0AAC5b20Ab32c2eFB183CB8798e6611aC11"
   }
 }
