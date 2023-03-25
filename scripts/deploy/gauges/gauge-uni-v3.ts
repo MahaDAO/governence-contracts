@@ -5,7 +5,7 @@ async function main() {
   console.log(`Deploying governance to ${network.name}`);
 
   const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
-  const tokenA = "ARTH";
+  const tokenA = "MAHA";
   const tokenB = "WETH";
   const fee = 10000;
   const registry = await getOutputAddress("Registry");
@@ -30,7 +30,6 @@ async function main() {
     fee, // uint24 fee,
     uniPositionManager, // INonfungiblePositionManager _nonfungiblePositionManager,
     feeSplitter, // treasury
-    "0x77cd66d59ac48a0E7CE54fF16D9235a5fffF335E", // migrator
   ]);
 
   const implementation = await deployOrLoadAndVerify(
