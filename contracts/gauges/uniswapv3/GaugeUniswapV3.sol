@@ -131,6 +131,8 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         require(inRange, "liquidty not in range");
         require(liquidity > 0, "cannot stake 0 liquidity");
 
+        _updateReward(_tokenId);
+
         uint256 __derivedLiquidity = _derivedLiquidity(liquidity, _from);
 
         _deposits[_tokenId] = Deposit({
