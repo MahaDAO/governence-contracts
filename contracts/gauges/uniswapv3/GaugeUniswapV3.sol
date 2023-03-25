@@ -29,8 +29,7 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         address _token1,
         uint24 _fee,
         address _nonfungiblePositionManager,
-        address _treasury,
-        address _migrator
+        address _treasury
     ) public initializer {
         super._initialize(
             _registry,
@@ -41,7 +40,7 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         );
 
         treasury = _treasury;
-        _transferOwnership(_migrator);
+        _transferOwnership(address(0));
     }
 
     modifier updateReward(uint256 _tokenId) {
