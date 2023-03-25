@@ -53,14 +53,13 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         return 2;
     }
 
-    function boostedFactor(uint256 tokenId, address who)
+    function boostedFactor(
+        uint256 tokenId,
+        address who
+    )
         external
         view
-        returns (
-            uint256 original,
-            uint256 boosted,
-            uint256 factor
-        )
+        returns (uint256 original, uint256 boosted, uint256 factor)
     {
         (, , , uint128 _liquidity) = NFTPositionInfo.getPositionInfo(
             factory,
@@ -73,12 +72,9 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         factor = (boosted * 1e18) / original;
     }
 
-    function isIdsWithinRange(uint256[] memory tokenIds)
-        external
-        view
-        override
-        returns (bool[] memory)
-    {
+    function isIdsWithinRange(
+        uint256[] memory tokenIds
+    ) external view override returns (bool[] memory) {
         bool[] memory ret = new bool[](tokenIds.length);
         for (uint256 index = 0; index < tokenIds.length; index++) {
             uint256 tokenId = tokenIds[index];
@@ -100,24 +96,19 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         return ret;
     }
 
-    function getLiquidityAndInRange(uint256 _tokenId)
+    function getLiquidityAndInRange(
+        uint256 _tokenId
+    )
         external
         view
-        returns (
-            IUniswapV3Pool _p,
-            bool _inRange,
-            uint128 liquidity
-        )
+        returns (IUniswapV3Pool _p, bool _inRange, uint128 liquidity)
     {
         return _getLiquidityAndInRange(_tokenId);
     }
 
-    function _getReward(uint256 _tokenId)
-        internal
-        nonReentrant
-        updateReward(_tokenId)
-        onlyTokenOwner(_tokenId)
-    {
+    function _getReward(
+        uint256 _tokenId
+    ) internal nonReentrant updateReward(_tokenId) onlyTokenOwner(_tokenId) {
         uint256 reward = rewards[_tokenId];
         if (reward > 0) {
             rewards[_tokenId] = 0;
@@ -202,14 +193,12 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         _deposits[_tokenId].derivedLiquidity = __derivedLiquidity;
     }
 
-    function _getLiquidityAndInRange(uint256 _tokenId)
+    function _getLiquidityAndInRange(
+        uint256 _tokenId
+    )
         private
         view
-        returns (
-            IUniswapV3Pool _p,
-            bool _inRange,
-            uint128 liquidity
-        )
+        returns (IUniswapV3Pool _p, bool _inRange, uint128 liquidity)
     {
         (
             IUniswapV3Pool _pool,
@@ -248,11 +237,10 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
                 .add(rewards[_tokenId]);
     }
 
-    function _derivedLiquidity(uint128 _liquidity, address account)
-        internal
-        view
-        returns (uint256)
-    {
+    function _derivedLiquidity(
+        uint128 _liquidity,
+        address account
+    ) internal view returns (uint256) {
         uint128 _normalLiquidity = (_liquidity * 20) / 100;
         uint256 stake = INFTStaker(registry.staker()).balanceOf(account);
 
@@ -279,12 +267,9 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
             );
     }
 
-    function _withdraw(uint256 tokenId)
-        internal
-        nonReentrant
-        updateReward(tokenId)
-        onlyTokenOwner(tokenId)
-    {
+    function _withdraw(
+        uint256 tokenId
+    ) internal nonReentrant updateReward(tokenId) onlyTokenOwner(tokenId) {
         // claim fees for the treasury
         _claimFees(tokenId);
 
@@ -330,12 +315,10 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         return _earned(_tokenId);
     }
 
-    function derivedLiquidity(uint128 _liquidity, address account)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function derivedLiquidity(
+        uint128 _liquidity,
+        address account
+    ) external view override returns (uint256) {
         return _derivedLiquidity(_liquidity, account);
     }
 
@@ -389,11 +372,10 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         );
     }
 
-    function notifyRewardAmount(address, uint256 reward)
-        external
-        override
-        updateReward(0)
-    {
+    function notifyRewardAmount(
+        address,
+        uint256 reward
+    ) external override updateReward(0) {
         require(msg.sender == registry.gaugeVoter(), "not gauge voter");
 
         // fetch rewards from voter
