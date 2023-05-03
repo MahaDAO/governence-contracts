@@ -72,6 +72,10 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         _unlocked = 0;
     }
 
+    // mapping to check lock duration
+    mapping(address => uint256) public lockDuration;
+    mapping(address => uint256) public unlockAt;
+
     function initialize(address _registry, address _stake) public initializer {
         stake = _stake;
         registry = IRegistry(_registry);
@@ -80,7 +84,7 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         maxBoostRequirement = 5000e18; // 5000 MAHAX for max boost
 
         DURATION = 14 days; // rewards are released over 14 days
-        PRECISION = 10**18;
+        PRECISION = 10 ** 18;
     }
 
     function getRevision() public pure virtual override returns (uint256) {
@@ -94,11 +98,10 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
      * @param timestamp The timestamp to get the balance at
      * @return The balance the account had as of the given block
      */
-    function getPriorBalanceIndex(address account, uint256 timestamp)
-        public
-        view
-        returns (uint256)
-    {
+    function getPriorBalanceIndex(
+        address account,
+        uint256 timestamp
+    ) public view returns (uint256) {
         uint256 nCheckpoints = numCheckpoints[account];
         if (nCheckpoints == 0) return 0;
 
@@ -121,11 +124,9 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         return lower;
     }
 
-    function getPriorSupplyIndex(uint256 timestamp)
-        public
-        view
-        returns (uint256)
-    {
+    function getPriorSupplyIndex(
+        uint256 timestamp
+    ) public view returns (uint256) {
         uint256 nCheckpoints = supplyNumCheckpoints;
         if (nCheckpoints == 0) return 0;
 
@@ -148,11 +149,10 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         return lower;
     }
 
-    function getPriorRewardPerToken(address token, uint256 timestamp)
-        public
-        view
-        returns (uint256, uint256)
-    {
+    function getPriorRewardPerToken(
+        address token,
+        uint256 timestamp
+    ) public view returns (uint256, uint256) {
         uint256 nCheckpoints = rewardPerTokenNumCheckpoints[token];
         if (nCheckpoints == 0) return (0, 0);
 
@@ -240,9 +240,8 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         if (
             _nCheckPoints > 0 &&
             supplyCheckpoints[_nCheckPoints - 1].timestamp == _timestamp
-        ) {
-            supplyCheckpoints[_nCheckPoints - 1].supply = derivedSupply;
-        } else {
+        ) supplyCheckpoints[_nCheckPoints - 1].supply = derivedSupply;
+        else {
             supplyCheckpoints[_nCheckPoints] = SupplyCheckpoint(
                 _timestamp,
                 derivedSupply
@@ -256,19 +255,16 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
     }
 
     // returns the last time the reward was modified or periodFinish if the reward has ended
-    function lastTimeRewardApplicable(address token)
-        public
-        view
-        returns (uint256)
-    {
+    function lastTimeRewardApplicable(
+        address token
+    ) public view returns (uint256) {
         return Math.min(block.timestamp, periodFinish[token]);
     }
 
-    function getReward(address account, address[] memory tokens)
-        external
-        override
-        lock
-    {
+    function getReward(
+        address account,
+        address[] memory tokens
+    ) external override lock {
         registry.ensureNotPaused();
         require(
             msg.sender == account || msg.sender == registry.gaugeVoter(),
@@ -319,15 +315,39 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
 
     function derivedBalance(address account) public view returns (uint256) {
         uint256 _balance = balanceOf[account];
-
-        uint256 _derived = (_balance * 20) / 100;
+        uint256 _duration = lockDuration[account];
         uint256 _stake = INFTStaker(registry.staker()).balanceOf(account);
 
-        uint256 _adjusted = ((_balance * _stake * 80) / maxBoostRequirement) /
-            100;
+        return derivedBalanceFor(_balance, _stake, _duration);
+    }
+
+    function derivedBalanceFor(
+        uint256 amount,
+        uint256 mahax,
+        uint256 duration
+    ) public view returns (uint256) {
+        uint256 _derived = (amount * 20) / 100;
+
+        // give 50% weight to mahax boost
+        uint256 _adjustedMAHAX = (1e8 * mahax) / maxBoostRequirement;
+
+        // give 50% weight to lock boost
+        uint256 _adjustedLock = (1e8 * duration) / 126144000;
+
+        uint256 finalDerived = (amount *
+            ((_adjustedMAHAX + _adjustedLock) * 40)) / 1e8;
 
         // because of this we are able to max out the boost by 5x
-        return Math.min(_derived + _adjusted, _balance);
+        return Math.max(finalDerived, _derived);
+    }
+
+    function increaseLockDurationTo(uint256 duration) public {
+        _increaseLockDurationTo(duration);
+        _updateRewardFor(msg.sender);
+    }
+
+    function updateRewardFor(address who) public {
+        _updateRewardFor(who);
     }
 
     function batchRewardPerToken(address token, uint256 maxRuns) external {
@@ -337,10 +357,10 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         ) = _batchRewardPerToken(token, maxRuns);
     }
 
-    function _batchRewardPerToken(address token, uint256 maxRuns)
-        internal
-        returns (uint256, uint256)
-    {
+    function _batchRewardPerToken(
+        address token,
+        uint256 maxRuns
+    ) internal returns (uint256, uint256) {
         uint256 _startTimestamp = lastUpdateTime[token];
         uint256 reward = rewardPerTokenStored[token];
 
@@ -395,10 +415,9 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         );
     }
 
-    function _updateRewardPerToken(address token)
-        internal
-        returns (uint256, uint256)
-    {
+    function _updateRewardPerToken(
+        address token
+    ) internal returns (uint256, uint256) {
         uint256 _startTimestamp = lastUpdateTime[token];
         uint256 reward = rewardPerTokenStored[token];
 
@@ -450,11 +469,10 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
     }
 
     // earned is an estimation, it won't be exact till the supply > rewardPerToken calculations have run
-    function earned(address token, address account)
-        public
-        view
-        returns (uint256)
-    {
+    function earned(
+        address token,
+        address account
+    ) public view returns (uint256) {
         uint256 _startTimestamp = Math.max(
             lastEarn[token][account],
             rewardPerTokenCheckpoints[token][0].timestamp
@@ -504,11 +522,11 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         return reward;
     }
 
-    function depositAll() external {
-        deposit(IERC20(stake).balanceOf(msg.sender));
+    function depositAll(uint256 duration) external {
+        deposit(IERC20(stake).balanceOf(msg.sender), duration);
     }
 
-    function deposit(uint256 amount) public lock {
+    function deposit(uint256 amount, uint256 duration) public lock {
         registry.ensureNotPaused();
         require(amount > 0, "amount = 0");
 
@@ -516,11 +534,9 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         totalSupply += amount;
         balanceOf[msg.sender] += amount;
 
-        uint256 _derivedBalance = derivedBalances[msg.sender];
-        derivedSupply -= _derivedBalance;
-        _derivedBalance = derivedBalance(msg.sender);
-        derivedBalances[msg.sender] = _derivedBalance;
-        derivedSupply += _derivedBalance;
+        _increaseLockDurationTo(duration);
+
+        uint256 _derivedBalance = _updateRewardFor(msg.sender);
 
         if (!attached[msg.sender]) {
             attached[msg.sender] = true;
@@ -573,11 +589,10 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         return _remaining * rewardRate[token];
     }
 
-    function notifyRewardAmount(address token, uint256 amount)
-        external
-        override
-        lock
-    {
+    function notifyRewardAmount(
+        address token,
+        uint256 amount
+    ) external override lock {
         require(token != stake, "token = stake");
         require(amount > 0, "amount = 0");
         if (rewardRate[token] == 0)
@@ -615,10 +630,10 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
     }
 
     /// @dev in case admin needs to execute some calls directly
-    function emergencyCall(address target, bytes memory signature)
-        external
-        onlyTimelock
-    {
+    function emergencyCall(
+        address target,
+        bytes memory signature
+    ) external onlyTimelock {
         (bool success, bytes memory response) = target.call(signature);
         require(success, string(response));
     }
@@ -631,11 +646,28 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         maxBoostRequirement = _maxBoostRequirement;
     }
 
-    function _safeTransfer(
-        address token,
-        address to,
-        uint256 value
-    ) internal {
+    function _increaseLockDurationTo(uint256 duration) internal {
+        require(duration >= lockDuration[msg.sender], "duration too short");
+        require(
+            duration <= 86400 * 365 * 4, // max 4 years
+            "duration too long"
+        );
+
+        // capture lock duration
+        lockDuration[msg.sender] = duration;
+        unlockAt[msg.sender] = block.timestamp + duration;
+    }
+
+    function _updateRewardFor(address who) internal returns (uint256) {
+        uint256 _derivedBalance = derivedBalances[who];
+        derivedSupply -= _derivedBalance;
+        _derivedBalance = derivedBalance(who);
+        derivedBalances[who] = _derivedBalance;
+        derivedSupply += _derivedBalance;
+        return _derivedBalance;
+    }
+
+    function _safeTransfer(address token, address to, uint256 value) internal {
         require(token.code.length > 0, "invalid code length");
         (bool success, bytes memory data) = token.call(
             abi.encodeWithSelector(IERC20.transfer.selector, to, value)
