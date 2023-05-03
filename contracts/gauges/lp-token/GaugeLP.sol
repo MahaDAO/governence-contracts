@@ -329,16 +329,15 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         uint256 _derived = (amount * 20) / 100;
 
         // give 50% weight to mahax boost
-        uint256 _adjustedMAHAX = (1e8 * mahax) / maxBoostRequirement;
+        uint256 mahaxBoost = (1e8 * mahax) / maxBoostRequirement;
 
         // give 50% weight to lock boost
-        uint256 _adjustedLock = (1e8 * duration) / 126144000;
+        uint256 lockBoost = (1e8 * duration) / 126144000;
 
-        uint256 finalDerived = (amount *
-            ((_adjustedMAHAX + _adjustedLock) * 40)) / 1e8;
+        uint256 boost = (amount * ((mahaxBoost + lockBoost) * 40)) / 1e8;
 
         // because of this we are able to max out the boost by 5x
-        return Math.max(finalDerived, _derived);
+        return Math.min(_derived + boost, amount);
     }
 
     function increaseLockDurationTo(uint256 duration) public {
