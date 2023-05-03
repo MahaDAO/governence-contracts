@@ -23,6 +23,10 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
 
     address public treasury;
 
+    // mapping to check lock duration
+    mapping(uint256 => uint256) public lockDuration;
+    mapping(uint256 => uint256) public unlockAt;
+
     function initialize(
         address _registry,
         address _token0,
@@ -49,50 +53,7 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
     }
 
     function getRevision() public pure virtual override returns (uint256) {
-        return 2;
-    }
-
-    function boostedFactor(
-        uint256 tokenId,
-        address who
-    )
-        external
-        view
-        returns (uint256 original, uint256 boosted, uint256 factor)
-    {
-        (, , , uint128 _liquidity) = NFTPositionInfo.getPositionInfo(
-            factory,
-            nonfungiblePositionManager,
-            tokenId
-        );
-
-        original = (_liquidity * 20) / 100;
-        boosted = _derivedLiquidity(_liquidity, who);
-        factor = (boosted * 1e18) / original;
-    }
-
-    function isIdsWithinRange(
-        uint256[] memory tokenIds
-    ) external view override returns (bool[] memory) {
-        bool[] memory ret = new bool[](tokenIds.length);
-        for (uint256 index = 0; index < tokenIds.length; index++) {
-            uint256 tokenId = tokenIds[index];
-            (
-                IUniswapV3Pool _pool,
-                int24 tickLower,
-                int24 tickUpper,
-
-            ) = NFTPositionInfo.getPositionInfo(
-                    factory,
-                    nonfungiblePositionManager,
-                    tokenId
-                );
-
-            (, int24 tick, , , , , ) = _pool.slot0();
-            ret[index] = tickLower < tick && tick < tickUpper;
-        }
-
-        return ret;
+        return 3;
     }
 
     function getLiquidityAndInRange(
@@ -116,7 +77,11 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         }
     }
 
-    function _onERC721Received(address _from, uint256 _tokenId) internal {
+    function _onERC721Received(
+        address _from,
+        uint256 _tokenId,
+        uint256 _lockDuration
+    ) internal {
         (
             IUniswapV3Pool _pool,
             bool inRange,
@@ -131,8 +96,13 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         require(liquidity > 0, "cannot stake 0 liquidity");
 
         _updateReward(_tokenId);
+        _increaseLockDurationTo(_tokenId, _lockDuration);
 
-        uint256 __derivedLiquidity = _derivedLiquidity(liquidity, _from);
+        uint256 __derivedLiquidity = _derivedLiquidity(
+            _tokenId,
+            liquidity,
+            _from
+        );
 
         _deposits[_tokenId] = Deposit({
             owner: _from,
@@ -182,7 +152,13 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         if (_liquidity == _deposits[_tokenId].liquidity) return;
 
         address _who = _deposits[_tokenId].owner;
-        uint256 __derivedLiquidity = _derivedLiquidity(_liquidity, _who);
+
+        // calculate new liquidty
+        uint256 __derivedLiquidity = _derivedLiquidity(
+            _tokenId,
+            _liquidity,
+            _who
+        );
 
         // remove old, add new derived liquidity
         totalSupply = totalSupply.add(__derivedLiquidity).sub(
@@ -239,17 +215,35 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
     }
 
     function _derivedLiquidity(
-        uint128 _liquidity,
+        uint256 nftId,
+        uint128 liquidity,
         address account
     ) internal view returns (uint256) {
-        uint128 _normalLiquidity = (_liquidity * 20) / 100;
+        uint256 duration = lockDuration[nftId];
         uint256 stake = INFTStaker(registry.staker()).balanceOf(account);
 
-        uint256 _boost = ((_liquidity * stake * 80) / maxBoostRequirement) /
-            100;
+        // because of this we are able to max out the boost by 5x
+        return derivedBalanceFor(liquidity, stake, duration);
+    }
+
+    function derivedBalanceFor(
+        uint256 liquidity,
+        uint256 mahax,
+        uint256 duration
+    ) public view returns (uint256) {
+        uint256 _derived = (liquidity * 20) / 100;
+
+        // give 50% weight to mahax boost
+        uint256 mahaxBoost = (1e8 * mahax) / maxBoostRequirement;
+
+        // give 50% weight to lock boost
+        uint256 lockBoost = (1e8 * duration) / 126144000;
+
+        // calculate the boost
+        uint256 boost = (liquidity * ((mahaxBoost + lockBoost) * 40)) / 1e8;
 
         // because of this we are able to max out the boost by 5x
-        return Math.min(_normalLiquidity + _boost, _liquidity);
+        return Math.min(_derived + boost, liquidity);
     }
 
     function lastTimeRewardApplicable() public view returns (uint256) {
@@ -317,10 +311,11 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
     }
 
     function derivedLiquidity(
-        uint128 _liquidity,
+        uint256 nftId,
+        uint128 liquidity,
         address account
     ) external view override returns (uint256) {
-        return _derivedLiquidity(_liquidity, account);
+        return _derivedLiquidity(nftId, liquidity, account);
     }
 
     function withdraw(uint256 tokenId) external override {
@@ -346,23 +341,32 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         address,
         address from,
         uint256 tokenId,
-        bytes calldata
+        bytes calldata params
     ) external override returns (bytes4) {
         require(
             msg.sender == address(nonfungiblePositionManager),
             "not called from nft manager"
         );
-        _onERC721Received(from, tokenId);
+        uint256 _lockDuration = abi.decode(params, (uint256));
+        _onERC721Received(from, tokenId, _lockDuration);
         return this.onERC721Received.selector;
     }
 
-    function uploadStaker(address who, uint256 tokenId) external onlyOwner {
-        nonfungiblePositionManager.transferFrom(
-            msg.sender,
-            address(this),
-            tokenId
+    function _increaseLockDurationTo(
+        uint256 _tokenId,
+        uint256 duration
+    ) internal {
+        if (duration == lockDuration[_tokenId]) return;
+
+        require(duration > lockDuration[_tokenId], "duration too short");
+        require(
+            duration <= 86400 * 365 * 4, // max 4 years
+            "duration too long"
         );
-        _onERC721Received(who, tokenId);
+
+        // capture lock duration
+        lockDuration[_tokenId] = duration;
+        unlockAt[_tokenId] = block.timestamp + duration;
     }
 
     function transferNFT(uint256 tokenId) external onlyOwner {

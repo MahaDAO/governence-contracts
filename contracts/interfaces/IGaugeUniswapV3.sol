@@ -14,10 +14,11 @@ interface IGaugeUniswapV3 is IGauge, IERC721Receiver {
 
     function earned(uint256 _tokenId) external view returns (uint256);
 
-    function derivedLiquidity(uint128 _liquidity, address account)
-        external
-        view
-        returns (uint256);
+    function derivedLiquidity(
+        uint256 tokenId,
+        uint128 liquidity,
+        address account
+    ) external view returns (uint256);
 
     function withdraw(uint256 tokenId) external;
 
@@ -31,19 +32,14 @@ interface IGaugeUniswapV3 is IGauge, IERC721Receiver {
 
     function updateRewardFor(uint256 _tokenId) external;
 
-    function tokenOfOwnerByIndex(address owner, uint256 index)
-        external
-        view
-        returns (uint256);
+    function tokenOfOwnerByIndex(
+        address owner,
+        uint256 index
+    ) external view returns (uint256);
 
     function totalNFTSupply() external view returns (uint256);
 
     function tokenByIndex(uint256 index) external view returns (uint256);
-
-    function isIdsWithinRange(uint256[] memory tokenIds)
-        external
-        view
-        returns (bool[] memory);
 
     function deposits(uint256 index) external view returns (Deposit memory);
 }
