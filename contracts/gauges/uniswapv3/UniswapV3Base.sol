@@ -105,11 +105,9 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
         return _deposits[_tokenId].liquidity;
     }
 
-    function derivedLiquidity(uint256 _tokenId)
-        external
-        view
-        returns (uint256)
-    {
+    function derivedLiquidity(
+        uint256 _tokenId
+    ) external view returns (uint256) {
         return _deposits[_tokenId].derivedLiquidity;
     }
 
@@ -145,13 +143,14 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
      * @param from address representing the previous owner of the given token ID
      * @param tokenId uint256 ID of the token to be removed from the tokens list of the given address
      */
-    function _removeTokenFromOwnerEnumeration(address from, uint256 tokenId)
-        internal
-    {
+    function _removeTokenFromOwnerEnumeration(
+        address from,
+        uint256 tokenId
+    ) internal {
         // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
         // then delete the last slot (swap and pop).
 
-        uint256 lastTokenIndex = balanceOf[from];
+        uint256 lastTokenIndex = balanceOf[from] - 1;
         uint256 tokenIndex = _ownedTokensIndex[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary
@@ -197,13 +196,10 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
         _;
     }
 
-    function tokenOfOwnerByIndex(address owner, uint256 index)
-        public
-        view
-        virtual
-        override
-        returns (uint256)
-    {
+    function tokenOfOwnerByIndex(
+        address owner,
+        uint256 index
+    ) public view virtual override returns (uint256) {
         require(
             index < balanceOf[owner],
             "ERC721Enumerable: owner index out of bounds"
@@ -211,13 +207,9 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
         return _ownedTokens[owner][index];
     }
 
-    function tokenByIndex(uint256 index)
-        public
-        view
-        virtual
-        override
-        returns (uint256)
-    {
+    function tokenByIndex(
+        uint256 index
+    ) public view virtual override returns (uint256) {
         require(
             index < totalNFTSupply(),
             "ERC721Enumerable: global index out of bounds"
@@ -229,12 +221,9 @@ abstract contract UniswapV3Base is ReentrancyGuard, IGaugeUniswapV3 {
         return _allTokens.length;
     }
 
-    function deposits(uint256 index)
-        external
-        view
-        override
-        returns (Deposit memory)
-    {
+    function deposits(
+        uint256 index
+    ) external view override returns (Deposit memory) {
         return _deposits[index];
     }
 
