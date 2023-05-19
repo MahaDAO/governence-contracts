@@ -347,8 +347,13 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
             msg.sender == address(nonfungiblePositionManager),
             "not called from nft manager"
         );
-        uint256 _lockDuration = abi.decode(params, (uint256));
-        _onERC721Received(from, tokenId, _lockDuration);
+
+        // decode lock duration
+        if (params.length > 0) {
+            uint256 _lockDuration = abi.decode(params, (uint256));
+            _onERC721Received(from, tokenId, _lockDuration);
+        } else _onERC721Received(from, tokenId, 0);
+
         return this.onERC721Received.selector;
     }
 
@@ -414,5 +419,30 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
     function updateRewardFor(uint256 _tokenId) external override {
         require(_deposits[_tokenId].liquidity > 0, "liquidity is 0");
         _updateReward(_tokenId);
+    }
+
+    function isIdsWithinRange(
+        uint256[] memory tokenIds
+    ) external view returns (bool[] memory) {
+        bool[] memory ret = new bool[](tokenIds.length);
+
+        for (uint256 index = 0; index < tokenIds.length; index++) {
+            uint256 tokenId = tokenIds[index];
+            (
+                IUniswapV3Pool _pool,
+                int24 tickLower,
+                int24 tickUpper,
+
+            ) = NFTPositionInfo.getPositionInfo(
+                    factory,
+                    nonfungiblePositionManager,
+                    tokenId
+                );
+
+            (, int24 tick, , , , , ) = _pool.slot0();
+            ret[index] = _pool == pool && tickLower < tick && tick < tickUpper;
+        }
+
+        return ret;
     }
 }

@@ -2,51 +2,95 @@
   "MAHA": {
     "abi": "MockERC20",
     "verified": true,
-    "address": "0x90344dD6Dc73A6FDa00A9e8315065662cFf43228"
+    "address": "0x3956099D71043e66195E1bdFd7856B53FB783d37"
   },
-  "ARTH": {
+  "WETH": {
     "abi": "MockERC20",
     "verified": true,
-    "address": "0x2B9F4A54333E3A5CBfC6221dE328f377C11372f1"
+    "address": "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6"
+  },
+  "UniswapNFTManager": {
+    "abi": "IUniswapNFTManager",
+    "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
   },
   "MAHATimelockController": {
     "abi": "MAHATimelockController",
     "verified": true,
-    "address": "0x8aDF73Ae6E54F988920Dd37249461d1472b24682"
+    "address": "0x6A765A3B1f66d40D6ed037726b852B29336F3ed7"
   },
   "Registry": {
     "abi": "Registry",
     "verified": true,
-    "address": "0x6C65E99Bb25079b51A4928DC1A196CD067811de4"
+    "address": "0x433F8F8cF413Ea6FcAC65F95f03f13B51425a75c"
   },
   "RenderingContract": {
     "abi": "RenderingContract",
     "verified": true,
-    "address": "0x40B34FD4CFAFF73E1b037De83328eBD2D9b7EEFb"
+    "address": "0x98e1701F6558Dd63481B57926c9F22c64d918C35"
   },
   "MAHAXGovernor": {
     "abi": "MAHAXGovernor",
     "verified": true,
-    "address": "0x7224c3C6b8c2815Ed12D0436ba3650f3E5476531"
+    "address": "0x2E1dB01F87aB645321CB12048bBAB8a9538c61CC"
   },
   "MAHAXStaker": {
     "abi": "MAHAXStaker",
     "verified": true,
-    "address": "0xD2125a722d28C7685AEd658A3Ddc7b08275b8Aeb"
+    "address": "0x8f878A2F8aC0d28C581ADB5494179D3BBC7890Ed"
   },
   "MAHAXLocker": {
     "abi": "MAHAXLocker",
     "verified": true,
-    "address": "0x9ee8110c0aACb7f9147252d7A2D95a5ff52F8496"
+    "address": "0x0b1b37c0d376e72d523319c6592f3A24D39912fD"
   },
   "EmissionController": {
     "abi": "EmissionController",
     "verified": true,
-    "address": "0x7d4B79ED098c1a593512525201a0ec27aEaA9F9B"
+    "address": "0x6818F17E4894CB1dAE9fD115f6da280291193C7b"
   },
   "BaseV2Voter": {
     "abi": "BaseV2Voter",
     "verified": true,
-    "address": "0x3b49D7dbce1a19D02c1D85c74D55d8ab49577A2b"
+    "address": "0x53C6ADe8ae2eC803bfB1C494C7A1600C615Fe8FC"
+  },
+  "MAHAFeeDistributor": {
+    "abi": "FeeDistributor",
+    "verified": true,
+    "address": "0x772500810ab7975073c14E2054f8f891A2190572"
+  },
+  "ARTH": {
+    "abi": "IERC20",
+    "verified": true,
+    "address": "0xEDe13A2f72eaDd2262818c535d456c1D63CCe90B"
+  },
+  "ARTHMAHA-UniV3Gauge": {
+    "abi": "GaugeUniswapV3",
+    "verified": true,
+    "address": "0x5094B4C40E8d7c9a7522349AFCE1032237e35f20"
+  },
+  "ARTHMAHA-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x07511aAd8FF0933473DCDeBB9F553803E56ADD71"
+  },
+  "ARTHMAHA-UniV3-Pool": {
+    "abi": "IUniswapV3Pool",
+    "verified": true,
+    "address": "0x7E7831646dbF8aA6b7966A8cEc0FF723C57e48cD"
+  },
+  "WETHMAHA-UniV3Gauge": {
+    "abi": "GaugeUniswapV3",
+    "verified": true,
+    "address": "0xBd490247b3441C22BF0F6b98256D2Be7f5289EDa"
+  },
+  "WETHMAHA-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x7E5a9097232487Ebf4d65CE5f69210D7E5a36329"
+  },
+  "WETHMAHA-UniV3-Pool": {
+    "abi": "IUniswapV3Pool",
+    "verified": true,
+    "address": "0xc7359d24FB88d38952280fE7a0b77BA90D27609F"
   }
 }
