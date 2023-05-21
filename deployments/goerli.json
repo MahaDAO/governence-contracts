@@ -78,19 +78,19 @@
     "verified": true,
     "address": "0x7E7831646dbF8aA6b7966A8cEc0FF723C57e48cD"
   },
-  "WETHMAHA-UniV3Gauge": {
+  "WETHMAHA-3000-UniV3Gauge": {
     "abi": "GaugeUniswapV3",
     "verified": true,
-    "address": "0xBd490247b3441C22BF0F6b98256D2Be7f5289EDa"
+    "address": "0x208EeF11C7aB3730e77dDD9D31778B01C8DA4b6B"
   },
-  "WETHMAHA-UniV3Bribe": {
+  "WETHMAHA-3000-UniV3Bribe": {
     "abi": "BaseV2Bribes",
     "verified": true,
-    "address": "0x7E5a9097232487Ebf4d65CE5f69210D7E5a36329"
+    "address": "0xE555845BeAd448A42E9daB8B07CEDFb0f2e57022"
   },
-  "WETHMAHA-UniV3-Pool": {
+  "WETHMAHA-3000-UniV3-Pool": {
     "abi": "IUniswapV3Pool",
     "verified": true,
-    "address": "0xc7359d24FB88d38952280fE7a0b77BA90D27609F"
+    "address": "0x9F51A960B6A171be7cd7B2F8c37b4aE5CFe93e2d"
   }
 }

@@ -268,6 +268,7 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         // claim fees for the treasury
         _claimFees(tokenId);
 
+        require(block.timestamp > unlockAt[tokenId], "!withdraw when locked");
         require(_deposits[tokenId].liquidity > 0, "Cannot withdraw 0");
         totalSupply = totalSupply.sub(_deposits[tokenId].derivedLiquidity);
         delete _deposits[tokenId];
@@ -357,6 +358,15 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         return this.onERC721Received.selector;
     }
 
+    function increaseLockDurationTo(
+        uint256 _tokenId,
+        uint256 duration
+    ) public onlyTokenOwner(_tokenId) {
+        require(_deposits[_tokenId].liquidity > 0, "liquidity is 0");
+        _increaseLockDurationTo(_tokenId, duration);
+        _updateReward(_tokenId);
+    }
+
     function _increaseLockDurationTo(
         uint256 _tokenId,
         uint256 duration
@@ -444,5 +454,24 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         }
 
         return ret;
+    }
+
+    function boostedFactor(
+        uint256 _tokenId,
+        address _from
+    )
+        external
+        view
+        returns (uint256 original, uint256 boosted, uint256 factor)
+    {
+        (, , , uint128 _liquidity) = NFTPositionInfo.getPositionInfo(
+            factory,
+            nonfungiblePositionManager,
+            _tokenId
+        );
+
+        original = (_liquidity * 20) / 100;
+        boosted = _derivedLiquidity(_tokenId, _liquidity, _from);
+        factor = (boosted * 1e18) / original;
     }
 }

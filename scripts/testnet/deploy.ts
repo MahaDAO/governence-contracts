@@ -121,12 +121,6 @@ async function main() {
     ethers.BigNumber.from(10).pow(18).mul(1e6),
     { gasPrice }
   );
-  // console.log(`Minting ARTH to Fee distributor`);
-  // await arthCI.mint(
-  //   arthFeeDistributorCI.address,
-  //   ethers.BigNumber.from(10).pow(18).mul(1e6),
-  //   { gasPrice }
-  // );
 
   console.log(`Governance deployment on ${network.name} complete.`);
 }
