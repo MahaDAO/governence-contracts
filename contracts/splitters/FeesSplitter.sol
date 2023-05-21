@@ -85,7 +85,7 @@ contract FeesSplitter is Ownable, ReentrancyGuard {
     }
 
     function withdrawERC20(IERC20 token) external onlyOwner {
-        token.transfer(owner(), token.balanceOf(address(this)));
+        token.safeTransfer(owner(), token.balanceOf(address(this)));
     }
 
     function _scaleAmountByPercentage(
