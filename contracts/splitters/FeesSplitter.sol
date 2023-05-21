@@ -57,7 +57,7 @@ contract FeesSplitter is Ownable, ReentrancyGuard {
                 percentAllocations[i]
             );
 
-            token.transfer(accounts[i], amt);
+            token.safeTransfer(accounts[i], amt);
         }
     }
 
