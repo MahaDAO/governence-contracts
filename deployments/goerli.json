@@ -92,5 +92,35 @@
     "abi": "IUniswapV3Pool",
     "verified": true,
     "address": "0x9F51A960B6A171be7cd7B2F8c37b4aE5CFe93e2d"
+  },
+  "WETHARTH-3000-UniV3Gauge": {
+    "abi": "GaugeUniswapV3",
+    "verified": true,
+    "address": "0xd1EE008fFDfDAF7ec29e4d2c73eD17be20413aC7"
+  },
+  "WETHARTH-3000-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x2774Ea374F0f9533e178CCe7b28924d1C67d9aE3"
+  },
+  "WETHARTH-3000-UniV3-Pool": {
+    "abi": "IUniswapV3Pool",
+    "verified": true,
+    "address": "0x518C2B1710d9C66472c5Ae0cd5A94391eE329c29"
+  },
+  "WETHARTH-500-UniV3Gauge": {
+    "abi": "GaugeUniswapV3",
+    "verified": true,
+    "address": "0x0b99a466bA0C2E219b4Dd173b8A1399cd5988396"
+  },
+  "WETHARTH-500-UniV3Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x630D2268651a57974382ea15806bbb1B389D3fFE"
+  },
+  "WETHARTH-500-UniV3-Pool": {
+    "abi": "IUniswapV3Pool",
+    "verified": true,
+    "address": "0x497385ab74181c705335d1B443Eb6c4cB1f60Be8"
   }
 }

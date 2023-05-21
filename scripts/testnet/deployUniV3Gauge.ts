@@ -8,8 +8,8 @@ async function main() {
 
   const uniPositionManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
   const tokenA = "WETH";
-  const tokenB = "MAHA";
-  const fee = 3000;
+  const tokenB = "ARTH";
+  const fee = 500;
 
   const [deployer] = await ethers.getSigners();
   console.log(`Deployer address is ${deployer.address}`);
@@ -95,17 +95,17 @@ async function main() {
   await tx4.wait();
 
   await saveABI(
-    `${tokenA}${tokenB}-UniV3Gauge`,
+    `${tokenA}${tokenB}-${fee}-UniV3Gauge`,
     "GaugeUniswapV3",
     univ3GaugeContractInstance.address
   );
   await saveABI(
-    `${tokenA}${tokenB}-UniV3Bribe`,
+    `${tokenA}${tokenB}-${fee}-UniV3Bribe`,
     "BaseV2Bribes",
     bribesInstance.address
   );
   await saveABI(
-    `${tokenA}${tokenB}-UniV3-Pool`,
+    `${tokenA}${tokenB}-${fee}-UniV3-Pool`,
     "IUniswapV3Pool",
     await univ3GaugeContractInstance.pool()
   );
