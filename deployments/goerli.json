@@ -122,5 +122,20 @@
     "abi": "IUniswapV3Pool",
     "verified": true,
     "address": "0x497385ab74181c705335d1B443Eb6c4cB1f60Be8"
+  },
+  "WETHMAHA-Uniswap-Gauge": {
+    "abi": "GaugeLP",
+    "verified": true,
+    "address": "0x3c04d37eaf915A88B3b1530F9E130D4B9F63963f"
+  },
+  "WETHMAHA-Uniswap-Bribe": {
+    "abi": "BaseV2Bribes",
+    "verified": true,
+    "address": "0x528E2C8f189aeD09C4892729d7c89468489FeE5A"
+  },
+  "WETHMAHA-Uniswap-Pool": {
+    "abi": "IERC20",
+    "verified": true,
+    "address": "0x95394092a343f2f9ddc5f68e332ed3ef80a6cbb5"
   }
 }
