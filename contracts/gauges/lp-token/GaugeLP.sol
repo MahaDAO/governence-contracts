@@ -563,6 +563,11 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
         balanceOf[msg.sender] -= amount;
         _safeTransfer(stake, msg.sender, amount);
 
+        require(
+            block.timestamp > unlockAt[msg.sender],
+            "!withdraw when locked"
+        );
+
         if (amount == balanceOf[msg.sender] && attached[msg.sender]) {
             attached[msg.sender] = false;
             IGaugeVoterV2(registry.gaugeVoter()).detachStakerFromGauge(
@@ -646,15 +651,23 @@ contract GaugeLP is IGaugeV2, VersionedInitializable {
     }
 
     function _increaseLockDurationTo(uint256 duration) internal {
-        require(duration >= lockDuration[msg.sender], "duration too short");
+        if (duration == lockDuration[msg.sender]) return;
+        if (unlockAt[msg.sender] == 0) unlockAt[msg.sender] = block.timestamp;
+
+        require(duration > lockDuration[msg.sender], "duration too short");
         require(
             duration <= 86400 * 365 * 4, // max 4 years
             "duration too long"
         );
 
+        if (unlockAt[msg.sender] == 0) unlockAt[msg.sender] = block.timestamp;
+
         // capture lock duration
+        unlockAt[msg.sender] =
+            unlockAt[msg.sender] +
+            duration -
+            lockDuration[msg.sender];
         lockDuration[msg.sender] = duration;
-        unlockAt[msg.sender] = block.timestamp + duration;
     }
 
     function _updateRewardFor(address who) internal returns (uint256) {

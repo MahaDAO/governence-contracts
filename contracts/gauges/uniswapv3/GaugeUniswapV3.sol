@@ -372,6 +372,7 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         uint256 duration
     ) internal {
         if (duration == lockDuration[_tokenId]) return;
+        if (unlockAt[_tokenId] == 0) unlockAt[_tokenId] = block.timestamp;
 
         require(duration > lockDuration[_tokenId], "duration too short");
         require(
@@ -380,16 +381,11 @@ contract GaugeUniswapV3 is Ownable, VersionedInitializable, UniswapV3Base {
         );
 
         // capture lock duration
+        unlockAt[_tokenId] =
+            unlockAt[_tokenId] +
+            duration -
+            lockDuration[_tokenId];
         lockDuration[_tokenId] = duration;
-        unlockAt[_tokenId] = block.timestamp + duration;
-    }
-
-    function transferNFT(uint256 tokenId) external onlyOwner {
-        nonfungiblePositionManager.transferFrom(
-            msg.sender,
-            address(this),
-            tokenId
-        );
     }
 
     function notifyRewardAmount(
