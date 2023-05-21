@@ -2,10 +2,11 @@
 
 pragma solidity ^0.8.0;
 
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract FeesSplitter is Ownable {
+contract FeesSplitter is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event ETHReceived(address from, uint256 amount);
@@ -14,8 +15,10 @@ contract FeesSplitter is Ownable {
     address[] public accounts;
     uint32[] public percentAllocations;
 
-    constructor(address[] memory _accounts, uint32[] memory _percentAllocations)
-    {
+    constructor(
+        address[] memory _accounts,
+        uint32[] memory _percentAllocations
+    ) {
         accounts = _accounts;
         percentAllocations = _percentAllocations;
         checkPercentages(_percentAllocations);
@@ -25,7 +28,7 @@ contract FeesSplitter is Ownable {
         emit ETHReceived(_msgSender(), msg.value);
     }
 
-    function distributeETH() public {
+    function distributeETH() public nonReentrant {
         uint256 amountToSplit = address(this).balance;
 
         // distribute remaining balance
@@ -67,11 +70,9 @@ contract FeesSplitter is Ownable {
         checkPercentages(_percentAllocations);
     }
 
-    function checkPercentages(uint32[] memory _percentAllocations)
-        public
-        view
-        onlyOwner
-    {
+    function checkPercentages(
+        uint32[] memory _percentAllocations
+    ) public view onlyOwner {
         uint32 sum = 0;
         for (uint256 i = 0; i < _percentAllocations.length; i++) {
             sum += _percentAllocations[i];
@@ -87,11 +88,10 @@ contract FeesSplitter is Ownable {
         token.transfer(owner(), token.balanceOf(address(this)));
     }
 
-    function _scaleAmountByPercentage(uint256 amount, uint256 scaledPercent)
-        internal
-        pure
-        returns (uint256 scaledAmount)
-    {
+    function _scaleAmountByPercentage(
+        uint256 amount,
+        uint256 scaledPercent
+    ) internal pure returns (uint256 scaledAmount) {
         // use assembly to bypass checking for overflow & division by 0
         // scaledPercent has been validated to be < PERCENTAGE_SCALE)
         // & PERCENTAGE_SCALE will never be 0
