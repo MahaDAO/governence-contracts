@@ -8,7 +8,6 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-abi-exporter";
-import { url } from "inspector";
 
 dotenv.config();
 
