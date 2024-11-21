@@ -11,6 +11,7 @@ type UserDetails = {
   mahaLocked: number;
   startDate: string;
   endDate: string;
+  bonus: number;
 };
 
 const parseCSV = async (filePath: string): Promise<UserDetails[]> => {
@@ -23,17 +24,20 @@ const parseCSV = async (filePath: string): Promise<UserDetails[]> => {
           const userDetail: UserDetails = {
             user: data.user,
             nftId: parseInt(data.nftId, 10),
-            mahaLocked: parseFloat(data.mahaLocked),
+            mahaLocked: Number(data.mahaLocked), // Parse as a number (handles both int and float)
             startDate: data.startDate,
             endDate: data.endDate,
+            bonus: Number(data.bonus), // Parse as a number (handles both int and float)
           };
 
+          // Validate the parsed data
           if (
             !userDetail.user ||
             isNaN(userDetail.nftId) ||
             isNaN(userDetail.mahaLocked) ||
             !userDetail.startDate ||
-            !userDetail.endDate
+            !userDetail.endDate ||
+            isNaN(userDetail.bonus)
           ) {
             throw new Error(`Invalid data in ${JSON.stringify(data)}`);
           }
@@ -53,13 +57,14 @@ const hashLeafNode = (
   nftId: number,
   mahaLocked: number,
   startDate: string,
-  endDate: string
+  endDate: string,
+  bonus: number
 ): Buffer => {
   return Buffer.from(
     keccak256(
       ethers.utils.defaultAbiCoder.encode(
-        ["address", "uint256", "uint256", "string", "string"],
-        [user, nftId, mahaLocked, startDate, endDate]
+        ["address", "uint256", "uint256", "string", "string", "uint256"],
+        [user, nftId, mahaLocked, startDate, endDate, bonus]
       )
     ).slice(2),
     "hex"
@@ -73,6 +78,7 @@ async function main() {
   if (!csvFilePath) {
     throw new Error("Please provide the path to the CSV file as an argument.");
   }
+
   // Parse CSV file to get user details
   const userDetails: UserDetails[] = await parseCSV(csvFilePath);
 
@@ -83,7 +89,8 @@ async function main() {
       detail.nftId,
       detail.mahaLocked,
       detail.startDate,
-      detail.endDate
+      detail.endDate,
+      detail.bonus
     )
   );
 
