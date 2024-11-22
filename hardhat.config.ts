@@ -151,6 +151,16 @@ const config: HardhatUserConfig & any = {
       polygon: process.env.POLYGONSCAN_API_KEY,
       base: process.env.BSCSCAN_API_KEY,
     },
+    customChains:[
+      {
+        network:'base',
+        chainId:8453,
+        urls:{
+          apiURL:"https://api.basescan.org/api",
+          browserURL:"https://basescan.org/"
+        }
+      }
+    ]
   },
 };
 
