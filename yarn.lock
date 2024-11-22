@@ -494,6 +494,11 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
+"@fastify/busboy@^2.0.0":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.1.1.tgz#b9da6a878a371829a0502c9b6c1c143ef6663f4d"
+  integrity sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==
+
 "@humanwhocodes/config-array@^0.5.0":
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.5.0.tgz#1407967d4c6eecd7388f83acf1eaf4d0c6e58ef9"
@@ -706,6 +711,21 @@
   integrity sha512-a35iVD4ycF6AoTfllAnKm96IPIzzHpgKX/ep4oKc2bsUKFfMlacWdyntgC/7d5blyCTXfFssgNAvXDZfzNWVGQ==
   dependencies:
     ethereumjs-util "^7.1.4"
+
+"@nomicfoundation/hardhat-verify@^2.0.12":
+  version "2.0.12"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-verify/-/hardhat-verify-2.0.12.tgz#480819a245a2db0b127e473c62079f7b4f16daa8"
+  integrity sha512-Lg3Nu7DCXASQRVI/YysjuAX2z8jwOCbS0w5tz2HalWGSTZThqA0v9N0v0psHbKNqzPJa8bNOeapIVSziyJTnAg==
+  dependencies:
+    "@ethersproject/abi" "^5.1.2"
+    "@ethersproject/address" "^5.0.2"
+    cbor "^8.1.0"
+    debug "^4.1.1"
+    lodash.clonedeep "^4.5.0"
+    picocolors "^1.1.0"
+    semver "^6.3.0"
+    table "^6.8.0"
+    undici "^5.14.0"
 
 "@nomicfoundation/solidity-analyzer-darwin-arm64@0.0.3":
   version "0.0.3"
@@ -2792,6 +2812,13 @@ cbor@^5.0.2:
   dependencies:
     bignumber.js "^9.0.1"
     nofilter "^1.0.4"
+
+cbor@^8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/cbor/-/cbor-8.1.0.tgz#cfc56437e770b73417a2ecbfc9caf6b771af60d5"
+  integrity sha512-DwGjNW9omn6EwP70aXsn7FQJx5kO12tX0bZkaTjzdVFM6/7nhA4t0EENocKGx6D2Bch9PE2KzCUf5SceBdeijg==
+  dependencies:
+    nofilter "^3.1.0"
 
 chai@^4.2.0:
   version "4.3.6"
@@ -6653,6 +6680,11 @@ lodash.assign@^4.0.3, lodash.assign@^4.0.6:
   resolved "https://registry.yarnpkg.com/lodash.assign/-/lodash.assign-4.2.0.tgz#0d99f3ccd7a6d261d19bdaeb9245005d285808e7"
   integrity sha512-hFuH8TY+Yji7Eja3mGiuAxBqLagejScbG8GbG0j6o9vzn0YL14My+ktnqtZgFTosKymC9/44wP6s7xyuLfnClw==
 
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+  integrity sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==
+
 lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
@@ -7296,6 +7328,11 @@ nofilter@^1.0.4:
   resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-1.0.4.tgz#78d6f4b6a613e7ced8b015cec534625f7667006e"
   integrity sha512-N8lidFp+fCz+TD51+haYdbDGrcBWwuHX40F5+z0qkUjMJ5Tp+rdSuAkMJ9N9eoolDlEVTf6u5icM+cNKkKW2mA==
 
+nofilter@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-3.1.0.tgz#c757ba68801d41ff930ba2ec55bab52ca184aa66"
+  integrity sha512-l2NNj07e9afPnhAhvgVrCD/oy2Ai1yfLpuo3EpiO1jFTsB4sFz6oIfAfSZyQzVpkZQ9xS8ZS5g1jCBgq4Hwo0g==
+
 nopt@3.x:
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/nopt/-/nopt-3.0.6.tgz#c6465dbf08abcd4db359317f79ac68a646b28ff9"
@@ -7780,6 +7817,11 @@ performance-now@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
   integrity sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==
+
+picocolors@^1.1.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.1.1.tgz#3d321af3eab939b083c8f929a1d12cda81c26b6b"
+  integrity sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==
 
 picomatch@^2.0.4, picomatch@^2.2.1, picomatch@^2.3.1:
   version "2.3.1"
@@ -9697,6 +9739,13 @@ underscore@1.9.1:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.9.1.tgz#06dce34a0e68a7babc29b365b8e74b8925203961"
   integrity sha512-5/4etnCkd9c8gwgowi5/om/mYO5ajCaOgdzj/oW+0eQV9WxKBDZw5+ycmKmeaTXjInS/W0BzpGLo2xR2aBwZdg==
+
+undici@^5.14.0:
+  version "5.28.4"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-5.28.4.tgz#6b280408edb6a1a604a9b20340f45b422e373068"
+  integrity sha512-72RFADWFqKmUb2hmmvNODKL3p9hcB6Gt2DOQMis1SEBaV6a4MH8soBvzg+95CYhCKPFedut2JY9bMfrDl9D23g==
+  dependencies:
+    "@fastify/busboy" "^2.0.0"
 
 undici@^5.4.0:
   version "5.10.0"
