@@ -1,0 +1,14 @@
+{
+  "MAHA": {
+    "abi": "IERC20",
+    "address": "0x554bba833518793056CF105E66aBEA330672c0dE"
+  },
+  "MigratorMahaProxy": {
+    "abi": "TransparentUpgradeableProxy",
+    "address": "0x3FecA580C3c55F69B25A61Ee801864896328957b"
+  },
+  "MigratorMahaImplementation": {
+    "abi": "MigratorMaha",
+    "address": "0x5C6F0250B866CDbe7c69c59Eb5145CCfa7140Cd0"
+  }
+}
