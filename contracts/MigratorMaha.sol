@@ -10,9 +10,9 @@ import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/acces
 
 /**
  * @title MigratorMaha
- * @notice Handles the migration process for MAHA token holders by allowing them to claim an NFT and bonus tokens.
- * @dev Uses a Merkle tree to validate user details for migration. Inherits from OpenZeppelin's
- *      ERC721Upgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable, and Ownable2StepUpgradeable.
+ * @notice Manages the migration process for MAHA token holders, allowing them to claim an NFT and receive bonus tokens.
+ * @dev Utilizes a Merkle tree for user verification and supports upgradable patterns through OpenZeppelin modules.
+ *      This contract ensures secure migrations, owner controls, and safe token handling.
  */
 contract MigratorMaha is
     ERC721Upgradeable,
@@ -22,51 +22,56 @@ contract MigratorMaha is
 {
     using SafeERC20 for IERC20;
 
-    /// @notice The Merkle root for verifying user migration details.
+    /// @notice Merkle root used to verify the migration eligibility of users.
     bytes32 public merkleRoot;
 
-    /// @notice The ERC20 token contract for MAHA.
+    /// @notice Address of the MAHA token contract used for bonus distribution.
     IERC20 public maha;
 
-    /// @notice Tracks the current token ID for NFT minting.
+    /// @notice Tracks the current token ID used for NFT minting.
     uint256 private _tokenId;
 
-    /// @notice Mapping to track whether a user has already migrated.
+    /// @notice Stores whether a user has already claimed their migration benefits.
     mapping(address => bool) public haveClaimed;
 
-    /// @notice Struct to represent user migration details
+    /// @notice Represents the details of a user's migration.
     struct UserDetail {
-        address user; // Address of the user
-        uint256 nftId; // ID of the NFT being migrated
-        uint256 mahaLocked; // Amount of MAHA tokens locked
-        uint256 startTime; // Migration start time
-        uint256 endTime; // Migration end time
-        uint256 mahaBonus; // Bonus MAHA tokens to be transferred
+        address user; // Address of the user.
+        uint256 nftId; // ID of the NFT to be issued.
+        uint256 mahaLocked; // Amount of MAHA tokens locked by the user.
+        uint256 startTime; // Migration start time.
+        uint256 endTime; // Migration end time.
+        uint256 mahaBonus; // Bonus MAHA tokens to be distributed to the user.
     }
 
-    /// @dev Custom error indicating the user has already migrated
-    /// @param user The address of the user attempting to migrate
+    /// @dev Error indicating the user has already migrated.
+    /// @param user Address of the user attempting to migrate again.
     error AlreadyMigrated(address user);
 
-    /// @dev Custom error indicating an invalid Merkle proof
-    /// @param proof The Merkle proof provided
+    /// @dev Error indicating that an invalid Merkle proof was provided.
+    /// @param proof The invalid Merkle proof submitted.
     error InvalidMerkleProof(bytes32[] proof);
 
-    /// @dev Custom error indicating a zero address is invalid
+    /// @dev Error indicating a zero address was used.
     error InvalidZeroAddress();
 
-    /// @notice Event emitted when a user successfully migrates.
-    /// @param user The address of the user who migrated.
-    /// @param nftId The unique NFT ID minted to the user.
-    /// @param bonus The bonus amount of MAHA tokens transferred to the user.
+    /// @notice Event emitted when a migration is successfully completed.
+    /// @param user Address of the user who migrated.
+    /// @param nftId ID of the NFT issued to the user.
+    /// @param bonus Amount of bonus MAHA tokens distributed.
     event Migrated(address indexed user, uint256 indexed nftId, uint256 bonus);
 
+    /// @notice Event emitted when the Merkle root is updated.
+    /// @param oldMerkleRoot The previous Merkle root.
+    /// @param newMerkleRoot The new Merkle root.
+    event MerkleRootUpdated(bytes32 oldMerkleRoot, bytes32 newMerkleRoot);
+
     /**
-     * @dev Initializes the Migrator contract.
-     * @param _name The name of the ERC721 NFT.
-     * @param _symbol The symbol of the ERC721 NFT.
-     * @param _merkleRoot The Merkle root for verifying user migration data.
-     * @param _maha The address of the MAHA token contract.
+     * @notice Initializes the Migrator contract.
+     * @param _name Name of the ERC721 NFT.
+     * @param _symbol Symbol of the ERC721 NFT.
+     * @param _merkleRoot Initial Merkle root for user verification.
+     * @param _maha Address of the MAHA token contract.
      */
     function init(
         string memory _name,
@@ -82,15 +87,14 @@ contract MigratorMaha is
     }
 
     /**
-     * @notice Allows a user to migrate their data by minting an NFT and receiving bonus tokens.
-     * @param _details A struct containing user details for the migration.
-     * @param _proof The Merkle proof verifying the user's eligibility for migration.
-     * @dev Verifies the Merkle proof and ensures the user has not already migrated.
-     *      Transfers the bonus MAHA tokens and mints an NFT to the user.
+     * @notice Allows users to migrate by minting an NFT and receiving bonus MAHA tokens.
+     * @param _details Struct containing user details for the migration.
+     * @param _proof Merkle proof verifying the user's eligibility for migration.
+     * @dev Validates Merkle proof, ensures the user has not already migrated, and performs secure token transfers.
      * @custom:reverts AlreadyMigrated If the user has already migrated.
      * @custom:reverts InvalidZeroAddress If the user's address is zero.
-     * @custom:reverts InvalidMerkleProof If the provided Merkle proof is invalid.
-     * @custom:requirements Migration is only allowed when the contract is not paused.
+     * @custom:reverts InvalidMerkleProof If the Merkle proof is invalid.
+     * @custom:requirements This function can only be called when the contract is not paused.
      */
     function migrate(
         UserDetail calldata _details,
@@ -103,7 +107,6 @@ contract MigratorMaha is
             revert InvalidZeroAddress();
         }
 
-        // Generate the Merkle leaf for the user's details
         bytes32 leaf = keccak256(
             abi.encodePacked(
                 _details.user,
@@ -115,31 +118,49 @@ contract MigratorMaha is
             )
         );
 
-        // Verify the Merkle proof
         if (!MerkleProofUpgradeable.verify(_proof, merkleRoot, leaf)) {
             revert InvalidMerkleProof(_proof);
         }
 
-        // Mark the user as having claimed
         haveClaimed[_details.user] = true;
 
-        // Increment the token ID and mint the NFT
         uint256 tokenId = ++_tokenId;
         _mint(_details.user, tokenId);
 
-        // Transfer the bonus MAHA tokens to the user
         IERC20(maha).safeTransfer(_details.user, _details.mahaBonus);
 
-        // Emit the migration event
         emit Migrated(_details.user, _details.nftId, _details.mahaBonus);
     }
 
     /**
      * @notice Toggles the paused state of the contract.
-     * @dev Can only be called by the owner. If the contract is paused, it will unpause, and vice versa.
+     * @dev This function can only be called by the owner.
+     *      If the contract is paused, it will be unpaused, and vice versa.
      */
     function togglePause() external onlyOwner {
         if (paused()) _unpause();
         else _pause();
+    }
+
+    /**
+     * @notice Updates the Merkle root used for migration verification.
+     * @param _newMerkleRoot The new Merkle root.
+     * @dev Emits the `MerkleRootUpdated` event upon successful update.
+     *      Can only be called by the owner.
+     */
+    function updateMerkleRoot(bytes32 _newMerkleRoot) external onlyOwner {
+        bytes32 oldMerkleRoot = merkleRoot;
+        merkleRoot = _newMerkleRoot;
+        emit MerkleRootUpdated(oldMerkleRoot, _newMerkleRoot);
+    }
+
+    /**
+     * @notice Refunds the contract's balance of a specific token to the owner.
+     * @param token Address of the ERC20 token to refund.
+     * @dev Transfers the entire token balance from the contract to the owner.
+     *      This function is restricted to the owner.
+     */
+    function refund(IERC20 token) external onlyOwner {
+        token.safeTransfer(msg.sender, token.balanceOf(address(this)));
     }
 }
