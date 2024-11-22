@@ -31,6 +31,15 @@ const config: HardhatUserConfig & any = {
   solidity: {
     compilers: [
       {
+        version: "0.8.21",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
+      },
+      {
         version: "0.8.4",
         settings: {
           optimizer: {
@@ -117,6 +126,11 @@ const config: HardhatUserConfig & any = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    base: {
+      url: `https://base-mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   abiExporter: {
     path: "./output/abis/",
@@ -135,7 +149,18 @@ const config: HardhatUserConfig & any = {
       mainnet: process.env.ETHERSCAN_API_KEY,
       goerli: process.env.ETHERSCAN_API_KEY,
       polygon: process.env.POLYGONSCAN_API_KEY,
+      base: process.env.BSCSCAN_API_KEY,
     },
+    customChains:[
+      {
+        network:'base',
+        chainId:8453,
+        urls:{
+          apiURL:"https://api.basescan.org/api",
+          browserURL:"https://basescan.org/"
+        }
+      }
+    ]
   },
 };
 
